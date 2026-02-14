@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 mkdir -p /root/policies
 
 # Create PII protection policy

@@ -23,7 +23,7 @@ AgentGateway extends Gateway API with AI-specific capabilities while staying com
 
 ## Verify Your Cluster
 
-A kind cluster was created during track setup. Let's verify it's ready:
+A k3s cluster was created during track setup. Let's verify it's ready:
 
 ```bash
 kubectl cluster-info

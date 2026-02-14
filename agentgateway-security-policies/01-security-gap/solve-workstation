@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 # Create the Gateway
 cat <<EOF | kubectl apply -f -
 apiVersion: gateway.networking.k8s.io/v1

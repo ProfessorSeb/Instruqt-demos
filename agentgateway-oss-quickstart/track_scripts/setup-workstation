@@ -7,47 +7,35 @@ until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
   sleep 2
 done
 
-echo "=== Installing dependencies ==="
+echo "=== Installing k3s ==="
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable=traefik" sh -
 
-# Install prerequisites
-apt-get update -qq
-apt-get install -y -qq curl wget jq apt-transport-https ca-certificates gnupg lsb-release
-
-# Install kubectl
-curl -fsSL https://dl.k8s.io/release/v1.31.4/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl
-chmod +x /usr/local/bin/kubectl
-
-# Install Helm
-curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-# Install kind
-curl -fsSL -o /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.25.0/kind-linux-amd64
-chmod +x /usr/local/bin/kind
-
-# Install Docker and start daemon manually (container environment)
-if ! command -v docker &>/dev/null; then
-  curl -fsSL https://get.docker.com | sh
-fi
-dockerd &>/var/log/dockerd.log &
-# Wait for Docker to be ready
-for i in $(seq 1 30); do
-  docker info &>/dev/null && break
-  sleep 2
+# Wait for k3s to be ready
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+until kubectl get nodes 2>/dev/null | grep -q ' Ready'; do
+  echo "Waiting for k3s node to be Ready..."
+  sleep 3
 done
 
-echo "=== Creating kind cluster ==="
-kind create cluster --name agentgateway --wait 120s
+echo "=== Configuring shell environment ==="
+cat >> /root/.bashrc << 'BASHEOF'
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+alias k=kubectl
+source <(kubectl completion bash)
+complete -o default -F __start_kubectl k
+BASHEOF
 
-# Verify cluster is ready
-kubectl cluster-info
-kubectl wait --for=condition=Ready nodes --all --timeout=120s
+echo "=== Installing Helm ==="
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+echo "=== Installing jq ==="
+apt-get update -qq && apt-get install -y -qq jq
 
 echo "=== Installing Gateway API CRDs ==="
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
-echo "=== Pre-pulling AgentGateway images ==="
-# Add Helm repos
-helm repo add agentgateway https://solo-io.github.io/helm-charts
+echo "=== Adding AgentGateway Helm repo ==="
+helm repo add agentgateway https://solo-io.github.io/agentgateway
 helm repo update
 
 echo "=== Track setup complete ==="

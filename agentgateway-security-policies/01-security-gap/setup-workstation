@@ -1,15 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Wait for track setup to complete
-while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
-  echo "Waiting for bootstrap..."
-  sleep 2
-done
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 # Ensure cluster is ready
-kubectl cluster-info --context kind-agentgateway
-kubectl wait --for=condition=ready node --all --timeout=120s
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
 # Ensure AgentGateway is running
 kubectl -n agentgateway-system wait --for=condition=available deployment/agentgateway --timeout=120s

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 # Verify cluster
 kubectl cluster-info
 kubectl get nodes

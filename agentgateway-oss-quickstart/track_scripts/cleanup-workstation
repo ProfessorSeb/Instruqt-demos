@@ -1,7 +1,9 @@
 #!/bin/bash
-set -euxo pipefail
+set -x
 
-# Clean up the kind cluster
-kind delete cluster --name agentgateway 2>/dev/null || true
+# Clean up k3s
+if [ -f /usr/local/bin/k3s-uninstall.sh ]; then
+  /usr/local/bin/k3s-uninstall.sh
+fi
 
 echo "Cleanup complete"

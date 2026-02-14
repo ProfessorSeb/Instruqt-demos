@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 # Ensure AgentGateway is running
 kubectl wait --for=condition=Ready pods --all -n agentgateway-system --timeout=120s
 
