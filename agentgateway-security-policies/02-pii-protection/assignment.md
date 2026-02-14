@@ -7,19 +7,12 @@ teaser: Redact personally identifiable information at the gateway before it reac
   third-party LLMs.
 notes:
 - type: text
-  contents: |
-    # 🛡️ PII Protection
-
-    SSNs, emails, credit cards — all flowing to third-party LLMs unfiltered.
-
-    **In this challenge, you'll:**
-
-    - Create an AgentGatewayPolicy for PII redaction
-    - Understand REDACT vs BLOCK vs LOG actions
-    - Simulate what PII protection looks like in practice
-    - See how the gateway transforms requests transparently
-
-    > ℹ️ PII protection is an **Enterprise** feature. You'll learn the concepts and create the policy YAML.
+  contents: "# \U0001F6E1️ PII Protection\n\nSSNs, emails, credit cards — all flowing
+    to third-party LLMs unfiltered.\n\n**In this challenge, you'll:**\n\n- Create
+    an AgentGatewayPolicy for PII redaction\n- Understand REDACT vs BLOCK vs LOG actions\n-
+    Simulate what PII protection looks like in practice\n- See how the gateway transforms
+    requests transparently\n\n> ℹ️ PII protection is an **Enterprise** feature. You'll
+    learn the concepts and create the policy YAML.\n"
 tabs:
 - id: kffafiugzg3y
   title: Terminal

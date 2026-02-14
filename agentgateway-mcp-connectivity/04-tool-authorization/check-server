@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check GitHub policy
+if ! kubectl -n agentgateway-system get agentgatewaypolicy github-read-only &>/dev/null; then
+  fail-message "The github-read-only AgentgatewayPolicy was not found. Please create it as described."
+  exit 1
+fi
+
+# Check Slack policy
+if ! kubectl -n agentgateway-system get agentgatewaypolicy slack-messaging &>/dev/null; then
+  fail-message "The slack-messaging AgentgatewayPolicy was not found. Please create it as described."
+  exit 1
+fi
+
+# Verify the GitHub policy has toolAuth configured
+if ! kubectl -n agentgateway-system get agentgatewaypolicy github-read-only -o yaml | grep -q "toolAuth"; then
+  fail-message "The github-read-only policy doesn't seem to have toolAuth configured. Check the spec."
+  exit 1
+fi
+
+echo "Tool authorization policies are configured correctly!"

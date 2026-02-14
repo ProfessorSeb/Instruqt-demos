@@ -7,16 +7,10 @@ teaser: Route to both OpenAI and Anthropic through a single gateway with path-ba
   routing.
 notes:
 - type: text
-  contents: |
-    # 🔀 Multi-Provider Routing
-
-    Most teams use multiple LLM providers. Without a gateway, that's N×M complexity.
-
-    **In this challenge, you'll:**
-
-    - Add Anthropic as a second LLM backend
-    - Configure path-based routing (`/openai/*` and `/anthropic/*`)
-    - Test both routes through a single gateway endpoint
+  contents: "# \U0001F500 Multi-Provider Routing\n\nMost teams use multiple LLM providers.
+    Without a gateway, that's N×M complexity.\n\n**In this challenge, you'll:**\n\n-
+    Add Anthropic as a second LLM backend\n- Configure path-based routing (`/openai/*`
+    and `/anthropic/*`)\n- Test both routes through a single gateway endpoint\n"
 tabs:
 - id: yby5cmiejbio
   title: Terminal

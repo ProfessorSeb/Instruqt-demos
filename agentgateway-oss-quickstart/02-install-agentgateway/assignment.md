@@ -6,16 +6,11 @@ title: Install AgentGateway on Kubernetes
 teaser: Set up a Kubernetes cluster and deploy AgentGateway OSS using Helm.
 notes:
 - type: text
-  contents: |
-    # 🚀 Install AgentGateway on Kubernetes
-
-    AgentGateway is a Kubernetes-native AI gateway built on the **Gateway API** standard.
-
-    **In this challenge, you'll:**
-
-    - Verify your Kubernetes cluster is ready
-    - Install AgentGateway CRDs and control plane via Helm
-    - Understand the GatewayClass → Gateway → Route model
+  contents: "# \U0001F680 Install AgentGateway on Kubernetes\n\nAgentGateway is a
+    Kubernetes-native AI gateway built on the **Gateway API** standard.\n\n**In this
+    challenge, you'll:**\n\n- Verify your Kubernetes cluster is ready\n- Install AgentGateway
+    CRDs and control plane via Helm\n- Understand the GatewayClass → Gateway → Route
+    model\n"
 tabs:
 - id: 9debqhafljmq
   title: Terminal

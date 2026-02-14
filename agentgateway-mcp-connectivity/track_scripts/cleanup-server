@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+
+k3d cluster delete my-k8s-cluster 2>/dev/null || true
+
+echo "Cleanup complete"

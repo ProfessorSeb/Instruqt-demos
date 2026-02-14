@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check GitHub rate limit policy
+if ! kubectl -n agentgateway-system get agentgatewaypolicy github-rate-limit &>/dev/null; then
+  fail-message "The github-rate-limit AgentgatewayPolicy was not found. Please create it as described."
+  exit 1
+fi
+
+# Check Slack rate limit policy
+if ! kubectl -n agentgateway-system get agentgatewaypolicy slack-rate-limit &>/dev/null; then
+  fail-message "The slack-rate-limit AgentgatewayPolicy was not found. Please create it as described."
+  exit 1
+fi
+
+# Verify rate limit config
+if ! kubectl -n agentgateway-system get agentgatewaypolicy github-rate-limit -o yaml | grep -q "rateLimit"; then
+  fail-message "The github-rate-limit policy doesn't seem to have rateLimit configured."
+  exit 1
+fi
+
+echo "Rate limiting policies are configured correctly!"

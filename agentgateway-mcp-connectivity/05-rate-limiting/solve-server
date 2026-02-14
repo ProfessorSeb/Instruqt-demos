@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat > /root/github-rate-limit.yaml << 'YAML'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: github-rate-limit
+  namespace: agentgateway-system
+spec:
+  targetRefs:
+  - kind: HTTPRoute
+    name: github-mcp-route
+  rateLimit:
+    requests: 5
+    unit: Minute
+YAML
+kubectl apply -f /root/github-rate-limit.yaml
+
+cat > /root/slack-rate-limit.yaml << 'YAML'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: slack-rate-limit
+  namespace: agentgateway-system
+spec:
+  targetRefs:
+  - kind: HTTPRoute
+    name: slack-mcp-route
+  rateLimit:
+    requests: 10
+    unit: Minute
+YAML
+kubectl apply -f /root/slack-rate-limit.yaml

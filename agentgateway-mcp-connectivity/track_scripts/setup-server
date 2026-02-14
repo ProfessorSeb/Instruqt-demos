@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Wait for instruqt bootstrap
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  sleep 1
+done
+
+set -euxo pipefail
+
+set-workdir /root
+
+# Shell conveniences
+cat >> ~/.bashrc << 'EOF'
+alias k=kubectl
+complete -F __start_kubectl k
+source /etc/bash_completion
+EOF
+
+# Start k3d cluster (pre-installed in image)
+if command -v k3d >/dev/null 2>&1; then
+  k3d cluster start my-k8s-cluster 2>/dev/null || \
+  k3d cluster create my-k8s-cluster --wait
+fi
+
+# Wait for cluster to be ready
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
+
+echo "=== Installing Gateway API CRDs ==="
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+
+echo "=== Installing AgentGateway CRDs ==="
+helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds --version 0.1.0-rc1 --wait
+
+echo "=== Installing AgentGateway ==="
+helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
+  --namespace agentgateway-system --create-namespace \
+  --version 0.1.0-rc1 --wait
+
+# Wait for agentgateway deployment
+kubectl -n agentgateway-system wait --for=condition=Available deployment --all --timeout=120s
+
+echo "=== Creating MCP namespace ==="
+kubectl create namespace mcp
+
+echo "=== Track setup complete ==="

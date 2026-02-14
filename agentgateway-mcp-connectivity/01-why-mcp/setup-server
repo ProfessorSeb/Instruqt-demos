@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Ensure cluster is ready from track setup
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kubectl -n agentgateway-system wait --for=condition=Available deployment --all --timeout=120s
+
+echo "Challenge 1 setup complete"

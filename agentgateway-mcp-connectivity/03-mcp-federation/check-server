@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check GitHub MCP server
+if ! kubectl -n mcp get deployment github-mcp-server &>/dev/null; then
+  fail-message "The github-mcp-server deployment was not found in the 'mcp' namespace. Please deploy it as described."
+  exit 1
+fi
+
+# Check Slack MCP server
+if ! kubectl -n mcp get deployment slack-mcp-server &>/dev/null; then
+  fail-message "The slack-mcp-server deployment was not found in the 'mcp' namespace. Please deploy it as described."
+  exit 1
+fi
+
+# Check backends
+if ! kubectl -n agentgateway-system get agentgatewaybackend github-mcp &>/dev/null; then
+  fail-message "The github-mcp AgentgatewayBackend was not found. Please create it as described."
+  exit 1
+fi
+
+if ! kubectl -n agentgateway-system get agentgatewaybackend slack-mcp &>/dev/null; then
+  fail-message "The slack-mcp AgentgatewayBackend was not found. Please create it as described."
+  exit 1
+fi
+
+# Check routes
+if ! kubectl -n agentgateway-system get httproute github-mcp-route &>/dev/null; then
+  fail-message "The github-mcp-route HTTPRoute was not found. Please create it as described."
+  exit 1
+fi
+
+if ! kubectl -n agentgateway-system get httproute slack-mcp-route &>/dev/null; then
+  fail-message "The slack-mcp-route HTTPRoute was not found. Please create it as described."
+  exit 1
+fi
+
+echo "MCP federation is configured correctly!"

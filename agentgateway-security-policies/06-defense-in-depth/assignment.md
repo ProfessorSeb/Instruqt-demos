@@ -6,21 +6,12 @@ title: Defense in Depth — All Policies Together
 teaser: Stack all security policies for comprehensive AI agent protection.
 notes:
 - type: text
-  contents: |
-    # 🏰 Defense in Depth
-
-    Time to stack all four security layers into a production-hardened AI gateway.
-
-    **In this challenge, you'll:**
-
-    - Combine PII, prompt injection, credential leak, and rate limiting policies
-    - Run a comprehensive security test
-    - See the complete request → response protection flow
-    - Plan your next steps with AgentGateway
-
-    ```
-    Request → Rate Limit → Prompt Guard → PII Redact → LLM → Credential Scrub → Response
-    ```
+  contents: "# \U0001F3F0 Defense in Depth\n\nTime to stack all four security layers
+    into a production-hardened AI gateway.\n\n**In this challenge, you'll:**\n\n-
+    Combine PII, prompt injection, credential leak, and rate limiting policies\n-
+    Run a comprehensive security test\n- See the complete request → response protection
+    flow\n- Plan your next steps with AgentGateway\n\n```\nRequest → Rate Limit →
+    Prompt Guard → PII Redact → LLM → Credential Scrub → Response\n```\n"
 tabs:
 - id: yssigbqyaeux
   title: Terminal
