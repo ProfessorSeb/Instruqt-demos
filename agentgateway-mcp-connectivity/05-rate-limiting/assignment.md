@@ -22,7 +22,8 @@ tabs:
   type: code
   hostname: server
   path: /root
-- title: MCP Inspector
+- id: yllipuhqq5yj
+  title: MCP Inspector
   type: service
   hostname: server
   port: 6274

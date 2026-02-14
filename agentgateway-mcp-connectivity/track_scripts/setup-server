@@ -88,4 +88,9 @@ systemctl start agentgateway-proxy
 echo "=== Creating MCP namespace ==="
 kubectl create namespace mcp || true
 
+echo "=== Pre-pulling MCP server image into k3d ==="
+# Import the image into k3d so challenges don't wait for pulls
+docker pull ghcr.io/peterj/mcp-website-fetcher:main || true
+k3d image import ghcr.io/peterj/mcp-website-fetcher:main -c my-k8s-cluster || true
+
 echo "=== Track setup complete ==="

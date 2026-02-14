@@ -7,8 +7,8 @@ teaser: Deploy an MCP server and route traffic to it through AgentGateway.
 notes:
 - type: text
   contents: "# \U0001F3AF Static MCP Routing\n\nTime to get hands-on! You'll deploy
-    an MCP tool server, create an AgentGateway backend, and route MCP traffic
-    through the gateway.\n\nThis is the foundation for everything else in this track.\n"
+    an MCP tool server, create an AgentGateway backend, and route MCP traffic through
+    the gateway.\n\nThis is the foundation for everything else in this track.\n"
 tabs:
 - id: snmgz50inhyi
   title: Terminal
@@ -19,7 +19,8 @@ tabs:
   type: code
   hostname: server
   path: /root
-- title: MCP Inspector
+- id: bgvirymqtixg
+  title: MCP Inspector
   type: service
   hostname: server
   port: 6274
