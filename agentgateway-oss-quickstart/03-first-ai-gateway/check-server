@@ -1,26 +1,27 @@
 #!/bin/bash
 set -euxo pipefail
+
 # Check secret exists
 if ! kubectl get secret openai-api-key -n agentgateway-system &>/dev/null; then
-  fail-message "The 'openai-api-key' secret was not found in the agentgateway-system namespace. Create it with: kubectl create secret generic openai-api-key --namespace agentgateway-system --from-literal=api-key=\"sk-demo-placeholder-key\""
+  fail-message "The 'openai-api-key' secret was not found in the agentgateway-system namespace."
   exit 1
 fi
 
 # Check Gateway exists
 if ! kubectl get gateway ai-gateway -n agentgateway-system &>/dev/null; then
-  fail-message "The 'ai-gateway' Gateway resource was not found. Please create it as described in the instructions."
+  fail-message "The 'ai-gateway' Gateway resource was not found."
   exit 1
 fi
 
-# Check Backend exists
-if ! kubectl get backend openai-backend -n agentgateway-system &>/dev/null; then
-  fail-message "The 'openai-backend' Backend resource was not found. Please create the Backend and HTTPRoute as described in the instructions."
+# Check AgentgatewayBackend exists
+if ! kubectl get agentgatewaybackend openai-backend -n agentgateway-system &>/dev/null; then
+  fail-message "The 'openai-backend' AgentgatewayBackend resource was not found."
   exit 1
 fi
 
 # Check HTTPRoute exists
 if ! kubectl get httproute openai-route -n agentgateway-system &>/dev/null; then
-  fail-message "The 'openai-route' HTTPRoute was not found. Please create it as described in the instructions."
+  fail-message "The 'openai-route' HTTPRoute was not found."
   exit 1
 fi
 

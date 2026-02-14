@@ -1,27 +1,24 @@
 #!/bin/bash
 set -euxo pipefail
-# Check Anthropic secret
+
 if ! kubectl get secret anthropic-api-key -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-api-key' secret was not found. Create it with: kubectl create secret generic anthropic-api-key --namespace agentgateway-system --from-literal=api-key=\"sk-ant-demo-placeholder-key\""
+  fail-message "The 'anthropic-api-key' secret was not found."
   exit 1
 fi
 
-# Check Anthropic backend
-if ! kubectl get backend anthropic-backend -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-backend' Backend was not found. Please create it as described in the instructions."
+if ! kubectl get agentgatewaybackend anthropic-backend -n agentgateway-system &>/dev/null; then
+  fail-message "The 'anthropic-backend' AgentgatewayBackend was not found."
   exit 1
 fi
 
-# Check Anthropic route
 if ! kubectl get httproute anthropic-route -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-route' HTTPRoute was not found. Please create it as described in the instructions."
+  fail-message "The 'anthropic-route' HTTPRoute was not found."
   exit 1
 fi
 
-# Verify we now have 2 backends
-BACKEND_COUNT=$(kubectl get backend -n agentgateway-system --no-headers 2>/dev/null | wc -l)
+BACKEND_COUNT=$(kubectl get agentgatewaybackend -n agentgateway-system --no-headers 2>/dev/null | wc -l)
 if [ "$BACKEND_COUNT" -lt 2 ]; then
-  fail-message "Expected at least 2 backends (openai-backend and anthropic-backend) but found $BACKEND_COUNT. Check: kubectl get backend -n agentgateway-system"
+  fail-message "Expected at least 2 backends but found $BACKEND_COUNT."
   exit 1
 fi
 

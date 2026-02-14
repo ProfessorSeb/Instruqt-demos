@@ -47,18 +47,21 @@ kubectl create secret generic anthropic-api-key \
 
 ```bash
 cat <<EOF | kubectl apply -f -
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: Backend
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
 metadata:
   name: anthropic-backend
   namespace: agentgateway-system
 spec:
   ai:
-    llm:
-      provider: anthropic
-      apiKeySecretRef:
+    provider:
+      anthropic:
+        model: claude-sonnet-4-20250514
+  policies:
+    auth:
+      secretRef:
         name: anthropic-api-key
-        key: api-key
+        namespace: agentgateway-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -75,7 +78,8 @@ spec:
             type: PathPrefix
             value: /anthropic
       backendRefs:
-        - kind: Backend
+        - group: agentgateway.dev
+          kind: AgentgatewayBackend
           name: anthropic-backend
           namespace: agentgateway-system
 EOF
@@ -86,7 +90,7 @@ EOF
 Check all the resources:
 
 ```bash
-kubectl get backend,httproute -n agentgateway-system
+kubectl get agentgatewaybackend,httproute -n agentgateway-system
 ```
 
 You should see two backends (openai-backend, anthropic-backend) and two routes (openai-route, anthropic-route).

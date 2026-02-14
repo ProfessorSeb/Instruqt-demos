@@ -80,18 +80,21 @@ Now create a Backend that tells AgentGateway how to reach OpenAI, and an HTTPRou
 
 ```bash
 cat <<EOF | kubectl apply -f -
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: Backend
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
 metadata:
   name: openai-backend
   namespace: agentgateway-system
 spec:
   ai:
-    llm:
-      provider: openai
-      apiKeySecretRef:
+    provider:
+      openai:
+        model: gpt-4o-mini
+  policies:
+    auth:
+      secretRef:
         name: openai-api-key
-        key: api-key
+        namespace: agentgateway-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -108,7 +111,8 @@ spec:
             type: PathPrefix
             value: /openai
       backendRefs:
-        - kind: Backend
+        - group: agentgateway.dev
+          kind: AgentgatewayBackend
           name: openai-backend
           namespace: agentgateway-system
 EOF
@@ -117,7 +121,7 @@ EOF
 Verify both resources:
 
 ```bash
-kubectl get backend,httproute -n agentgateway-system
+kubectl get agentgatewaybackend,httproute -n agentgateway-system
 ```
 
 ## Step 4: Test Your Gateway

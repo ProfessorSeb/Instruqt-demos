@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euxo pipefail
+
 # Create secret
 kubectl create secret generic openai-api-key \
   --namespace agentgateway-system \
@@ -24,21 +25,27 @@ EOF
 kubectl wait --for=condition=Programmed gateway/ai-gateway \
   -n agentgateway-system --timeout=60s
 
-# Create Backend and HTTPRoute
+# Create AgentgatewayBackend
 cat <<EOF | kubectl apply -f -
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: Backend
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
 metadata:
   name: openai-backend
   namespace: agentgateway-system
 spec:
   ai:
-    llm:
-      provider: openai
-      apiKeySecretRef:
+    provider:
+      openai:
+        model: gpt-4o-mini
+  policies:
+    auth:
+      secretRef:
         name: openai-api-key
-        key: api-key
----
+        namespace: agentgateway-system
+EOF
+
+# Create HTTPRoute
+cat <<EOF | kubectl apply -f -
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -54,13 +61,14 @@ spec:
             type: PathPrefix
             value: /openai
       backendRefs:
-        - kind: Backend
+        - group: agentgateway.dev
+          kind: AgentgatewayBackend
           name: openai-backend
           namespace: agentgateway-system
 EOF
 
 # Verify
-kubectl get gateway,backend,httproute -n agentgateway-system
+kubectl get gateway,agentgatewaybackend,httproute -n agentgateway-system
 
 # Port-forward and test
 kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
