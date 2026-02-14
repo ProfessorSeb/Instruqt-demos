@@ -1,8 +1,12 @@
 ---
 slug: multiple-providers
+id: gr3edurbowtx
 type: challenge
-title: "Add Multiple LLM Providers"
-teaser: Route to both OpenAI and Anthropic through a single gateway with path-based routing.
+title: Add Multiple LLM Providers
+teaser: Route to both OpenAI and Anthropic through a single gateway with path-based
+  routing.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Add Multiple LLM Providers

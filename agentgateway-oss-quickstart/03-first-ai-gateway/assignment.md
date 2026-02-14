@@ -1,8 +1,11 @@
 ---
 slug: first-ai-gateway
+id: tuokfmqtlbfn
 type: challenge
-title: "Create Your First AI Gateway"
+title: Create Your First AI Gateway
 teaser: Deploy a Gateway resource and route traffic to OpenAI through AgentGateway.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Create Your First AI Gateway

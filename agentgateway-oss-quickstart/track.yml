@@ -18,18 +18,22 @@ description: "AI agents are calling LLMs and MCP tools directly — no visibilit
   pods, services) is helpful."
 icon: ""
 tags:
-- kubernetes
 - ai
 - llm
-- gateway-api
+- kubernetes
 - agentgateway
 - solo-io
+- gateway-api
 owner: soloio
 developers:
-- null
+- sebastian.maniak@solo.io
 idle_timeout: 1800
 timelimit: 3600
 lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
   loadingMessages: true
-checksum: "9728011955301763102"
+  hideStopButton: false
+checksum: "3002381513478611923"
 enhanced_loading: false

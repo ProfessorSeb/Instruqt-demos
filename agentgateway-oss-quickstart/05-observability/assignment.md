@@ -1,8 +1,11 @@
 ---
 slug: observability
+id: nclrrhvfeyya
 type: challenge
-title: "See What Your Agents Are Doing"
+title: See What Your Agents Are Doing
 teaser: Explore the observability data AgentGateway captures for every LLM request.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # See What Your Agents Are Doing

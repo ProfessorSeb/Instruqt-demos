@@ -25,6 +25,16 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
 chmod +x /usr/local/bin/kind
 
+# ─── Install Docker and start daemon (container environment) ───
+if ! command -v docker &>/dev/null; then
+  curl -fsSL https://get.docker.com | sh
+fi
+dockerd &>/var/log/dockerd.log &
+for i in $(seq 1 30); do
+  docker info &>/dev/null && break
+  sleep 2
+done
+
 # ─── Create kind cluster ───
 cat <<EOF > /tmp/kind-config.yaml
 kind: Cluster

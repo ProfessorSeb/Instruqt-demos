@@ -1,8 +1,11 @@
 ---
 slug: install-agentgateway
+id: ctseayfuds2t
 type: challenge
-title: "Install AgentGateway on Kubernetes"
+title: Install AgentGateway on Kubernetes
 teaser: Set up a Kubernetes cluster and deploy AgentGateway OSS using Helm.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Install AgentGateway on Kubernetes

@@ -1,8 +1,11 @@
 ---
 slug: the-problem
+id: 9ixvzqdyuqbh
 type: challenge
-title: "The Problem — Agents Without Guardrails"
+title: The Problem — Agents Without Guardrails
 teaser: See what happens when AI agents call LLMs directly with no gateway in between.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # The Problem: Agents Without Guardrails

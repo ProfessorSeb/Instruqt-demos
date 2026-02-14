@@ -1,8 +1,11 @@
 ---
 slug: whats-next
+id: yss5ivalys9m
 type: challenge
-title: "What's Next — Security & Governance"
+title: What's Next — Security & Governance
 teaser: Discover what AgentGateway Enterprise adds for production AI agent deployments.
+difficulty: ""
+enhanced_loading: null
 ---
 
 # What's Next: Security & Governance
@@ -66,7 +69,7 @@ What I learned:
 
 Architecture:
   Agent -> AgentGateway (Gateway API) -> LLM Providers
-  
+
 Key Resources:
   - GatewayClass: registers AgentGateway as an implementation
   - Gateway: the actual gateway instance (listeners)

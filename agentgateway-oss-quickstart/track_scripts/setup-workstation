@@ -24,10 +24,16 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 curl -fsSL -o /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.25.0/kind-linux-amd64
 chmod +x /usr/local/bin/kind
 
-# Install Docker (needed for kind)
+# Install Docker and start daemon manually (container environment)
 if ! command -v docker &>/dev/null; then
   curl -fsSL https://get.docker.com | sh
 fi
+dockerd &>/var/log/dockerd.log &
+# Wait for Docker to be ready
+for i in $(seq 1 30); do
+  docker info &>/dev/null && break
+  sleep 2
+done
 
 echo "=== Creating kind cluster ==="
 kind create cluster --name agentgateway --wait 120s
