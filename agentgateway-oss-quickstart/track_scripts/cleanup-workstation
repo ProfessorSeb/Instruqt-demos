@@ -1,9 +1,0 @@
-#!/bin/bash
-set -x
-
-# Clean up k3s
-if [ -f /usr/local/bin/k3s-uninstall.sh ]; then
-  /usr/local/bin/k3s-uninstall.sh
-fi
-
-echo "Cleanup complete"

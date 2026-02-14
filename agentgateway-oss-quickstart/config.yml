@@ -1,10 +1,6 @@
 version: "3"
 virtualmachines:
-- name: workstation
-  image: ubuntu-os-cloud/ubuntu-2204-jammy-v20240607
-  machine_type: n1-standard-2
-  shell: /bin/bash
-  allow_external_ingress:
-  - http
-  - https
-  - high-ports
+- name: server
+  image: solo-test-236622/workshop-instruqt-kgateway-20251023
+  shell: /usr/bin/bash
+  machine_type: n1-standard-4

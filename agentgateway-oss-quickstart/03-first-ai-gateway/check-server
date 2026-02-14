@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Check secret exists
 if ! kubectl get secret openai-api-key -n agentgateway-system &>/dev/null; then
   fail-message "The 'openai-api-key' secret was not found in the agentgateway-system namespace. Create it with: kubectl create secret generic openai-api-key --namespace agentgateway-system --from-literal=api-key=\"sk-demo-placeholder-key\""

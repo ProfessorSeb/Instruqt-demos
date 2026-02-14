@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 kubectl create secret generic anthropic-api-key \
   --namespace agentgateway-system \
   --from-literal=api-key="sk-ant-demo-placeholder-key"

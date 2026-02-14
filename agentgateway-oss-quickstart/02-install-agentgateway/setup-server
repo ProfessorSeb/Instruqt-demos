@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Ensure cluster is ready from track setup
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 

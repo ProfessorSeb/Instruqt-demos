@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Ensure previous challenge resources exist
 kubectl wait --for=condition=Programmed gateway/ai-gateway \
   -n agentgateway-system --timeout=60s

@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Create secret
 kubectl create secret generic openai-api-key \
   --namespace agentgateway-system \

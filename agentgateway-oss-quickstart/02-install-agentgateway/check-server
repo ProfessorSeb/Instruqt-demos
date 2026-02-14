@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Check AgentGateway namespace exists
 if ! kubectl get namespace agentgateway-system &>/dev/null; then
   fail-message "The 'agentgateway-system' namespace doesn't exist. Did you install the AgentGateway Helm charts? Start with: helm install agentgateway-crds agentgateway/agentgateway-crds --version 2.1.0 --namespace agentgateway-system --create-namespace --wait"

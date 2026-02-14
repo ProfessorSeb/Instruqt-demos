@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # Check that the Gateway resource exists
 if ! kubectl get gateway ai-gateway -n default &>/dev/null; then
   fail-message "Gateway 'ai-gateway' not found. Please create the Gateway resource as shown in the instructions."

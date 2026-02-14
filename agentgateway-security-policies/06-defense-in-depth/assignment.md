@@ -8,11 +8,11 @@ tabs:
 - id: yssigbqyaeux
   title: Terminal
   type: terminal
-  hostname: workstation
+  hostname: server
 - id: fex5p3pybi0s
   title: Code Editor
   type: code
-  hostname: workstation
+  hostname: server
   path: /root
 difficulty: ""
 enhanced_loading: null

@@ -1,32 +1,28 @@
 #!/bin/bash
+
+# Wait for instruqt bootstrap
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  sleep 1
+done
+
 set -euxo pipefail
 
-# Wait for the Instruqt bootstrap to complete
-until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
-  echo "Waiting for Instruqt bootstrap..."
-  sleep 2
-done
+set-workdir /root
 
-echo "=== Installing k3s ==="
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable=traefik" sh -
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-until kubectl get nodes 2>/dev/null | grep -q ' Ready'; do
-  echo "Waiting for k3s node to be Ready..."
-  sleep 3
-done
-
-echo "=== Configuring shell environment ==="
-cat >> /root/.bashrc << 'BASHEOF'
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+# Shell conveniences
+cat >> ~/.bashrc << 'EOF'
 alias k=kubectl
-source <(kubectl completion bash)
-complete -o default -F __start_kubectl k
-BASHEOF
+complete -F __start_kubectl k
+source /etc/bash_completion
+EOF
 
-echo "=== Installing tools ==="
-apt-get update -qq && apt-get install -y -qq jq unzip bash-completion
-curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+# Start k3d cluster (pre-installed in image)
+if command -v k3d >/dev/null 2>&1; then
+  k3d cluster start my-k8s-cluster 2>/dev/null || \
+  k3d cluster create my-k8s-cluster --wait
+fi
+
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
 echo "=== Installing Gateway API CRDs ==="
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
