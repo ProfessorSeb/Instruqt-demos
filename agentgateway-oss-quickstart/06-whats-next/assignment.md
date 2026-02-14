@@ -4,6 +4,16 @@ id: yss5ivalys9m
 type: challenge
 title: What's Next — Security & Governance
 teaser: Discover what AgentGateway Enterprise adds for production AI agent deployments.
+tabs:
+- id: u0nkuycn4lch
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: 8qsvpe3hamxk
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---

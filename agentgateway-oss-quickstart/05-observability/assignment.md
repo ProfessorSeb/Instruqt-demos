@@ -4,6 +4,16 @@ id: nclrrhvfeyya
 type: challenge
 title: See What Your Agents Are Doing
 teaser: Explore the observability data AgentGateway captures for every LLM request.
+tabs:
+- id: xcnpwifmfrke
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: ubyhrompdgts
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---

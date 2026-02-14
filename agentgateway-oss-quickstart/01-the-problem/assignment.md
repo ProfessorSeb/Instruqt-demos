@@ -4,6 +4,16 @@ id: 9ixvzqdyuqbh
 type: challenge
 title: The Problem — Agents Without Guardrails
 teaser: See what happens when AI agents call LLMs directly with no gateway in between.
+tabs:
+- id: lfkce2mxhdfv
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: gyurmbwdu2ae
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---

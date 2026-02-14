@@ -4,6 +4,16 @@ id: ctseayfuds2t
 type: challenge
 title: Install AgentGateway on Kubernetes
 teaser: Set up a Kubernetes cluster and deploy AgentGateway OSS using Helm.
+tabs:
+- id: 9debqhafljmq
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: oxqn1rffggz5
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---

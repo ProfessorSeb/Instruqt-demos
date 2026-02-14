@@ -4,6 +4,16 @@ id: tuokfmqtlbfn
 type: challenge
 title: Create Your First AI Gateway
 teaser: Deploy a Gateway resource and route traffic to OpenAI through AgentGateway.
+tabs:
+- id: xyyfq8ho9qsz
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: q7rcjvnxo1e0
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---

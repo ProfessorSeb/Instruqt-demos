@@ -5,6 +5,16 @@ type: challenge
 title: Add Multiple LLM Providers
 teaser: Route to both OpenAI and Anthropic through a single gateway with path-based
   routing.
+tabs:
+- id: yby5cmiejbio
+  title: Terminal
+  type: terminal
+  hostname: server
+- id: mkzjmo0elinf
+  title: Editor
+  type: code
+  hostname: server
+  path: /root
 difficulty: ""
 enhanced_loading: null
 ---
