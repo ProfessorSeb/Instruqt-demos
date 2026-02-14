@@ -61,7 +61,6 @@ spec:
     auth:
       secretRef:
         name: anthropic-api-key
-        namespace: agentgateway-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -81,7 +80,6 @@ spec:
         - group: agentgateway.dev
           kind: AgentgatewayBackend
           name: anthropic-backend
-          namespace: agentgateway-system
 EOF
 ```
 

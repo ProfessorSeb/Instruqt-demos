@@ -27,11 +27,16 @@ kubectl wait --for=condition=Ready nodes --all --timeout=120s
 echo "=== Installing Gateway API CRDs ==="
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
-echo "=== Installing AgentGateway OSS via Helm ==="
-
-helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
+echo "=== Installing AgentGateway CRDs ==="
+helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
   --namespace agentgateway-system \
   --create-namespace \
+  --version v2.2.0 \
+  --wait
+
+echo "=== Installing AgentGateway Control Plane ==="
+helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
+  --namespace agentgateway-system \
   --version v2.2.0 \
   --wait --timeout 120s
 

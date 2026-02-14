@@ -94,7 +94,6 @@ spec:
     auth:
       secretRef:
         name: openai-api-key
-        namespace: agentgateway-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -114,7 +113,6 @@ spec:
         - group: agentgateway.dev
           kind: AgentgatewayBackend
           name: openai-backend
-          namespace: agentgateway-system
 EOF
 ```
 

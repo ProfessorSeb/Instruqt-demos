@@ -41,7 +41,6 @@ spec:
     auth:
       secretRef:
         name: openai-api-key
-        namespace: agentgateway-system
 EOF
 
 # Create HTTPRoute
@@ -64,7 +63,6 @@ spec:
         - group: agentgateway.dev
           kind: AgentgatewayBackend
           name: openai-backend
-          namespace: agentgateway-system
 EOF
 
 # Verify
