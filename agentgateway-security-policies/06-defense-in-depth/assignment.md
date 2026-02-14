@@ -1,17 +1,21 @@
 ---
 slug: defense-in-depth
-id: ""
+id: n31vnvachq1x
 type: challenge
-title: "Defense in Depth — All Policies Together"
+title: Defense in Depth — All Policies Together
 teaser: Stack all security policies for comprehensive AI agent protection.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: yssigbqyaeux
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: fex5p3pybi0s
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Defense in Depth

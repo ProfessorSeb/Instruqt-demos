@@ -1,17 +1,22 @@
 ---
 slug: pii-protection
-id: ""
+id: 3o8dxkorzzke
 type: challenge
-title: "PII Protection — Stop Sensitive Data from Reaching LLMs"
-teaser: Redact personally identifiable information at the gateway before it reaches third-party LLMs.
+title: PII Protection — Stop Sensitive Data from Reaching LLMs
+teaser: Redact personally identifiable information at the gateway before it reaches
+  third-party LLMs.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: kffafiugzg3y
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: 38syuxqfqttb
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # PII Protection

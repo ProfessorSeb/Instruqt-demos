@@ -1,17 +1,21 @@
 ---
 slug: rate-limiting
-id: ""
+id: q5dkb34vzbxj
 type: challenge
-title: "Rate Limiting — Control AI Spend"
+title: Rate Limiting — Control AI Spend
 teaser: Set request and token limits to prevent runaway AI costs.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: yazubpnbnqg2
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: xpvxdofqigon
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Rate Limiting
@@ -109,10 +113,10 @@ for i in $(seq 1 8); do
       \"model\": \"gpt-4\",
       \"messages\": [{\"role\": \"user\", \"content\": \"Request number $i\"}]
     }")
-  
+
   HTTP_CODE=$(echo "$RESPONSE" | tail -1)
   BODY=$(echo "$RESPONSE" | head -n -1)
-  
+
   if [ "$HTTP_CODE" = "429" ]; then
     echo "🚫 Request $i: HTTP $HTTP_CODE — RATE LIMITED"
   elif [ "$HTTP_CODE" = "200" ]; then

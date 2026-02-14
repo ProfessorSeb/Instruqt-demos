@@ -1,17 +1,21 @@
 ---
 slug: prompt-injection
-id: ""
+id: b0spl7fxx47x
 type: challenge
-title: "Prompt Injection Guard — Block Jailbreak Attempts"
+title: Prompt Injection Guard — Block Jailbreak Attempts
 teaser: Detect and block prompt injection attacks before they reach your LLM providers.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: rfgixg11ijs9
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: oxhm45vz5wmt
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Prompt Injection Guard
@@ -141,13 +145,13 @@ ALLOWED=0
 
 for test in "${TESTS[@]}"; do
   IFS='|' read -r desc prompt expected <<< "$test"
-  
+
   # Check against patterns
   RESULT="ALLOWED"
   if echo "$prompt" | grep -iqP "(ignore.*previous.*instructions|you are now|output.*system.*prompt|do anything now)"; then
     RESULT="BLOCKED"
   fi
-  
+
   if [ "$RESULT" = "BLOCKED" ]; then
     echo "🚫 BLOCKED: $desc"
     echo "   Prompt: \"$prompt\""

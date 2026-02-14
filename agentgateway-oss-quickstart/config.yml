@@ -1,6 +1,6 @@
 version: "3"
 containers:
-  - name: workstation
-    image: ubuntu-2204
-    memory: 4096
-    shell: /bin/bash
+- name: workstation
+  image: "ubuntu:22.04"
+  shell: /bin/bash
+  memory: 4096

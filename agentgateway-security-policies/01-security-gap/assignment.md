@@ -1,17 +1,21 @@
 ---
 slug: security-gap
-id: ""
+id: iwt6tpxekohy
 type: challenge
-title: "The Security Gap — What Could Go Wrong?"
+title: The Security Gap — What Could Go Wrong?
 teaser: Explore the risks of routing AI agent traffic without security policies.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: nuhqv97ctrfm
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: z3yjsopcor32
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # The Security Gap

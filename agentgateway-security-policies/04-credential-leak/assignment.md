@@ -1,17 +1,21 @@
 ---
 slug: credential-leak
-id: ""
+id: toyfp52ggdsd
 type: challenge
-title: "Credential Leak Prevention — Keep Secrets Out of Responses"
+title: Credential Leak Prevention — Keep Secrets Out of Responses
 teaser: Prevent API keys and secrets from leaking through LLM responses.
 tabs:
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-  - title: Code Editor
-    type: code
-    hostname: workstation
-    path: /root
+- id: gbokxxmdqy6y
+  title: Terminal
+  type: terminal
+  hostname: workstation
+- id: gm01awwcf18v
+  title: Code Editor
+  type: code
+  hostname: workstation
+  path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Credential Leak Prevention
@@ -128,7 +132,7 @@ CLEAN=0
 
 for resp in "${RESPONSES[@]}"; do
   IFS='|' read -r desc content pattern <<< "$resp"
-  
+
   if [ "$pattern" = "NO_MATCH" ]; then
     echo "✅ CLEAN: $desc"
     echo "   Response: \"${content:0:80}...\""
