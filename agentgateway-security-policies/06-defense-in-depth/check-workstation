@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euxo pipefail
+
+if [ ! -f /root/policies/comprehensive-security.yaml ]; then
+  fail-message "Comprehensive security policy not found at /root/policies/comprehensive-security.yaml. Please create the combined policy as shown in the instructions."
+  exit 1
+fi
+
+if ! grep -q "pii" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include PII protection."
+  exit 1
+fi
+
+if ! grep -q "promptInjection" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include prompt injection guard."
+  exit 1
+fi
+
+if ! grep -q "credentialLeak" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include credential leak prevention."
+  exit 1
+fi
+
+if ! grep -q "rateLimit" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include rate limiting."
+  exit 1
+fi
+
+if [ ! -f /root/policies/test-all-policies.sh ]; then
+  fail-message "Comprehensive test script not found at /root/policies/test-all-policies.sh. Please create it."
+  exit 1
+fi
+
+echo "🎉 Track complete! You've built a defense-in-depth security posture for your AI gateway."

@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Verify cluster
+kubectl cluster-info
+kubectl get nodes
+
+# Verify Gateway API CRDs
+kubectl get crds | grep gateway
+
+# Install AgentGateway CRDs
+helm install agentgateway-crds agentgateway/agentgateway-crds \
+  --version 2.1.0 \
+  --namespace agentgateway-system \
+  --create-namespace \
+  --wait
+
+# Install AgentGateway control plane
+helm install agentgateway agentgateway/agentgateway \
+  --version 2.1.0 \
+  --namespace agentgateway-system \
+  --wait --timeout 120s
+
+# Verify
+kubectl get pods -n agentgateway-system
+kubectl get gatewayclass

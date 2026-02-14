@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euxo pipefail
+
+if [ ! -f /root/policies/rate-limit.yaml ]; then
+  fail-message "Rate limit policy not found at /root/policies/rate-limit.yaml. Please create it as shown in the instructions."
+  exit 1
+fi
+
+if ! grep -q "rateLimit" /root/policies/rate-limit.yaml; then
+  fail-message "Policy file doesn't contain rateLimit configuration."
+  exit 1
+fi
+
+if ! grep -q "limit: 5" /root/policies/rate-limit.yaml; then
+  fail-message "Rate limit should be set to 5 requests. Check the file content."
+  exit 1
+fi
+
+if [ ! -f /root/policies/test-rate-limit.sh ]; then
+  fail-message "Rate limit test script not found at /root/policies/test-rate-limit.sh. Please create it."
+  exit 1
+fi
+
+if [ ! -f /root/policies/token-rate-limit.yaml ]; then
+  fail-message "Token-based rate limit policy not found at /root/policies/token-rate-limit.yaml. Please create it."
+  exit 1
+fi
+
+echo "Challenge 5 complete!"

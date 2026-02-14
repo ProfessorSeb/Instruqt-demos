@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Create the Gateway
+cat <<EOF | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ai-gateway
+  namespace: default
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - name: http
+      port: 8080
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+EOF
+
+# Create the HTTPRoute
+cat <<EOF | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llm-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: ai-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: mock-llm
+          port: 8080
+EOF
+
+# Wait for gateway to be ready
+sleep 5
+export GATEWAY_IP=$(kubectl get gateway ai-gateway -o jsonpath='{.status.addresses[0].value}' 2>/dev/null || echo "localhost")
+echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
+
+echo "Challenge 1 solved!"

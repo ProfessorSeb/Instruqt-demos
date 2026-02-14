@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check logs
+kubectl logs -n agentgateway-system -l app=agentgateway --tail=50 || true
+
+# Create observability notes
+cat > /root/observability-notes.txt << 'EOF'
+AgentGateway OSS Observability:
+
+Structured Logs:
+- Every request logged with provider, model, status, latency
+- Accessible via kubectl logs or any log aggregator
+
+Prometheus Metrics:
+- Request count by provider/model/status
+- Latency histograms (p50, p95, p99)
+- Token usage (input/output)
+- Error rates
+
+What Enterprise Adds:
+- Langfuse integration for full LLM observability
+- Trace correlation across agent chains
+- Cost tracking and attribution by team/agent
+- Prompt/response content logging (opt-in)
+EOF
+
+cat /root/observability-notes.txt

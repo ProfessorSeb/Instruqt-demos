@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Wait for track setup to complete
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  echo "Waiting for bootstrap..."
+  sleep 2
+done
+
+# Ensure cluster is ready
+kubectl cluster-info --context kind-agentgateway
+kubectl wait --for=condition=ready node --all --timeout=120s
+
+# Ensure AgentGateway is running
+kubectl -n agentgateway-system wait --for=condition=available deployment/agentgateway --timeout=120s
+
+# Ensure mock LLM is running
+kubectl wait --for=condition=available deployment/mock-llm --timeout=120s
+
+echo "Challenge 1 setup complete"

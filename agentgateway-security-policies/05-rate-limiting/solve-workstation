@@ -1,0 +1,69 @@
+#!/bin/bash
+set -euxo pipefail
+
+mkdir -p /root/policies
+
+cat <<EOF > /root/policies/rate-limit.yaml
+apiVersion: agentgateway.solo.io/v1alpha1
+kind: AgentGatewayPolicy
+metadata:
+  name: rate-limit
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: llm-route
+  default:
+    rateLimit:
+      requests:
+        limit: 5
+        window: 60s
+      keyType: REMOTE_ADDRESS
+EOF
+
+kubectl apply -f /root/policies/rate-limit.yaml 2>/dev/null || true
+
+cat <<'SCRIPT' > /root/policies/test-rate-limit.sh
+#!/bin/bash
+source /root/.bashrc
+echo "=== Rate Limiting Test ==="
+for i in $(seq 1 8); do
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$GATEWAY_IP:8080/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"gpt-4\",\"messages\":[{\"role\":\"user\",\"content\":\"Request $i\"}]}")
+  echo "Request $i: HTTP $HTTP_CODE"
+done
+SCRIPT
+chmod +x /root/policies/test-rate-limit.sh
+
+cat <<EOF > /root/policies/token-rate-limit.yaml
+apiVersion: agentgateway.solo.io/v1alpha1
+kind: AgentGatewayPolicy
+metadata:
+  name: token-rate-limit
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: llm-route
+  default:
+    rateLimit:
+      tokens:
+        limit: 50000
+        window: 3600s
+      keyType: HEADER
+      keyHeader: x-user-id
+EOF
+
+kubectl apply -f /root/policies/token-rate-limit.yaml 2>/dev/null || true
+
+cat <<'CALC' > /root/policies/cost-calculator.sh
+#!/bin/bash
+echo "=== AI Spend Calculator ==="
+echo "Rate limiting saves you from runaway costs."
+CALC
+chmod +x /root/policies/cost-calculator.sh
+
+echo "Challenge 5 solved!"

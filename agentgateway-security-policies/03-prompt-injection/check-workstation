@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check that the prompt injection policy exists
+if [ ! -f /root/policies/prompt-injection.yaml ]; then
+  fail-message "Prompt injection policy not found at /root/policies/prompt-injection.yaml. Please create it as shown in the instructions."
+  exit 1
+fi
+
+if ! grep -q "promptInjection" /root/policies/prompt-injection.yaml; then
+  fail-message "Policy file doesn't contain promptInjection configuration. Check the file content."
+  exit 1
+fi
+
+if ! grep -q "BLOCK" /root/policies/prompt-injection.yaml; then
+  fail-message "Policy should have action: BLOCK. Check the file content."
+  exit 1
+fi
+
+# Check test script exists
+if [ ! -f /root/policies/test-injection.sh ]; then
+  fail-message "Test script not found at /root/policies/test-injection.sh. Please create it as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 3 complete!"

@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Wait for the Instruqt bootstrap to finish
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  echo "Waiting for Instruqt bootstrap..."
+  sleep 2
+done
+
+echo "=== Installing dependencies ==="
+
+# Install prerequisites
+apt-get update -qq
+apt-get install -y -qq curl wget jq apt-transport-https ca-certificates gnupg lsb-release
+
+# Install kubectl
+curl -fsSL https://dl.k8s.io/release/v1.31.4/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl
+chmod +x /usr/local/bin/kubectl
+
+# Install Helm
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Install kind
+curl -fsSL -o /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.25.0/kind-linux-amd64
+chmod +x /usr/local/bin/kind
+
+# Install Docker (needed for kind)
+if ! command -v docker &>/dev/null; then
+  curl -fsSL https://get.docker.com | sh
+fi
+
+echo "=== Creating kind cluster ==="
+kind create cluster --name agentgateway --wait 120s
+
+# Verify cluster is ready
+kubectl cluster-info
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
+
+echo "=== Installing Gateway API CRDs ==="
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+
+echo "=== Pre-pulling AgentGateway images ==="
+# Add Helm repos
+helm repo add agentgateway https://solo-io.github.io/helm-charts
+helm repo update
+
+echo "=== Track setup complete ==="

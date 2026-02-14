@@ -1,0 +1,222 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Wait for the Instruqt bootstrap to complete
+while [ ! -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  echo "Waiting for Instruqt bootstrap..."
+  sleep 2
+done
+
+# ─── System packages ───
+apt-get update -y
+apt-get install -y curl wget jq unzip bash-completion apt-transport-https ca-certificates gnupg lsb-release
+
+# ─── Install kubectl ───
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
+apt-get update -y
+apt-get install -y kubectl
+kubectl completion bash > /etc/bash_completion.d/kubectl
+
+# ─── Install Helm ───
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# ─── Install kind ───
+curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+chmod +x /usr/local/bin/kind
+
+# ─── Create kind cluster ───
+cat <<EOF > /tmp/kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
+      - containerPort: 30443
+        hostPort: 8443
+        protocol: TCP
+EOF
+
+kind create cluster --name agentgateway --config /tmp/kind-config.yaml --wait 120s
+
+# ─── Install Gateway API CRDs ───
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+
+# ─── Install AgentGateway OSS via Helm ───
+helm repo add agentgateway https://solo-io.github.io/agentgateway
+helm repo update
+
+helm install agentgateway agentgateway/agentgateway \
+  --namespace agentgateway-system \
+  --create-namespace \
+  --version 2.1.0 \
+  --wait --timeout 120s
+
+# ─── Wait for AgentGateway to be ready ───
+kubectl -n agentgateway-system rollout status deployment/agentgateway --timeout=120s
+
+# ─── Create a mock LLM backend for testing (no real API key needed) ───
+# This simple echo server simulates LLM responses so learners can test policies
+# without needing real OpenAI credentials
+cat <<'MOCKEOF' > /root/mock-llm-server.py
+#!/usr/bin/env python3
+"""Minimal mock LLM server that echoes back requests in OpenAI-compatible format."""
+import json
+import http.server
+import socketserver
+
+class MockLLMHandler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8')
+
+        try:
+            req = json.loads(body)
+        except json.JSONDecodeError:
+            req = {"messages": [{"role": "user", "content": body}]}
+
+        # Extract the user message
+        user_msg = "Hello!"
+        if "messages" in req:
+            for msg in reversed(req["messages"]):
+                if msg.get("role") == "user":
+                    user_msg = msg.get("content", "Hello!")
+                    break
+
+        # Generate a mock response that includes the user's input
+        # (This is intentional — it helps demonstrate security policies)
+        response = {
+            "id": "mock-chat-001",
+            "object": "chat.completions",
+            "model": req.get("model", "mock-gpt-4"),
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": f"I received your message. You said: {user_msg}\n\nHere is my response based on your input."
+                },
+                "finish_reason": "stop"
+            }],
+            "usage": {
+                "prompt_tokens": len(user_msg.split()) * 2,
+                "completion_tokens": 30,
+                "total_tokens": len(user_msg.split()) * 2 + 30
+            }
+        }
+
+        resp_bytes = json.dumps(response).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(resp_bytes)))
+        self.end_headers()
+        self.wfile.write(resp_bytes)
+
+    def log_message(self, format, *args):
+        pass  # Suppress logs
+
+PORT = 9999
+with socketserver.TCPServer(("", PORT), MockLLMHandler) as httpd:
+    print(f"Mock LLM server running on port {PORT}")
+    httpd.serve_forever()
+MOCKEOF
+chmod +x /root/mock-llm-server.py
+
+# Deploy mock LLM as a Kubernetes service
+cat <<'K8SEOF' | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mock-llm-server
+  namespace: default
+data:
+  server.py: |
+    #!/usr/bin/env python3
+    import json, http.server, socketserver
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length).decode('utf-8')
+            try:
+                req = json.loads(body)
+            except:
+                req = {"messages": [{"role": "user", "content": body}]}
+
+            user_msg = "Hello!"
+            if "messages" in req:
+                for msg in reversed(req["messages"]):
+                    if msg.get("role") == "user":
+                        user_msg = msg.get("content", "Hello!")
+                        break
+
+            response = {
+                "id": "mock-001",
+                "object": "chat.completions",
+                "model": req.get("model", "mock-gpt-4"),
+                "choices": [{"index": 0, "message": {"role": "assistant", "content": f"I received your message. You said: {user_msg}\n\nHere is my response."}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 30, "total_tokens": 50}
+            }
+
+            resp = json.dumps(response).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(resp)))
+            self.end_headers()
+            self.wfile.write(resp)
+
+        def log_message(self, fmt, *args): pass
+
+    socketserver.TCPServer(("", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-llm
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mock-llm
+  template:
+    metadata:
+      labels:
+        app: mock-llm
+    spec:
+      containers:
+        - name: mock-llm
+          image: python:3.11-slim
+          command: ["python3", "/app/server.py"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: server
+              mountPath: /app
+      volumes:
+        - name: server
+          configMap:
+            name: mock-llm-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-llm
+  namespace: default
+spec:
+  selector:
+    app: mock-llm
+  ports:
+    - port: 8080
+      targetPort: 8080
+K8SEOF
+
+# Wait for mock LLM to be ready
+kubectl rollout status deployment/mock-llm --timeout=120s
+
+# ─── Create working directory ───
+mkdir -p /root/policies
+
+echo "Track setup complete!"

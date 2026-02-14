@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euxo pipefail
+
+if [ ! -f /root/workshop-recap.txt ]; then
+  fail-message "Please create the /root/workshop-recap.txt recap file as described in the instructions. It's a great way to solidify what you learned!"
+  exit 1
+fi
+
+echo "Workshop complete! Thanks for learning about AgentGateway."

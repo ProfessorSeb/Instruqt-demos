@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Nothing extra needed — track setup already prepared the environment
+echo "Challenge 1 setup complete"

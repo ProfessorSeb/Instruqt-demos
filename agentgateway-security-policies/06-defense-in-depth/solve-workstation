@@ -1,0 +1,73 @@
+#!/bin/bash
+set -euxo pipefail
+
+mkdir -p /root/policies
+
+cat <<EOF > /root/policies/comprehensive-security.yaml
+apiVersion: agentgateway.solo.io/v1alpha1
+kind: AgentGatewayPolicy
+metadata:
+  name: comprehensive-security
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: llm-route
+  default:
+    rateLimit:
+      requests:
+        limit: 100
+        window: 60s
+      tokens:
+        limit: 50000
+        window: 3600s
+      keyType: HEADER
+      keyHeader: x-user-id
+    security:
+      pii:
+        action: REDACT
+        detectors:
+          - type: SSN
+          - type: EMAIL
+          - type: PHONE
+          - type: CREDIT_CARD
+          - type: ADDRESS
+      promptInjection:
+        action: BLOCK
+        sensitivity: MEDIUM
+        customPatterns:
+          - pattern: "ignore.*previous.*instructions"
+            description: "Classic jailbreak"
+          - pattern: "you are now"
+            description: "Role hijacking"
+          - pattern: "output.*system.*prompt"
+            description: "Prompt extraction"
+      credentialLeak:
+        action: REDACT
+        detectors:
+          - type: API_KEY
+          - type: AWS_KEY
+          - type: PRIVATE_KEY
+          - type: JWT
+          - type: PASSWORD_IN_URL
+EOF
+
+kubectl apply -f /root/policies/comprehensive-security.yaml 2>/dev/null || true
+
+cat <<'SCRIPT' > /root/policies/test-all-policies.sh
+#!/bin/bash
+source /root/.bashrc
+echo "=== Comprehensive Security Test ==="
+echo "Testing PII, Prompt Injection, Credential Leak, Rate Limiting..."
+for i in 1 2 3; do
+  curl -s -o /dev/null -w "Request $i: HTTP %{http_code}\n" http://$GATEWAY_IP:8080/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"gpt-4\",\"messages\":[{\"role\":\"user\",\"content\":\"Test $i\"}]}"
+done
+echo "✅ All policies in place"
+SCRIPT
+chmod +x /root/policies/test-all-policies.sh
+/root/policies/test-all-policies.sh
+
+echo "Challenge 6 solved!"

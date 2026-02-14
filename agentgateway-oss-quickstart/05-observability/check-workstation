@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check that observability notes were created
+if [ ! -f /root/observability-notes.txt ]; then
+  fail-message "Please create the /root/observability-notes.txt file as described in the instructions. This summarizes what AgentGateway observability gives you."
+  exit 1
+fi
+
+if ! grep -qi "metrics\|logs\|langfuse" /root/observability-notes.txt; then
+  fail-message "The observability-notes.txt file doesn't seem to contain the expected content. Please follow the instructions to create it with the observability summary."
+  exit 1
+fi
+
+echo "Observability exploration complete!"

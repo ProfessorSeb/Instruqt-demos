@@ -1,0 +1,147 @@
+slug: agentgateway-oss-quickstart
+id: ""
+title: "AgentGateway OSS: Your First AI Gateway"
+teaser: Deploy a purpose-built gateway for AI agent traffic on Kubernetes using the open-source AgentGateway project.
+description: |-
+  AI agents are calling LLMs and MCP tools directly — no visibility, no security, no cost control. Sound familiar? It's the same chaos we saw with microservices in 2016, before service meshes and API gateways brought order.
+
+  **AgentGateway** is a purpose-built gateway for AI agent traffic. Built on the Kubernetes Gateway API, it gives you a single control point for all your agent-to-LLM communication — routing, observability, and governance included.
+
+  In this hands-on workshop, you'll:
+
+  - 🔍 Understand why direct agent-to-LLM calls are a problem
+  - 🚀 Install AgentGateway OSS on a Kubernetes cluster
+  - 🌐 Create your first AI Gateway with LLM routing
+  - 🔀 Route traffic to multiple LLM providers (OpenAI + Anthropic)
+  - 📊 Explore the observability AgentGateway provides out of the box
+  - 🗺️ Learn what's possible with AgentGateway Enterprise
+
+  **No prior AgentGateway experience required.** Familiarity with Kubernetes basics (kubectl, pods, services) is helpful.
+icon: https://raw.githubusercontent.com/solo-io/agentgateway/main/docs/content/img/logo.png
+tags:
+  - kubernetes
+  - ai
+  - llm
+  - gateway-api
+  - agentgateway
+  - solo-io
+owner: soloio
+developers:
+  - ""
+idle_timeout: 1800
+timelimit: 3600
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  extend_duration: 0
+  loadingMessages: true
+challenges:
+  - slug: the-problem
+    id: ""
+    type: challenge
+    title: "The Problem — Agents Without Guardrails"
+    teaser: See what happens when AI agents call LLMs directly with no gateway in between.
+    assignment: 01-the-problem/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    notes:
+      - type: text
+        contents: |-
+          # The AI Agent Infrastructure Gap
+
+          Think back to 2016. Microservices were exploding. Every team deployed services that called other services directly — no visibility into what was happening, no consistent security, no rate limiting.
+
+          Then came API gateways and service meshes. Suddenly you had a **control plane** for service-to-service traffic.
+
+          **We're at that same inflection point with AI agents.**
+
+          Today, agents call LLMs directly. API keys are scattered everywhere. There's no audit trail. No way to enforce cost controls. No unified observability.
+
+          Every agent team is solving these problems independently — badly.
+
+          **AgentGateway** is the missing infrastructure layer. A purpose-built gateway for AI agent traffic, built on the Kubernetes Gateway API standard.
+
+          Let's see the problem firsthand, then fix it.
+    timelimit: 600
+  - slug: install-agentgateway
+    id: ""
+    type: challenge
+    title: "Install AgentGateway on Kubernetes"
+    teaser: Set up a Kubernetes cluster and deploy AgentGateway OSS using Helm.
+    assignment: 02-install-agentgateway/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: first-ai-gateway
+    id: ""
+    type: challenge
+    title: "Create Your First AI Gateway"
+    teaser: Deploy a Gateway resource and route traffic to OpenAI through AgentGateway.
+    assignment: 03-first-ai-gateway/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: multiple-providers
+    id: ""
+    type: challenge
+    title: "Add Multiple LLM Providers"
+    teaser: Route to both OpenAI and Anthropic through a single gateway with path-based routing.
+    assignment: 04-multiple-providers/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: observability
+    id: ""
+    type: challenge
+    title: "See What Your Agents Are Doing"
+    teaser: Explore the observability data AgentGateway captures for every LLM request.
+    assignment: 05-observability/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 600
+  - slug: whats-next
+    id: ""
+    type: challenge
+    title: "What's Next — Security & Governance"
+    teaser: Discover what AgentGateway Enterprise adds for production AI agent deployments.
+    assignment: 06-whats-next/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 600

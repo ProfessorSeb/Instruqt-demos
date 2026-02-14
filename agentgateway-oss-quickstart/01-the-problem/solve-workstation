@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+export OPENAI_API_KEY="sk-placeholder-not-a-real-key"
+
+curl -s https://api.openai.com/v1/chat/completions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "Say hello"}],
+    "max_tokens": 50
+  }' | jq . || true
+
+cat > /root/problems.txt << 'EOF'
+Problems with direct agent-to-LLM communication:
+1. API keys scattered across agents and repos
+2. No centralized audit trail or logging
+3. No rate limiting or cost controls
+4. No content filtering or PII protection
+5. No unified observability across providers
+6. Each team solves these problems independently
+EOF
+
+cat /root/problems.txt

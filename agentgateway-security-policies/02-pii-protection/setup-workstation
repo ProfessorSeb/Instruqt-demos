@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Ensure gateway and route from previous challenge exist
+kubectl get gateway ai-gateway -n default
+kubectl get httproute llm-route -n default
+
+# Ensure policies directory exists
+mkdir -p /root/policies
+
+echo "Challenge 2 setup complete"

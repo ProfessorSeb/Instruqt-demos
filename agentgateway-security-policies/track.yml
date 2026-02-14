@@ -1,0 +1,150 @@
+slug: agentgateway-security-policies
+id: ""
+title: "Securing AI Agents: PII Protection, Prompt Injection & Rate Limiting"
+teaser: Protect your AI agent traffic with gateway-level security policies — no application code changes required.
+description: |-
+  Your AI gateway is routing traffic — great. But what about security?
+
+  Agents sending PII to third-party LLMs. Users injecting malicious prompts to hijack agent behavior. Runaway agents burning through API budgets with no limits. Credentials leaking in LLM responses.
+
+  **These aren't hypothetical risks — they're happening right now in production.**
+
+  AgentGateway's security policies fix all of this at the gateway layer. No application code changes. No per-agent configuration. One policy, applied consistently to all traffic.
+
+  In this hands-on workshop, you'll:
+
+  - 🔍 See the security gaps in unprotected AI agent traffic
+  - 🛡️ Apply PII protection to redact sensitive data before it reaches LLMs
+  - 🚫 Block prompt injection and jailbreak attempts
+  - 🔑 Prevent credential leaks in LLM responses
+  - 💰 Rate limit requests and tokens to control AI spend
+  - 🏰 Stack all policies for defense-in-depth protection
+
+  **Prerequisites:** Basic AgentGateway knowledge (completing the OSS Quickstart track is recommended).
+icon: https://raw.githubusercontent.com/solo-io/agentgateway/main/docs/content/img/logo.png
+tags:
+  - kubernetes
+  - ai
+  - llm
+  - security
+  - gateway-api
+  - agentgateway
+  - solo-io
+owner: soloio
+developers:
+  - ""
+idle_timeout: 1800
+timelimit: 3600
+lab_config:
+  overlay: false
+  width: 33
+  position: right
+  extend_duration: 0
+  loadingMessages: true
+challenges:
+  - slug: security-gap
+    id: ""
+    type: challenge
+    title: "The Security Gap — What Could Go Wrong?"
+    teaser: Explore the risks of routing AI agent traffic without security policies.
+    assignment: 01-security-gap/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    notes:
+      - type: text
+        contents: |-
+          # Your Gateway Is Open — Now What?
+
+          You've deployed AgentGateway. Agents are routing through it. You can see the traffic. You can route to multiple providers.
+
+          **But you're still wide open.**
+
+          Every request flows through unchanged. PII goes straight to third-party LLMs. Malicious prompts pass through unchecked. There's no spend limit. Credentials can leak back in responses.
+
+          It's like having a front door with no lock.
+
+          In this track, you'll add the locks — one by one — until your AI gateway is production-hardened.
+
+          Let's start by seeing exactly what can go wrong.
+    timelimit: 600
+  - slug: pii-protection
+    id: ""
+    type: challenge
+    title: "PII Protection — Stop Sensitive Data from Reaching LLMs"
+    teaser: Redact personally identifiable information at the gateway before it reaches third-party LLMs.
+    assignment: 02-pii-protection/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: prompt-injection
+    id: ""
+    type: challenge
+    title: "Prompt Injection Guard — Block Jailbreak Attempts"
+    teaser: Detect and block prompt injection attacks before they reach your LLM providers.
+    assignment: 03-prompt-injection/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: credential-leak
+    id: ""
+    type: challenge
+    title: "Credential Leak Prevention — Keep Secrets Out of Responses"
+    teaser: Prevent API keys and secrets from leaking through LLM responses.
+    assignment: 04-credential-leak/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: rate-limiting
+    id: ""
+    type: challenge
+    title: "Rate Limiting — Control AI Spend"
+    teaser: Set request and token limits to prevent runaway AI costs.
+    assignment: 05-rate-limiting/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 900
+  - slug: defense-in-depth
+    id: ""
+    type: challenge
+    title: "Defense in Depth — All Policies Together"
+    teaser: Stack all security policies for comprehensive AI agent protection.
+    assignment: 06-defense-in-depth/assignment.md
+    tabs:
+      - title: Terminal
+        type: terminal
+        hostname: workstation
+      - title: Code Editor
+        type: code
+        hostname: workstation
+        path: /root
+    timelimit: 600
