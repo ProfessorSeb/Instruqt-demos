@@ -2,14 +2,14 @@
 set -euxo pipefail
 
 # Check GitHub MCP server
-if ! kubectl -n mcp get deployment github-mcp-server &>/dev/null; then
-  fail-message "The github-mcp-server deployment was not found in the 'mcp' namespace. Please deploy it as described."
+if ! kubectl get deployment mcp-github &>/dev/null; then
+  fail-message "The mcp-github deployment was not found. Please deploy it as described."
   exit 1
 fi
 
 # Check Slack MCP server
-if ! kubectl -n mcp get deployment slack-mcp-server &>/dev/null; then
-  fail-message "The slack-mcp-server deployment was not found in the 'mcp' namespace. Please deploy it as described."
+if ! kubectl get deployment mcp-slack &>/dev/null; then
+  fail-message "The mcp-slack deployment was not found. Please deploy it as described."
   exit 1
 fi
 

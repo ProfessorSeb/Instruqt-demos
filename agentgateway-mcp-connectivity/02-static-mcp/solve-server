@@ -1,120 +1,62 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Deploy mock MCP server
-cat > /root/fetch-mcp-server.yaml << 'YAML'
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fetch-mcp-server-code
-  namespace: mcp
-data:
-  server.py: |
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    import json
-    TOOLS = [{"name": "fetch", "description": "Fetch content from a URL", "inputSchema": {"type": "object", "properties": {"url": {"type": "string", "description": "The URL to fetch"}}, "required": ["url"]}}]
-    class MCPHandler(BaseHTTPRequestHandler):
-        def do_POST(self):
-            length = int(self.headers.get('Content-Length', 0))
-            body = json.loads(self.rfile.read(length))
-            method = body.get('method', '')
-            if method == 'tools/list':
-                result = {"tools": TOOLS}
-            elif method == 'tools/call':
-                tool_name = body.get('params', {}).get('name', '')
-                args = body.get('params', {}).get('arguments', {})
-                url = args.get('url', 'unknown')
-                result = {"content": [{"type": "text", "text": f"Fetched content from {url}: <html>Mock page content</html>"}]}
-            elif method == 'initialize':
-                result = {"protocolVersion": "2024-11-05", "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "fetch-mcp", "version": "1.0.0"}}
-            else:
-                result = {"error": {"code": -32601, "message": f"Method not found: {method}"}}
-            response = json.dumps({"jsonrpc": "2.0", "result": result, "id": body.get('id', 1)})
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(response.encode())
-        def log_message(self, format, *args):
-            print(f"MCP Server: {args[0]}")
-    print("Starting Fetch MCP Server on port 8080...")
-    HTTPServer(('0.0.0.0', 8080), MCPHandler).serve_forever()
----
+# Deploy MCP website fetcher server
+cat > /root/mcp-website-fetcher.yaml << 'YAML'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fetch-mcp-server
-  namespace: mcp
+  name: mcp-website-fetcher
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fetch-mcp-server
+      app: mcp-website-fetcher
   template:
     metadata:
       labels:
-        app: fetch-mcp-server
+        app: mcp-website-fetcher
     spec:
       containers:
       - name: server
-        image: python:3.11-slim
-        command: ["python", "/app/server.py"]
+        image: ghcr.io/peterj/mcp-website-fetcher:main
         ports:
-        - containerPort: 8080
-        volumeMounts:
-        - name: code
-          mountPath: /app
-      volumes:
-      - name: code
-        configMap:
-          name: fetch-mcp-server-code
+        - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: fetch-mcp-server
-  namespace: mcp
+  name: mcp-website-fetcher
+  namespace: default
 spec:
   selector:
-    app: fetch-mcp-server
+    app: mcp-website-fetcher
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 80
+    targetPort: 8000
     appProtocol: kgateway.dev/mcp
 YAML
-
-kubectl apply -f /root/fetch-mcp-server.yaml
-kubectl -n mcp wait --for=condition=Ready pod -l app=fetch-mcp-server --timeout=120s
-
-# Create Gateway
-cat > /root/mcp-gateway.yaml << 'YAML'
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: mcp-gateway
-  namespace: agentgateway-system
-spec:
-  gatewayClassName: agentgateway
-  listeners:
-  - name: http
-    port: 8080
-    protocol: HTTP
-YAML
-kubectl apply -f /root/mcp-gateway.yaml
+kubectl apply -f /root/mcp-website-fetcher.yaml
+kubectl wait --for=condition=Ready pod -l app=mcp-website-fetcher --timeout=120s
 
 # Create Backend
-cat > /root/fetch-backend.yaml << 'YAML'
+cat > /root/mcp-backend.yaml << 'YAML'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: fetch-mcp
+  name: mcp-backend
   namespace: agentgateway-system
 spec:
   mcp:
-    target:
-      host: fetch-mcp-server.mcp.svc.cluster.local
-      port: 8080
+    targets:
+    - name: mcp-target
+      static:
+        host: mcp-website-fetcher.default.svc.cluster.local
+        port: 80
+        protocol: SSE
 YAML
-kubectl apply -f /root/fetch-backend.yaml
+kubectl apply -f /root/mcp-backend.yaml
 
 # Create Route
 cat > /root/mcp-route.yaml << 'YAML'
@@ -125,15 +67,16 @@ metadata:
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: mcp-gateway
+  - name: agentgateway-proxy
+    namespace: agentgateway-system
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /mcp
     backendRefs:
-    - group: agentgateway.dev
+    - name: mcp-backend
+      group: agentgateway.dev
       kind: AgentgatewayBackend
-      name: fetch-mcp
 YAML
 kubectl apply -f /root/mcp-route.yaml

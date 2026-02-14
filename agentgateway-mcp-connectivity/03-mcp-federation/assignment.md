@@ -19,204 +19,115 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: MCP Inspector
+  type: service
+  hostname: server
+  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
 
 # MCP Federation 🌐 Multi-Server Routing
 
-Real-world agents use many tools. A coding agent might need GitHub for repositories, Slack for notifications, and PostgreSQL for data. Instead of configuring each tool separately, AgentGateway can **federate** them behind a single gateway.
+Real-world agents use many tools. A coding agent might need GitHub for repositories, Slack for notifications, and a web fetcher for research. Instead of configuring each tool separately, AgentGateway can **federate** them behind a single gateway.
 
 ```
 Agent → /mcp/github  → GitHub MCP Server
 Agent → /mcp/slack   → Slack MCP Server
-Agent → /mcp/db      → Database MCP Server
+Agent → /mcp         → Fetch MCP Server (from previous challenge)
 ```
 
-## Step 1: Deploy Additional Mock MCP Servers
+## Step 1: Deploy Additional MCP Servers
 
-Let's create GitHub and Slack mock MCP servers alongside the existing fetch server:
+We'll deploy two more instances of the MCP website fetcher with different names to simulate different tool domains (GitHub and Slack):
 
 ```bash
-cat > /root/github-mcp-server.yaml << 'YAML'
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: github-mcp-server-code
-  namespace: mcp
-data:
-  server.py: |
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    import json
-    TOOLS = [
-        {"name": "get_repo", "description": "Get repository information", "inputSchema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["owner", "repo"]}},
-        {"name": "list_issues", "description": "List repository issues", "inputSchema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["owner", "repo"]}},
-        {"name": "create_issue", "description": "Create a new issue", "inputSchema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}, "title": {"type": "string"}, "body": {"type": "string"}}, "required": ["owner", "repo", "title"]}},
-        {"name": "delete_repo", "description": "Delete a repository (DANGEROUS)", "inputSchema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["owner", "repo"]}}
-    ]
-    class MCPHandler(BaseHTTPRequestHandler):
-        def do_POST(self):
-            length = int(self.headers.get('Content-Length', 0))
-            body = json.loads(self.rfile.read(length))
-            method = body.get('method', '')
-            if method == 'tools/list':
-                result = {"tools": TOOLS}
-            elif method == 'tools/call':
-                name = body.get('params', {}).get('name', '')
-                args = body.get('params', {}).get('arguments', {})
-                result = {"content": [{"type": "text", "text": f"Mock GitHub result for {name}: owner={args.get('owner','?')}, repo={args.get('repo','?')}"}]}
-            elif method == 'initialize':
-                result = {"protocolVersion": "2024-11-05", "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "github-mcp", "version": "1.0.0"}}
-            else:
-                result = {"error": {"code": -32601, "message": "Method not found"}}
-            response = json.dumps({"jsonrpc": "2.0", "result": result, "id": body.get('id', 1)})
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(response.encode())
-        def log_message(self, format, *args):
-            pass
-    HTTPServer(('0.0.0.0', 8080), MCPHandler).serve_forever()
----
+cat > /root/mcp-github.yaml << 'YAML'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: github-mcp-server
-  namespace: mcp
+  name: mcp-github
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: github-mcp-server
+      app: mcp-github
   template:
     metadata:
       labels:
-        app: github-mcp-server
+        app: mcp-github
     spec:
       containers:
       - name: server
-        image: python:3.11-slim
-        command: ["python", "/app/server.py"]
+        image: ghcr.io/peterj/mcp-website-fetcher:main
         ports:
-        - containerPort: 8080
-        volumeMounts:
-        - name: code
-          mountPath: /app
-      volumes:
-      - name: code
-        configMap:
-          name: github-mcp-server-code
+        - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: github-mcp-server
-  namespace: mcp
+  name: mcp-github
+  namespace: default
 spec:
   selector:
-    app: github-mcp-server
+    app: mcp-github
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 80
+    targetPort: 8000
     appProtocol: kgateway.dev/mcp
 YAML
 
-kubectl apply -f /root/github-mcp-server.yaml
+kubectl apply -f /root/mcp-github.yaml
 ```
 
 Now the Slack MCP server:
 
 ```bash
-cat > /root/slack-mcp-server.yaml << 'YAML'
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: slack-mcp-server-code
-  namespace: mcp
-data:
-  server.py: |
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    import json
-    TOOLS = [
-        {"name": "list_channels", "description": "List Slack channels", "inputSchema": {"type": "object", "properties": {}}},
-        {"name": "send_message", "description": "Send a message to a channel", "inputSchema": {"type": "object", "properties": {"channel": {"type": "string"}, "text": {"type": "string"}}, "required": ["channel", "text"]}},
-        {"name": "get_messages", "description": "Get recent messages from a channel", "inputSchema": {"type": "object", "properties": {"channel": {"type": "string"}}, "required": ["channel"]}},
-        {"name": "delete_channel", "description": "Delete a Slack channel (DANGEROUS)", "inputSchema": {"type": "object", "properties": {"channel": {"type": "string"}}, "required": ["channel"]}}
-    ]
-    class MCPHandler(BaseHTTPRequestHandler):
-        def do_POST(self):
-            length = int(self.headers.get('Content-Length', 0))
-            body = json.loads(self.rfile.read(length))
-            method = body.get('method', '')
-            if method == 'tools/list':
-                result = {"tools": TOOLS}
-            elif method == 'tools/call':
-                name = body.get('params', {}).get('name', '')
-                result = {"content": [{"type": "text", "text": f"Mock Slack result for {name}"}]}
-            elif method == 'initialize':
-                result = {"protocolVersion": "2024-11-05", "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "slack-mcp", "version": "1.0.0"}}
-            else:
-                result = {"error": {"code": -32601, "message": "Method not found"}}
-            response = json.dumps({"jsonrpc": "2.0", "result": result, "id": body.get('id', 1)})
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(response.encode())
-        def log_message(self, format, *args):
-            pass
-    HTTPServer(('0.0.0.0', 8080), MCPHandler).serve_forever()
----
+cat > /root/mcp-slack.yaml << 'YAML'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: slack-mcp-server
-  namespace: mcp
+  name: mcp-slack
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: slack-mcp-server
+      app: mcp-slack
   template:
     metadata:
       labels:
-        app: slack-mcp-server
+        app: mcp-slack
     spec:
       containers:
       - name: server
-        image: python:3.11-slim
-        command: ["python", "/app/server.py"]
+        image: ghcr.io/peterj/mcp-website-fetcher:main
         ports:
-        - containerPort: 8080
-        volumeMounts:
-        - name: code
-          mountPath: /app
-      volumes:
-      - name: code
-        configMap:
-          name: slack-mcp-server-code
+        - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: slack-mcp-server
-  namespace: mcp
+  name: mcp-slack
+  namespace: default
 spec:
   selector:
-    app: slack-mcp-server
+    app: mcp-slack
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 80
+    targetPort: 8000
     appProtocol: kgateway.dev/mcp
 YAML
 
-kubectl apply -f /root/slack-mcp-server.yaml
+kubectl apply -f /root/mcp-slack.yaml
 ```
 
 Wait for all servers:
 
 ```bash
-kubectl -n mcp wait --for=condition=Ready pod -l app=github-mcp-server --timeout=120s
-kubectl -n mcp wait --for=condition=Ready pod -l app=slack-mcp-server --timeout=120s
+kubectl wait --for=condition=Ready pod -l app=mcp-github --timeout=120s
+kubectl wait --for=condition=Ready pod -l app=mcp-slack --timeout=120s
 ```
 
 ## Step 2: Create AgentgatewayBackends
@@ -230,9 +141,12 @@ metadata:
   namespace: agentgateway-system
 spec:
   mcp:
-    target:
-      host: github-mcp-server.mcp.svc.cluster.local
-      port: 8080
+    targets:
+    - name: github-target
+      static:
+        host: mcp-github.default.svc.cluster.local
+        port: 80
+        protocol: SSE
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -241,9 +155,12 @@ metadata:
   namespace: agentgateway-system
 spec:
   mcp:
-    target:
-      host: slack-mcp-server.mcp.svc.cluster.local
-      port: 8080
+    targets:
+    - name: slack-target
+      static:
+        host: mcp-slack.default.svc.cluster.local
+        port: 80
+        protocol: SSE
 YAML
 
 kubectl apply -f /root/federation-backends.yaml
@@ -262,16 +179,17 @@ metadata:
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: mcp-gateway
+  - name: agentgateway-proxy
+    namespace: agentgateway-system
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /mcp/github
     backendRefs:
-    - group: agentgateway.dev
+    - name: github-mcp
+      group: agentgateway.dev
       kind: AgentgatewayBackend
-      name: github-mcp
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -280,16 +198,17 @@ metadata:
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: mcp-gateway
+  - name: agentgateway-proxy
+    namespace: agentgateway-system
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /mcp/slack
     backendRefs:
-    - group: agentgateway.dev
+    - name: slack-mcp
+      group: agentgateway.dev
       kind: AgentgatewayBackend
-      name: slack-mcp
 YAML
 
 kubectl apply -f /root/federation-routes.yaml
@@ -297,34 +216,27 @@ kubectl apply -f /root/federation-routes.yaml
 
 ## Step 4: Test Federation 🧪
 
-Make sure port-forward is running:
+Test GitHub tools via the gateway:
 
 ```bash
-# Kill any existing port-forward
-pkill -f "port-forward.*mcp-gateway" || true
-kubectl -n agentgateway-system port-forward svc/mcp-gateway 9080:8080 &
-sleep 2
-```
-
-Test GitHub tools:
-
-```bash
-curl -s http://localhost:9080/mcp/github -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
 Test Slack tools:
 
 ```bash
-curl -s http://localhost:9080/mcp/slack -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp/slack -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
-Call a GitHub tool:
+The original fetch route still works too:
 
 ```bash
-curl -s http://localhost:9080/mcp/github -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_issues","arguments":{"owner":"solo-io","repo":"agentgateway"}},"id":2}' | jq .
+curl -s http://localhost:8080/mcp -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
+
+You can also check these in the **MCP Inspector** tab for visual verification.
 
 🎉 **One gateway, three MCP servers, path-based routing!** The agent just needs to know the gateway address and the path prefix for each tool domain.

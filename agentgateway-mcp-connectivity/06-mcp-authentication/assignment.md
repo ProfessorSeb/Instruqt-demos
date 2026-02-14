@@ -20,6 +20,10 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: MCP Inspector
+  type: service
+  hostname: server
+  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
@@ -31,8 +35,6 @@ So far, anyone who can reach the gateway can call MCP tools. In production, you 
 AgentGateway supports OAuth authentication for MCP endpoints. We'll use **Keycloak** as the identity provider (IdP).
 
 ## The OAuth Flow for MCP
-
-Here's how it works:
 
 ```
 1. Agent → Gateway: "I want to call tools"
@@ -201,18 +203,10 @@ kubectl apply -f /root/mcp-auth-policy.yaml
 
 ## Step 4: Test Authentication 🧪
 
-Restart port-forward:
-
-```bash
-pkill -f "port-forward.*mcp-gateway" || true
-kubectl -n agentgateway-system port-forward svc/mcp-gateway 9080:8080 &
-sleep 2
-```
-
 **Without a token** (should be rejected ❌):
 
 ```bash
-curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:9080/mcp \
+curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
@@ -233,7 +227,7 @@ echo "Agent token: ${TOKEN:0:30}..."
 **With a valid token** (should work ✅):
 
 ```bash
-curl -s http://localhost:9080/mcp \
+curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .

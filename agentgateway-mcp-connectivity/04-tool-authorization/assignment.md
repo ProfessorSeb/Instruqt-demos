@@ -20,15 +20,17 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: MCP Inspector
+  type: service
+  hostname: server
+  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
 
 # MCP Tool Authorization 🔒
 
-Your GitHub MCP server exposes `get_repo`, `list_issues`, `create_issue`, and `delete_repo`. Your Slack server has `list_channels`, `send_message`, `get_messages`, and `delete_channel`.
-
-Should every agent be able to call `delete_repo`? **Absolutely not.** 🚫
+Your MCP servers expose tools through the gateway. But should every agent be able to call every tool? **Absolutely not.** 🚫
 
 AgentGateway's `AgentgatewayPolicy` with `toolAuth` lets you control exactly which tools agents can call.
 
@@ -55,6 +57,7 @@ spec:
         - tools:
           - "get_*"
           - "list_*"
+          - "fetch"
           action: Allow
 YAML
 
@@ -63,12 +66,12 @@ kubectl apply -f /root/github-tool-policy.yaml
 
 This policy:
 - **Denies all tools by default** (`defaultAction: Deny`)
-- **Allows** only tools matching `get_*` or `list_*` patterns
-- `create_issue` and `delete_repo` are **blocked** ❌
+- **Allows** only tools matching `get_*`, `list_*`, or `fetch` patterns
+- Any other tools are **blocked** ❌
 
 ## Step 2: Create a Messaging Policy for Slack
 
-For Slack, let's allow listing and reading but also sending messages — but block deletions:
+For Slack, let's allow listing and reading but block destructive operations:
 
 ```bash
 cat > /root/slack-tool-policy.yaml << 'YAML'
@@ -90,6 +93,7 @@ spec:
           - "list_*"
           - "get_*"
           - "send_message"
+          - "fetch"
           action: Allow
         - tools:
           - "delete_*"
@@ -101,40 +105,20 @@ kubectl apply -f /root/slack-tool-policy.yaml
 
 ## Step 3: Test the Policies 🧪
 
-Make sure port-forward is running:
+**Test allowed tools** — `fetch` on GitHub (should work ✅):
 
 ```bash
-pkill -f "port-forward.*mcp-gateway" || true
-kubectl -n agentgateway-system port-forward svc/mcp-gateway 9080:8080 &
-sleep 2
+curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
-**Test allowed tools** — `list_issues` on GitHub (should work ✅):
+**Test the tool authorization** by calling a tool:
 
 ```bash
-curl -s http://localhost:9080/mcp/github -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_issues","arguments":{"owner":"solo-io","repo":"agentgateway"}},"id":1}' | jq .
+curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}},"id":2}' | jq .
 ```
 
-**Test blocked tools** — `delete_repo` on GitHub (should be denied ❌):
-
-```bash
-curl -s http://localhost:9080/mcp/github -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"delete_repo","arguments":{"owner":"solo-io","repo":"agentgateway"}},"id":2}' | jq .
-```
-
-**Test Slack** — `send_message` (should work ✅):
-
-```bash
-curl -s http://localhost:9080/mcp/slack -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"send_message","arguments":{"channel":"general","text":"Hello from agent!"}},"id":3}' | jq .
-```
-
-**Test Slack** — `delete_channel` (should be denied ❌):
-
-```bash
-curl -s http://localhost:9080/mcp/slack -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"delete_channel","arguments":{"channel":"general"}},"id":4}' | jq .
-```
+You can also verify the policies using the **MCP Inspector** tab.
 
 🎉 **Tool authorization in action!** Agents can use the tools they need, but dangerous operations are blocked at the gateway level — before they ever reach the MCP server.

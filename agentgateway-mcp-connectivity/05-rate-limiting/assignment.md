@@ -22,13 +22,17 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: MCP Inspector
+  type: service
+  hostname: server
+  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
 
 # MCP Rate Limiting ⏱️
 
-AI agents can enter loops. A coding agent debugging a test might call `list_issues` → `get_repo` → `create_issue` hundreds of times. Without rate limiting, your upstream APIs get hammered, costs spike, and you might get rate-limited by the provider itself.
+AI agents can enter loops. A coding agent debugging a test might call tools hundreds of times. Without rate limiting, your upstream APIs get hammered, costs spike, and you might get rate-limited by the provider itself.
 
 AgentGateway lets you set rate limits on MCP routes so runaway agents are throttled at the gateway.
 
@@ -78,20 +82,12 @@ kubectl apply -f /root/slack-rate-limit.yaml
 
 ## Step 2: Test Rate Limiting 🧪
 
-Make sure port-forward is running:
-
-```bash
-pkill -f "port-forward.*mcp-gateway" || true
-kubectl -n agentgateway-system port-forward svc/mcp-gateway 9080:8080 &
-sleep 2
-```
-
 Let's hit the GitHub endpoint rapidly and see what happens:
 
 ```bash
 echo "=== Sending 8 rapid requests to GitHub MCP ==="
 for i in $(seq 1 8); do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9080/mcp/github \
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/mcp/github \
     -H "Content-Type: application/json" \
     -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":$i}")
   echo "Request $i: HTTP $STATUS"

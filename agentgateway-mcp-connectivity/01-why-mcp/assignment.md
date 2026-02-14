@@ -73,6 +73,16 @@ MCP solves the **integration** problem. But who controls:
 - ✅ **Authentication** — Verify agent identity with OAuth
 - ✅ **Observability** — See every tool call, every response
 
+## Architecture Overview
+
+In this track, you'll build the following architecture:
+
+```
+Agent → AgentGateway Proxy (port 8080) → AgentgatewayBackend → MCP Server
+```
+
+The `agentgateway-proxy` Gateway is already deployed and port-forwarded to `localhost:8080` for you.
+
 ## Your Task 📝
 
 Let's make sure you understand the "why" before we dive into the "how."
@@ -96,4 +106,4 @@ Also, let's verify your cluster is ready and AgentGateway is installed:
 kubectl get pods -n agentgateway-system
 ```
 
-You should see the AgentGateway pods running. In the next challenge, we'll deploy our first MCP server and route traffic to it! 🚀
+You should see the AgentGateway pods running, including the `agentgateway-proxy`. In the next challenge, we'll deploy our first MCP server and route traffic to it! 🚀

@@ -19,6 +19,7 @@ spec:
         - tools:
           - "get_*"
           - "list_*"
+          - "fetch"
           action: Allow
 YAML
 kubectl apply -f /root/github-tool-policy.yaml
@@ -42,6 +43,7 @@ spec:
           - "list_*"
           - "get_*"
           - "send_message"
+          - "fetch"
           action: Allow
         - tools:
           - "delete_*"

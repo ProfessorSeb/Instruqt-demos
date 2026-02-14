@@ -1,6 +1,10 @@
 #!/bin/bash
-set -x
+set -euxo pipefail
 
-k3d cluster delete my-k8s-cluster 2>/dev/null || true
+# Stop port-forward service
+systemctl stop agentgateway-proxy || true
+
+# Delete k3d cluster
+k3d cluster delete my-k8s-cluster || true
 
 echo "Cleanup complete"
