@@ -5,6 +5,21 @@ type: challenge
 title: PII Protection — Stop Sensitive Data from Reaching LLMs
 teaser: Redact personally identifiable information at the gateway before it reaches
   third-party LLMs.
+notes:
+- type: text
+  contents: |
+    # 🛡️ PII Protection
+
+    SSNs, emails, credit cards — all flowing to third-party LLMs unfiltered.
+
+    **In this challenge, you'll:**
+
+    - Create an AgentGatewayPolicy for PII redaction
+    - Understand REDACT vs BLOCK vs LOG actions
+    - Simulate what PII protection looks like in practice
+    - See how the gateway transforms requests transparently
+
+    > ℹ️ PII protection is an **Enterprise** feature. You'll learn the concepts and create the policy YAML.
 tabs:
 - id: kffafiugzg3y
   title: Terminal

@@ -4,6 +4,19 @@ id: yss5ivalys9m
 type: challenge
 title: What's Next — Security & Governance
 teaser: Discover what AgentGateway Enterprise adds for production AI agent deployments.
+notes:
+- type: text
+  contents: |
+    # 🗺️ What's Next — Security & Governance
+
+    You've built a working AI gateway with multi-provider routing and observability.
+
+    **In this final challenge, you'll:**
+
+    - Recap everything you built
+    - Learn about Enterprise security features
+    - Explore MCP gateway capabilities
+    - Get resources to continue your journey
 tabs:
 - id: u0nkuycn4lch
   title: Terminal

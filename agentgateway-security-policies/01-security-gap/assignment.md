@@ -4,6 +4,25 @@ id: iwt6tpxekohy
 type: challenge
 title: The Security Gap — What Could Go Wrong?
 teaser: Explore the risks of routing AI agent traffic without security policies.
+notes:
+- type: text
+  contents: |
+    # 🚨 The Security Gap
+
+    Your gateway is routing traffic — but without security policies, **everything passes through unchanged**.
+
+    **In this challenge, you'll:**
+
+    - Set up a Gateway with a mock LLM backend
+    - Send PII and prompt injections through unprotected traffic
+    - See exactly why gateway-level security policies are essential
+
+    | Risk | Impact |
+    |------|--------|
+    | PII Leakage | GDPR/CCPA violations |
+    | Prompt Injection | Agent hijacking |
+    | Credential Exposure | Account compromise |
+    | Runaway Costs | Surprise bills |
 tabs:
 - id: nuhqv97ctrfm
   title: Terminal

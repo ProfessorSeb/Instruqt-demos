@@ -4,6 +4,21 @@ id: q5dkb34vzbxj
 type: challenge
 title: Rate Limiting — Control AI Spend
 teaser: Set request and token limits to prevent runaway AI costs.
+notes:
+- type: text
+  contents: |
+    # 💰 Rate Limiting — Control AI Spend
+
+    A single runaway agent can burn $50K overnight. Rate limiting is your financial safety net.
+
+    **In this challenge, you'll:**
+
+    - Create request-based rate limits (requests/minute)
+    - Create token-based rate limits (tokens/hour)
+    - Test rate limiting behavior
+    - Calculate the cost impact
+
+    > ✅ Rate limiting is available in **AgentGateway OSS**!
 tabs:
 - id: yazubpnbnqg2
   title: Terminal

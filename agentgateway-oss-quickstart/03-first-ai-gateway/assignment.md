@@ -4,6 +4,19 @@ id: tuokfmqtlbfn
 type: challenge
 title: Create Your First AI Gateway
 teaser: Deploy a Gateway resource and route traffic to OpenAI through AgentGateway.
+notes:
+- type: text
+  contents: |
+    # 🌐 Create Your First AI Gateway
+
+    Time to route AI traffic through a gateway instead of calling providers directly.
+
+    **In this challenge, you'll:**
+
+    - Store API credentials as Kubernetes Secrets
+    - Create a Gateway resource and LLM backend
+    - Route traffic through AgentGateway to OpenAI
+    - See the difference: `Agent → Gateway → LLM` vs `Agent → LLM`
 tabs:
 - id: xyyfq8ho9qsz
   title: Terminal

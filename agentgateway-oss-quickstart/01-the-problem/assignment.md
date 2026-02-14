@@ -4,6 +4,18 @@ id: 9ixvzqdyuqbh
 type: challenge
 title: The Problem — Agents Without Guardrails
 teaser: See what happens when AI agents call LLMs directly with no gateway in between.
+notes:
+- type: text
+  contents: |
+    # 🚨 The Problem: Agents Without Guardrails
+
+    Every AI agent today calls LLMs directly — scattered API keys, no audit trail, no rate limits.
+
+    **In this challenge, you'll see why this is dangerous.**
+
+    - Explore what happens when agents call LLMs with no gateway
+    - Understand the security, cost, and visibility gaps
+    - Learn why we need a purpose-built AI gateway
 tabs:
 - id: lfkce2mxhdfv
   title: Terminal

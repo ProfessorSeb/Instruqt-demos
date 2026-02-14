@@ -4,6 +4,19 @@ id: nclrrhvfeyya
 type: challenge
 title: See What Your Agents Are Doing
 teaser: Explore the observability data AgentGateway captures for every LLM request.
+notes:
+- type: text
+  contents: |
+    # 📊 Observability — See What Your Agents Are Doing
+
+    The biggest reason to use a gateway: **knowing what your agents actually do**.
+
+    **In this challenge, you'll:**
+
+    - Explore AgentGateway's structured logs
+    - Check Prometheus-compatible metrics
+    - Learn about token tracking, latency, and error rates
+    - Preview Enterprise observability with Langfuse
 tabs:
 - id: xcnpwifmfrke
   title: Terminal

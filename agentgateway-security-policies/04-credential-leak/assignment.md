@@ -4,6 +4,20 @@ id: toyfp52ggdsd
 type: challenge
 title: Credential Leak Prevention — Keep Secrets Out of Responses
 teaser: Prevent API keys and secrets from leaking through LLM responses.
+notes:
+- type: text
+  contents: |
+    # 🔑 Credential Leak Prevention
+
+    We've protected what goes **in** to the LLM. Now let's protect what comes **out**.
+
+    **In this challenge, you'll:**
+
+    - Create a credential leak detection policy
+    - Scan for API keys, AWS keys, JWTs, and passwords in responses
+    - Understand response-side scanning vs request-side filtering
+
+    > ℹ️ Credential leak prevention is an **Enterprise** feature.
 tabs:
 - id: gbokxxmdqy6y
   title: Terminal

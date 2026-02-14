@@ -4,6 +4,21 @@ id: b0spl7fxx47x
 type: challenge
 title: Prompt Injection Guard — Block Jailbreak Attempts
 teaser: Detect and block prompt injection attacks before they reach your LLM providers.
+notes:
+- type: text
+  contents: |
+    # 🚫 Prompt Injection Guard
+
+    *"Ignore all previous instructions..."* — the #1 security risk for LLM applications.
+
+    **In this challenge, you'll:**
+
+    - Create a prompt injection detection policy
+    - Test against jailbreaks, role hijacking, and data exfiltration
+    - Learn about ML-based detection vs regex patterns
+    - Understand BLOCK vs LOG actions
+
+    > ℹ️ Prompt injection guard is an **Enterprise** feature.
 tabs:
 - id: rfgixg11ijs9
   title: Terminal
