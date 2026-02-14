@@ -62,8 +62,8 @@ AgentGateway installs in two steps: first the CRDs, then the control plane.
 **Step 1: Install AgentGateway CRDs**
 
 ```bash
-helm install agentgateway-crds agentgateway/agentgateway-crds \
-  --version 2.1.0 \
+helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+  --version v2.2.0 \
   --namespace agentgateway-system \
   --create-namespace \
   --wait
@@ -72,8 +72,8 @@ helm install agentgateway-crds agentgateway/agentgateway-crds \
 **Step 2: Install the AgentGateway control plane**
 
 ```bash
-helm install agentgateway agentgateway/agentgateway \
-  --version 2.1.0 \
+helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
+  --version v2.2.0 \
   --namespace agentgateway-system \
   --wait --timeout 120s
 ```

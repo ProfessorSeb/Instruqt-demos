@@ -2,19 +2,19 @@
 set -euxo pipefail
 # Check AgentGateway namespace exists
 if ! kubectl get namespace agentgateway-system &>/dev/null; then
-  fail-message "The 'agentgateway-system' namespace doesn't exist. Did you install the AgentGateway Helm charts? Start with: helm install agentgateway-crds agentgateway/agentgateway-crds --version 2.1.0 --namespace agentgateway-system --create-namespace --wait"
+  fail-message "The 'agentgateway-system' namespace doesn't exist. Did you install the AgentGateway Helm charts? Start with: helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds --version v2.2.0 --namespace agentgateway-system --create-namespace --wait"
   exit 1
 fi
 
 # Check CRDs are installed
 if ! helm list -n agentgateway-system | grep -q agentgateway-crds; then
-  fail-message "The agentgateway-crds Helm release is not found. Please install it first: helm install agentgateway-crds agentgateway/agentgateway-crds --version 2.1.0 --namespace agentgateway-system --create-namespace --wait"
+  fail-message "The agentgateway-crds Helm release is not found. Please install it first: helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds --version v2.2.0 --namespace agentgateway-system --create-namespace --wait"
   exit 1
 fi
 
 # Check control plane is installed
 if ! helm list -n agentgateway-system | grep -q "agentgateway[^-]"; then
-  fail-message "The agentgateway control plane Helm release is not found. Please install it: helm install agentgateway agentgateway/agentgateway --version 2.1.0 --namespace agentgateway-system --wait"
+  fail-message "The agentgateway control plane Helm release is not found. Please install it: helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway --version v2.2.0 --namespace agentgateway-system --wait"
   exit 1
 fi
 
