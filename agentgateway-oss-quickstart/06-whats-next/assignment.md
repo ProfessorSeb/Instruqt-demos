@@ -3,7 +3,7 @@ slug: whats-next
 id: yss5ivalys9m
 type: challenge
 title: What's Next — Security & Governance
-teaser: Discover what AgentGateway Enterprise adds for production AI agent deployments.
+teaser: Discover what Agentgateway Enterprise adds for production AI agent deployments.
 notes:
 - type: text
   contents: "# \U0001F5FA️ What's Next — Security & Governance\n\nYou've built a working
@@ -36,7 +36,7 @@ Let's recap what you accomplished:
 
 ✅ **Identified the problem** — direct agent-to-LLM calls create security, cost, and visibility gaps
 
-✅ **Installed AgentGateway OSS** — Kubernetes-native, built on Gateway API
+✅ **Installed Agentgateway OSS** — Kubernetes-native, built on Gateway API
 
 ✅ **Created an AI Gateway** — single entry point for all agent traffic
 
@@ -44,9 +44,9 @@ Let's recap what you accomplished:
 
 ✅ **Observability** — structured logs and Prometheus metrics for every request
 
-## What AgentGateway Enterprise Adds
+## What Agentgateway Enterprise Adds
 
-For production deployments with strict security and compliance requirements, **AgentGateway Enterprise** adds:
+For production deployments with strict security and compliance requirements, **Agentgateway Enterprise** adds:
 
 ### 🔒 Security
 - **Prompt injection detection** — block malicious prompts before they reach the LLM
@@ -74,27 +74,27 @@ Summarize your learning:
 
 ```bash
 cat > /root/workshop-recap.txt << 'EOF'
-AgentGateway OSS Quickstart - Workshop Recap
+Agentgateway OSS Quickstart - Workshop Recap
 
 What I learned:
 1. Direct agent-to-LLM calls create security and visibility gaps
-2. AgentGateway provides a Kubernetes-native gateway for AI traffic
+2. Agentgateway provides a Kubernetes-native gateway for AI traffic
 3. Built on Gateway API standard (GatewayClass, Gateway, HTTPRoute)
 4. Multi-provider routing through a single endpoint
 5. Built-in observability with structured logs and Prometheus metrics
 
 Architecture:
-  Agent -> AgentGateway (Gateway API) -> LLM Providers
+  Agent -> Agentgateway (Gateway API) -> LLM Providers
 
 Key Resources:
-  - GatewayClass: registers AgentGateway as an implementation
+  - GatewayClass: registers Agentgateway as an implementation
   - Gateway: the actual gateway instance (listeners)
   - Backend: LLM provider connection details + credentials
   - HTTPRoute: routing rules (path-based, header-based)
 
 Next steps:
   - Try with real API keys
-  - Explore AgentGateway Enterprise for security features
+  - Explore Agentgateway Enterprise for security features
   - Set up Langfuse for full LLM observability
 EOF
 
@@ -103,14 +103,14 @@ cat /root/workshop-recap.txt
 
 ## Resources
 
-- 📖 [AgentGateway Documentation](https://docs.solo.io/agentgateway/latest/)
-- 💻 [AgentGateway GitHub](https://github.com/solo-io/agentgateway)
+- 📖 [Agentgateway Documentation](https://docs.solo.io/agentgateway/latest/)
+- 💻 [Agentgateway GitHub](https://github.com/solo-io/agentgateway)
 - 🎓 [Solo.io Academy](https://academy.solo.io)
 - 💬 [Solo.io Community Slack](https://slack.solo.io)
 - 📧 [Contact Solo.io](https://www.solo.io/contact) — for Enterprise evaluation
 
 ## Thank You!
 
-You've seen how AgentGateway brings the same infrastructure patterns we rely on for microservices to the world of AI agents. As agents become a bigger part of your architecture, having a purpose-built gateway isn't optional — it's essential.
+You've seen how Agentgateway brings the same infrastructure patterns we rely on for microservices to the world of AI agents. As agents become a bigger part of your architecture, having a purpose-built gateway isn't optional — it's essential.
 
 **Happy gatewaying! 🚀**

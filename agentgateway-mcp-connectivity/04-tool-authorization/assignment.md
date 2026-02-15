@@ -33,7 +33,7 @@ enhanced_loading: null
 
 Your MCP servers expose tools through the gateway. But should every agent be able to call every tool? **Absolutely not.** 🚫
 
-AgentGateway's `AgentgatewayPolicy` lets you define **MCP authorization rules** using CEL (Common Expression Language) to control which tools agents can access.
+Agentgateway's `AgentgatewayPolicy` lets you define **MCP authorization rules** using CEL (Common Expression Language) to control which tools agents can access.
 
 ## Step 1: See All Available Tools
 

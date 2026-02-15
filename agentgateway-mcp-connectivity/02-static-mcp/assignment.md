@@ -3,11 +3,11 @@ slug: static-mcp
 id: q9n8iov0ygxm
 type: challenge
 title: "Static MCP Routing \U0001F3AF"
-teaser: Deploy an MCP server and route traffic to it through AgentGateway.
+teaser: Deploy an MCP server and route traffic to it through Agentgateway.
 notes:
 - type: text
   contents: "# \U0001F3AF Static MCP Routing\n\nTime to get hands-on! You'll deploy
-    an MCP tool server, create an AgentGateway backend, and route MCP traffic through
+    an MCP tool server, create an Agentgateway backend, and route MCP traffic through
     the gateway.\n\nThis is the foundation for everything else in this track.\n"
 tabs:
 - id: snmgz50inhyi
@@ -30,7 +30,7 @@ enhanced_loading: null
 
 # Static MCP Routing 🎯
 
-In this challenge, you'll deploy an MCP server and route traffic to it through AgentGateway. This is the fundamental building block for MCP connectivity.
+In this challenge, you'll deploy an MCP server and route traffic to it through Agentgateway. This is the fundamental building block for MCP connectivity.
 
 ## Step 1: Deploy an MCP Server
 
@@ -88,7 +88,7 @@ kubectl wait --for=condition=Ready pod -l app=mcp-website-fetcher --timeout=120s
 
 ## Step 2: Create the AgentgatewayBackend
 
-This tells AgentGateway where your MCP server lives. Note the `targets` array with `static` block format:
+This tells Agentgateway where your MCP server lives. Note the `targets` array with `static` block format:
 
 ```bash
 cat > /root/mcp-backend.yaml << 'YAML'
@@ -157,4 +157,4 @@ curl -s http://localhost:8080/mcp -H "Content-Type: application/json" \
 
 You can also use the **MCP Inspector** tab to visually inspect and test your MCP server connection. Point it at `http://localhost:8080/mcp` to see available tools.
 
-🎉 You just routed MCP traffic through AgentGateway! The agent sends standard JSON-RPC, the gateway routes it to the right MCP server.
+🎉 You just routed MCP traffic through Agentgateway! The agent sends standard JSON-RPC, the gateway routes it to the right MCP server.

@@ -33,7 +33,7 @@ enhanced_loading: null
 
 So far, anyone who can reach the gateway can call MCP tools. In production, you need to verify **who** is calling — is it an authorized agent? Which team does it belong to?
 
-AgentGateway supports **MCP-native authentication** via the `backend.mcp.authentication` policy. We'll use **Keycloak** as the identity provider (IdP), which has already been deployed and configured for you.
+Agentgateway supports **MCP-native authentication** via the `backend.mcp.authentication` policy. We'll use **Keycloak** as the identity provider (IdP), which has already been deployed and configured for you.
 
 ## The OAuth Flow for MCP
 
@@ -86,7 +86,7 @@ echo "Token obtained: ${TOKEN:0:30}..."
 
 ## Step 3: Create the MCP Authentication Policy 🛡️
 
-Now let's configure AgentGateway to require JWT authentication on the MCP route:
+Now let's configure Agentgateway to require JWT authentication on the MCP route:
 
 ```bash
 cat > /root/mcp-auth-policy.yaml << 'YAML'
@@ -175,6 +175,6 @@ In this track, you've built a complete MCP security stack:
 | ⏱️ Rate Limiting | Prevent runaway agents | `AgentgatewayPolicy` with `traffic.rateLimit` |
 | 🔑 Authentication | Verify agent identity | `AgentgatewayPolicy` with `backend.mcp.authentication` |
 
-**AgentGateway gives you enterprise-grade security for AI agent tool access — all on Kubernetes, all using the Gateway API.**
+**Agentgateway gives you enterprise-grade security for AI agent tool access — all on Kubernetes, all using the Gateway API.**
 
 Want to learn more? Visit [agentgateway.dev](https://agentgateway.dev) 🚀

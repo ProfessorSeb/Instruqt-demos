@@ -150,7 +150,7 @@ kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 5
 You've built a complete identity-aware AI gateway! Here's the full chain:
 
 ```
-User → Okta (authenticate) → JWT (with scopes) → AgentGateway → validates JWT → checks RBAC → LLM/MCP
+User → Okta (authenticate) → JWT (with scopes) → Agentgateway → validates JWT → checks RBAC → LLM/MCP
 ```
 
 **Key takeaways:**

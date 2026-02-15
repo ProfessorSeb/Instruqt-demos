@@ -9,7 +9,7 @@ notes:
 - type: text
   contents: "# MCP Tool Server \U0001F50C\n\nThe Model Context Protocol (MCP) lets
     AI agents discover and use tools dynamically. You'll deploy a real MCP server
-    that can fetch website content, then route it through AgentGateway.\n\nThe **MCP
+    that can fetch website content, then route it through Agentgateway.\n\nThe **MCP
     Inspector** tab lets you interactively test tool discovery and invocation."
 tabs:
 - id: f8dmttnf9i1m
@@ -76,7 +76,7 @@ spec:
     appProtocol: agentgateway.dev/mcp
 ```
 
-> **Note:** The `appProtocol: agentgateway.dev/mcp` tells Enterprise AgentGateway this is an MCP service.
+> **Note:** The `appProtocol: agentgateway.dev/mcp` tells Enterprise Agentgateway this is an MCP service.
 
 Apply it:
 

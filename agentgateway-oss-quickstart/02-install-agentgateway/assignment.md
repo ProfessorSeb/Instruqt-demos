@@ -2,13 +2,13 @@
 slug: install-agentgateway
 id: ctseayfuds2t
 type: challenge
-title: Install AgentGateway on Kubernetes
-teaser: Set up a Kubernetes cluster and deploy AgentGateway OSS using Helm.
+title: Install Agentgateway on Kubernetes
+teaser: Set up a Kubernetes cluster and deploy Agentgateway OSS using Helm.
 notes:
 - type: text
-  contents: "# \U0001F680 Install AgentGateway on Kubernetes\n\nAgentGateway is a
+  contents: "# \U0001F680 Install Agentgateway on Kubernetes\n\nAgentgateway is a
     Kubernetes-native AI gateway built on the **Gateway API** standard.\n\n**In this
-    challenge, you'll:**\n\n- Verify your Kubernetes cluster is ready\n- Install AgentGateway
+    challenge, you'll:**\n\n- Verify your Kubernetes cluster is ready\n- Install Agentgateway
     CRDs and control plane via Helm\n- Understand the GatewayClass → Gateway → Route
     model\n"
 tabs:
@@ -25,9 +25,9 @@ difficulty: ""
 enhanced_loading: null
 ---
 
-# Install AgentGateway on Kubernetes
+# Install Agentgateway on Kubernetes
 
-AgentGateway is a Kubernetes-native project built on the **Gateway API** standard. This means it uses the same patterns and CRDs that the broader Kubernetes ecosystem has adopted for ingress and traffic management — but extended for AI agent traffic.
+Agentgateway is a Kubernetes-native project built on the **Gateway API** standard. This means it uses the same patterns and CRDs that the broader Kubernetes ecosystem has adopted for ingress and traffic management — but extended for AI agent traffic.
 
 ## Why Kubernetes Gateway API?
 
@@ -36,7 +36,7 @@ The Gateway API is the successor to Ingress in Kubernetes. It provides:
 - **Expressive routing** — path, header, and method-based routing built in
 - **Extensibility** — custom resources for domain-specific needs (like AI!)
 
-AgentGateway extends Gateway API with AI-specific capabilities while staying compatible with the standard.
+Agentgateway extends Gateway API with AI-specific capabilities while staying compatible with the standard.
 
 ## Verify Your Cluster
 
@@ -62,11 +62,11 @@ kubectl get crds | grep gateway
 
 You should see CRDs like `gateways.gateway.networking.k8s.io` and `httproutes.gateway.networking.k8s.io`.
 
-## Install AgentGateway OSS
+## Install Agentgateway OSS
 
-AgentGateway installs in two steps: first the CRDs, then the control plane.
+Agentgateway installs in two steps: first the CRDs, then the control plane.
 
-**Step 1: Install AgentGateway CRDs**
+**Step 1: Install Agentgateway CRDs**
 
 ```bash
 helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
@@ -76,7 +76,7 @@ helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-cr
   --wait
 ```
 
-**Step 2: Install the AgentGateway control plane**
+**Step 2: Install the Agentgateway control plane**
 
 ```bash
 helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
@@ -101,13 +101,13 @@ Verify the GatewayClass was created:
 kubectl get gatewayclass
 ```
 
-You should see an `agentgateway` GatewayClass — this tells Kubernetes that AgentGateway is available as a gateway implementation.
+You should see an `agentgateway` GatewayClass — this tells Kubernetes that Agentgateway is available as a gateway implementation.
 
 ## What Just Happened?
 
 You installed:
-- **AgentGateway CRDs** — custom resource definitions for AI-specific configuration
-- **AgentGateway control plane** — the controller that watches for Gateway/Route resources and configures the data plane
-- **GatewayClass** — registers AgentGateway as an available gateway implementation
+- **Agentgateway CRDs** — custom resource definitions for AI-specific configuration
+- **Agentgateway control plane** — the controller that watches for Gateway/Route resources and configures the data plane
+- **GatewayClass** — registers Agentgateway as an available gateway implementation
 
 Next, we'll create our first AI Gateway and route traffic to an LLM provider.

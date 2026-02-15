@@ -102,4 +102,4 @@ What if there was a single gateway that all your agents talked through? One plac
 - **Enforce policies** (rate limits, content filtering, cost controls)
 - **Observe everything** (latency, tokens, errors — across all providers)
 
-That's exactly what **AgentGateway** does. Let's install it.
+That's exactly what **Agentgateway** does. Let's install it.

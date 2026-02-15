@@ -1,6 +1,6 @@
-# 🎓 AgentGateway Instruqt Demos
+# 🎓 Agentgateway Instruqt Demos
 
-Interactive hands-on labs for [AgentGateway](https://agentgateway.dev/) — the open-source, AI-first gateway for routing to LLMs, MCP tools, and agents on Kubernetes.
+Interactive hands-on labs for [Agentgateway](https://agentgateway.dev/) — the open-source, AI-first gateway for routing to LLMs, MCP tools, and agents on Kubernetes.
 
 Built for the [Instruqt](https://instruqt.com/) platform by the Solo.io GTM team.
 
@@ -8,14 +8,14 @@ Built for the [Instruqt](https://instruqt.com/) platform by the Solo.io GTM team
 
 ## 📚 Tracks
 
-### Track 1: [AgentGateway OSS — Your First AI Gateway](https://play.instruqt.com/soloio/tracks/agentgateway-oss-quickstart)
+### Track 1: [Agentgateway OSS — Your First AI Gateway](https://play.instruqt.com/soloio/tracks/agentgateway-oss-quickstart)
 
 > Deploy a purpose-built gateway for AI agent traffic on Kubernetes.
 
 | # | Challenge | What You'll Learn |
 |---|-----------|-------------------|
 | 1 | The Problem — Agents Without Guardrails | Why direct agent-to-LLM calls are a problem |
-| 2 | Install AgentGateway on Kubernetes | Helm install with Gateway API CRDs |
+| 2 | Install Agentgateway on Kubernetes | Helm install with Gateway API CRDs |
 | 3 | Create Your First AI Gateway | Gateway + HTTPRoute + LLM backend |
 | 4 | Add Multiple LLM Providers | Multi-provider routing (OpenAI + Anthropic) |
 | 5 | See What Your Agents Are Doing | Built-in observability and metrics |
@@ -38,28 +38,28 @@ Built for the [Instruqt](https://instruqt.com/) platform by the Solo.io GTM team
 | 5 | Rate Limiting | Control AI spend with request/token limits |
 | 6 | Defense in Depth | Combine all policies into layered security |
 
-**Time:** ~45 min · **Level:** Intermediate · **Prerequisites:** Track 1 or AgentGateway basics
+**Time:** ~45 min · **Level:** Intermediate · **Prerequisites:** Track 1 or Agentgateway basics
 
 ---
 
-### Track 3: [AgentGateway MCP — Secure Tool Access for AI Agents](https://play.instruqt.com/soloio/tracks/agentgateway-mcp-connectivity)
+### Track 3: [Agentgateway MCP — Secure Tool Access for AI Agents](https://play.instruqt.com/soloio/tracks/agentgateway-mcp-connectivity)
 
-> Connect AI agents to external tools securely using MCP and AgentGateway.
+> Connect AI agents to external tools securely using MCP and Agentgateway.
 
 | # | Challenge | What You'll Learn |
 |---|-----------|-------------------|
 | 1 | Why MCP? 🤔 | The tool integration problem MCP solves |
-| 2 | Static MCP Routing 🎯 | Deploy an MCP server, route through AgentGateway |
+| 2 | Static MCP Routing 🎯 | Deploy an MCP server, route through Agentgateway |
 | 3 | MCP Federation 🌐 | Multi-server routing with path-based matching |
 | 4 | MCP Tool Authorization 🔒 | CEL-based policies to control tool access |
 | 5 | MCP Rate Limiting ⏱️ | Prevent runaway agents from hammering APIs |
 | 6 | MCP Authentication with OAuth 🔑 | Keycloak integration for authenticated tool access |
 
-**Time:** ~60 min · **Level:** Intermediate · **Prerequisites:** Track 1 or AgentGateway basics
+**Time:** ~60 min · **Level:** Intermediate · **Prerequisites:** Track 1 or Agentgateway basics
 
 ---
 
-### Track 4: [Enterprise AgentGateway + Okta: Identity-Aware AI Agents](https://play.instruqt.com/soloio/tracks/agentgateway-enterprise-okta)
+### Track 4: [Enterprise Agentgateway + Okta: Identity-Aware AI Agents](https://play.instruqt.com/soloio/tracks/agentgateway-enterprise-okta)
 
 > Build a production-grade AI gateway with real OAuth authentication, tracing, and scope-based authorization.
 
@@ -86,8 +86,8 @@ All tracks run on Instruqt with:
 
 ## 🔗 Resources
 
-- [AgentGateway Docs](https://agentgateway.dev/)
-- [AgentGateway GitHub](https://github.com/agentgateway/agentgateway)
+- [Agentgateway Docs](https://agentgateway.dev/)
+- [Agentgateway GitHub](https://github.com/agentgateway/agentgateway)
 - [Solo.io](https://solo.io)
 - [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)
 

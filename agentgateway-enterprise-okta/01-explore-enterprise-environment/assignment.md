@@ -3,14 +3,14 @@ slug: explore-enterprise-environment
 id: hgelffzgay6j
 type: challenge
 title: Explore the Enterprise Environment
-teaser: Orient yourself with the Enterprise AgentGateway installation and monitoring
+teaser: Orient yourself with the Enterprise Agentgateway installation and monitoring
   stack.
 notes:
 - type: text
-  contents: "# Welcome to Enterprise AgentGateway + Okta! \U0001F510\n\nIn this workshop,
-    you'll build an **identity-aware AI gateway** using Enterprise AgentGateway and
+  contents: "# Welcome to Enterprise Agentgateway + Okta! \U0001F510\n\nIn this workshop,
+    you'll build an **identity-aware AI gateway** using Enterprise Agentgateway and
     Okta.\n\nYour environment comes pre-installed with:\n- **Kubernetes cluster**
-    (k3d)\n- **Enterprise AgentGateway controller** (v2.1.1)\n- **Monitoring stack**
+    (k3d)\n- **Enterprise Agentgateway controller** (v2.1.1)\n- **Monitoring stack**
     (Grafana + Tempo + Prometheus)\n- **OpenAI API key** (as a Kubernetes secret)\n\nYour
     job: configure the gateway, route traffic, and lock it down with Okta identity.\n\nLet's
     start by exploring what's already running!"
@@ -33,7 +33,7 @@ enhanced_loading: null
 
 Before building anything, let's understand what's already deployed.
 
-## Check the Enterprise AgentGateway Controller
+## Check the Enterprise Agentgateway Controller
 
 The controller is installed in the `enterprise-agentgateway` namespace:
 
@@ -45,7 +45,7 @@ You should see the controller pod running.
 
 ## Discover Enterprise CRDs
 
-Enterprise AgentGateway extends the OSS version with additional CRDs:
+Enterprise Agentgateway extends the OSS version with additional CRDs:
 
 ```bash
 kubectl api-resources | grep agentgateway
@@ -86,7 +86,7 @@ Create a file to confirm you've explored the environment:
 
 ```bash
 cat > /root/environment-verified.txt << 'EOF'
-Enterprise AgentGateway Environment Verified
+Enterprise Agentgateway Environment Verified
 - Controller: running in enterprise-agentgateway namespace
 - GatewayClass: enterprise-agentgateway
 - CRDs: AgentgatewayBackend, EnterpriseAgentgatewayParameters, EnterpriseAgentgatewayPolicy

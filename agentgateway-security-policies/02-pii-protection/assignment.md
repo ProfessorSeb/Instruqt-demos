@@ -9,7 +9,7 @@ notes:
 - type: text
   contents: "# \U0001F6E1️ PII Protection\n\nSSNs, emails, credit cards — all flowing
     to third-party LLMs unfiltered.\n\n**In this challenge, you'll:**\n\n- Create
-    an AgentGatewayPolicy for PII redaction\n- Understand REDACT vs BLOCK vs LOG actions\n-
+    an AgentgatewayPolicy for PII redaction\n- Understand REDACT vs BLOCK vs LOG actions\n-
     Simulate what PII protection looks like in practice\n- See how the gateway transforms
     requests transparently\n\n> ℹ️ PII protection is an **Enterprise** feature. You'll
     learn the concepts and create the policy YAML.\n"
@@ -45,17 +45,17 @@ The fix? **Redact PII at the gateway** — before it ever reaches the LLM.
 
 ## 🏢 OSS vs Enterprise
 
-> **Important:** PII protection is an **AgentGateway Enterprise** feature. In this challenge, we'll create the policy YAML and understand how it works conceptually. The policy structure is real — it just requires an Enterprise license to enforce.
+> **Important:** PII protection is an **Agentgateway Enterprise** feature. In this challenge, we'll create the policy YAML and understand how it works conceptually. The policy structure is real — it just requires an Enterprise license to enforce.
 >
 > We'll use our mock LLM to simulate the behavior so you can see the concept in action.
 
 ## Step 1: Understand the Policy
 
-AgentGateway uses `AgentGatewayPolicy` resources to define security rules. Here's what a PII protection policy looks like:
+Agentgateway uses `AgentgatewayPolicy` resources to define security rules. Here's what a PII protection policy looks like:
 
 ```yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: pii-protection
 spec:
@@ -89,7 +89,7 @@ Create the policy file:
 ```bash
 cat <<EOF > /root/policies/pii-protection.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: pii-protection
   namespace: default
@@ -113,7 +113,7 @@ EOF
 Apply it (this will create the CRD but won't be enforced without Enterprise):
 
 ```bash
-kubectl apply -f /root/policies/pii-protection.yaml 2>/dev/null || echo "Note: AgentGatewayPolicy CRD requires Enterprise. Policy file created for reference."
+kubectl apply -f /root/policies/pii-protection.yaml 2>/dev/null || echo "Note: AgentgatewayPolicy CRD requires Enterprise. Policy file created for reference."
 ```
 
 ## Step 3: Simulate PII Redaction
@@ -165,7 +165,7 @@ Create a script that demonstrates PII detection (what Enterprise would catch):
 ```bash
 cat <<'SCRIPT' > /root/policies/test-pii.sh
 #!/bin/bash
-# PII Detection Test — shows what AgentGateway Enterprise would catch
+# PII Detection Test — shows what Agentgateway Enterprise would catch
 
 echo "=== PII Detection Test ==="
 echo ""
@@ -216,8 +216,8 @@ cat /root/policies/pii-protection.yaml
 ## ✅ What You've Learned
 
 - PII routinely leaks through AI agent traffic to third-party LLMs
-- AgentGateway Enterprise's PII protection **redacts sensitive data at the gateway layer**
-- Policies use `AgentGatewayPolicy` CRDs attached to specific routes
+- Agentgateway Enterprise's PII protection **redacts sensitive data at the gateway layer**
+- Policies use `AgentgatewayPolicy` CRDs attached to specific routes
 - You can choose to **REDACT**, **BLOCK**, or **LOG** PII detections
 - No application code changes needed — the gateway handles it transparently
 

@@ -1,13 +1,13 @@
 slug: agentgateway-enterprise-okta
 id: my9ancacehvj
-title: 'Enterprise AgentGateway + Okta: Identity-Aware AI Agents'
+title: 'Enterprise Agentgateway + Okta: Identity-Aware AI Agents'
 teaser: Build a production-grade AI gateway with real OAuth authentication, tracing,
   and scope-based MCP authorization.
 description: "Your AI gateway is routing traffic and enforcing security policies.
   But in production, you need **identity** — knowing WHO is calling your agents and
   WHAT they're authorized to do.\n\nIn this advanced workshop, you'll build an identity-aware
-  AI gateway from scratch using **Enterprise AgentGateway** and **Okta** as your identity
-  provider. The cluster and Enterprise AgentGateway are pre-installed — you focus
+  AI gateway from scratch using **Enterprise Agentgateway** and **Okta** as your identity
+  provider. The cluster and Enterprise Agentgateway are pre-installed — you focus
   entirely on configuring the gateway.\n\nYou'll:\n\n- \U0001F527 Configure EnterpriseAgentgatewayParameters
   with tracing, logging, and extensions\n- \U0001F310 Create a Gateway with OpenTelemetry
   tracing connected to Grafana/Tempo\n- \U0001F916 Route real LLM traffic to OpenAI

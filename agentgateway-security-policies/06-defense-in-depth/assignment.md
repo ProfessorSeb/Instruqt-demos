@@ -10,7 +10,7 @@ notes:
     into a production-hardened AI gateway.\n\n**In this challenge, you'll:**\n\n-
     Combine PII, prompt injection, credential leak, and rate limiting policies\n-
     Run a comprehensive security test\n- See the complete request → response protection
-    flow\n- Plan your next steps with AgentGateway\n\n```\nRequest → Rate Limit →
+    flow\n- Plan your next steps with Agentgateway\n\n```\nRequest → Rate Limit →
     Prompt Guard → PII Redact → LLM → Credential Scrub → Response\n```\n"
 tabs:
 - id: yssigbqyaeux
@@ -63,7 +63,7 @@ In production, you'd typically combine all security settings into a single polic
 ```bash
 cat <<EOF > /root/policies/comprehensive-security.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: comprehensive-security
   namespace: default
@@ -136,7 +136,7 @@ cat <<'SCRIPT' > /root/policies/test-all-policies.sh
 source /root/.bashrc
 
 echo "╔══════════════════════════════════════════════════════════╗"
-echo "║     AgentGateway Security — Comprehensive Test          ║"
+echo "║     Agentgateway Security — Comprehensive Test          ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -229,7 +229,7 @@ You've built a comprehensive security posture for your AI gateway. Here's what t
 ```bash
 cat <<'NEXT'
 
-🗺️  AgentGateway Security Roadmap
+🗺️  Agentgateway Security Roadmap
 ═══════════════════════════════════
 
 What you built today:
@@ -277,4 +277,4 @@ In this track, you:
 
 All of this happens at the **gateway layer** — no changes to your agents, no changes to your LLM calls. One policy, applied consistently to all traffic.
 
-**That's the power of AgentGateway.** 🛡️
+**That's the power of Agentgateway.** 🛡️

@@ -29,7 +29,7 @@ enhanced_loading: null
 
 # The Security Gap
 
-You've got AgentGateway installed and routing traffic. That's the foundation. But right now, your gateway is like a highway with no speed limits, no guardrails, and no inspections.
+You've got Agentgateway installed and routing traffic. That's the foundation. But right now, your gateway is like a highway with no speed limits, no guardrails, and no inspections.
 
 **Everything passes through unchanged.**
 
@@ -50,13 +50,13 @@ By the end of this track, you'll have a policy for each one. But first — let's
 
 ## Step 1: Verify the Environment
 
-AgentGateway was installed during track setup. Let's confirm everything is running:
+Agentgateway was installed during track setup. Let's confirm everything is running:
 
 ```bash
 kubectl get pods -n agentgateway-system
 ```
 
-You should see the AgentGateway pod running. Now check the mock LLM backend:
+You should see the Agentgateway pod running. Now check the mock LLM backend:
 
 ```bash
 kubectl get pods -l app=mock-llm
@@ -165,7 +165,7 @@ echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
 
 ## ✅ What You've Learned
 
-- AgentGateway is installed and routing traffic
+- Agentgateway is installed and routing traffic
 - Without security policies, **everything passes through unchanged**
 - PII, prompt injections, and credentials flow freely
 - You need gateway-level policies to fix this — and that's what the next 5 challenges are about

@@ -1,20 +1,20 @@
 slug: agentgateway-oss-quickstart
 id: zgf0yqcbjvsh
-title: 'AgentGateway OSS: Your First AI Gateway'
+title: 'Agentgateway OSS: Your First AI Gateway'
 teaser: Deploy a purpose-built gateway for AI agent traffic on Kubernetes using the
-  open-source AgentGateway project.
+  open-source Agentgateway project.
 description: "AI agents are calling LLMs and MCP tools directly — no visibility, no
   security, no cost control. Sound familiar? It's the same chaos we saw with microservices
-  in 2016, before service meshes and API gateways brought order.\n\n**AgentGateway**
+  in 2016, before service meshes and API gateways brought order.\n\n**Agentgateway**
   is a purpose-built gateway for AI agent traffic. Built on the Kubernetes Gateway
   API, it gives you a single control point for all your agent-to-LLM communication
   — routing, observability, and governance included.\n\nIn this hands-on workshop,
   you'll:\n\n- \U0001F50D Understand why direct agent-to-LLM calls are a problem\n-
-  \U0001F680 Install AgentGateway OSS on a Kubernetes cluster\n- \U0001F310 Create
+  \U0001F680 Install Agentgateway OSS on a Kubernetes cluster\n- \U0001F310 Create
   your first AI Gateway with LLM routing\n- \U0001F500 Route traffic to multiple LLM
-  providers (OpenAI + Anthropic)\n- \U0001F4CA Explore the observability AgentGateway
-  provides out of the box\n- \U0001F5FA️ Learn what's possible with AgentGateway Enterprise\n\n**No
-  prior AgentGateway experience required.** Familiarity with Kubernetes basics (kubectl,
+  providers (OpenAI + Anthropic)\n- \U0001F4CA Explore the observability Agentgateway
+  provides out of the box\n- \U0001F5FA️ Learn what's possible with Agentgateway Enterprise\n\n**No
+  prior Agentgateway experience required.** Familiarity with Kubernetes basics (kubectl,
   pods, services) is helpful."
 icon: ""
 tags:

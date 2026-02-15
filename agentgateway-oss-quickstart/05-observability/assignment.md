@@ -3,12 +3,12 @@ slug: observability
 id: nclrrhvfeyya
 type: challenge
 title: See What Your Agents Are Doing
-teaser: Explore the observability data AgentGateway captures for every LLM request.
+teaser: Explore the observability data Agentgateway captures for every LLM request.
 notes:
 - type: text
   contents: "# \U0001F4CA Observability — See What Your Agents Are Doing\n\nThe biggest
     reason to use a gateway: **knowing what your agents actually do**.\n\n**In this
-    challenge, you'll:**\n\n- Explore AgentGateway's structured logs\n- Check Prometheus-compatible
+    challenge, you'll:**\n\n- Explore Agentgateway's structured logs\n- Check Prometheus-compatible
     metrics\n- Learn about token tracking, latency, and error rates\n- Preview Enterprise
     observability with Langfuse\n"
 tabs:
@@ -40,11 +40,11 @@ When agents call LLMs directly, you're blind:
 
 You might get some of this from your LLM provider's dashboard, but it's fragmented across providers, delayed, and doesn't tie back to your agents.
 
-**AgentGateway captures all of this at the gateway layer** — in real time, across all providers.
+**Agentgateway captures all of this at the gateway layer** — in real time, across all providers.
 
-## Step 1: Check AgentGateway Logs
+## Step 1: Check Agentgateway Logs
 
-AgentGateway logs every proxied request. Let's look:
+Agentgateway logs every proxied request. Let's look:
 
 ```bash
 kubectl logs -n agentgateway-system -l app=agentgateway --tail=50
@@ -58,10 +58,10 @@ You'll see structured log entries for each request that passed through the gatew
 
 ## Step 2: Explore Gateway Metrics
 
-AgentGateway exposes Prometheus-compatible metrics. Let's check what's available:
+Agentgateway exposes Prometheus-compatible metrics. Let's check what's available:
 
 ```bash
-# Find the AgentGateway pod
+# Find the Agentgateway pod
 AG_POD=$(kubectl get pods -n agentgateway-system -l app=agentgateway -o jsonpath='{.items[0].metadata.name}')
 
 # Port-forward to the metrics endpoint
@@ -80,11 +80,11 @@ These metrics include:
 
 ## Step 3: Create an Observability Summary
 
-Let's document what AgentGateway observability gives you out of the box:
+Let's document what Agentgateway observability gives you out of the box:
 
 ```bash
 cat > /root/observability-notes.txt << 'EOF'
-AgentGateway OSS Observability:
+Agentgateway OSS Observability:
 
 Structured Logs:
 - Every request logged with provider, model, status, latency
@@ -118,7 +118,7 @@ All from a single dashboard, regardless of how many providers you use.
 
 ## Going Further: Langfuse Integration
 
-For production deployments, **AgentGateway Enterprise** integrates with [Langfuse](https://langfuse.com) — an open-source LLM observability platform. This gives you:
+For production deployments, **Agentgateway Enterprise** integrates with [Langfuse](https://langfuse.com) — an open-source LLM observability platform. This gives you:
 - Full prompt and response tracing
 - Cost tracking per conversation/session
 - Quality evaluation and scoring

@@ -51,7 +51,7 @@ In all cases, secrets end up in API responses — logged, cached, and potentiall
 
 ## 🏢 OSS vs Enterprise
 
-> **Important:** Credential leak prevention is an **AgentGateway Enterprise** feature. We'll create the policy and simulate the detection behavior.
+> **Important:** Credential leak prevention is an **Agentgateway Enterprise** feature. We'll create the policy and simulate the detection behavior.
 
 ## Step 1: Understand the Policy
 
@@ -59,7 +59,7 @@ Credential leak prevention scans **LLM responses** (not requests) for secret pat
 
 ```yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: credential-leak-prevention
 spec:
@@ -86,7 +86,7 @@ This is **response-side scanning** — it inspects what the LLM sends back, not 
 ```bash
 cat <<EOF > /root/policies/credential-leak.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: credential-leak-prevention
   namespace: default
@@ -195,7 +195,7 @@ The credentials pass through in both directions. With Enterprise, the response w
 ## ✅ What You've Learned
 
 - LLM responses can leak credentials through echo-back, RAG context, and training data
-- AgentGateway Enterprise scans **responses** for API keys, AWS keys, JWTs, and more
+- Agentgateway Enterprise scans **responses** for API keys, AWS keys, JWTs, and more
 - Detected credentials are **redacted** before reaching the client
 - This is the response-side complement to request-side PII protection
 

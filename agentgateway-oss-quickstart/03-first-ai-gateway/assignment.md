@@ -3,13 +3,13 @@ slug: first-ai-gateway
 id: tuokfmqtlbfn
 type: challenge
 title: Create Your First AI Gateway
-teaser: Deploy a Gateway resource and route traffic to OpenAI through AgentGateway.
+teaser: Deploy a Gateway resource and route traffic to OpenAI through Agentgateway.
 notes:
 - type: text
   contents: "# \U0001F310 Create Your First AI Gateway\n\nTime to route AI traffic
     through a gateway instead of calling providers directly.\n\n**In this challenge,
     you'll:**\n\n- Store API credentials as Kubernetes Secrets\n- Create a Gateway
-    resource and LLM backend\n- Route traffic through AgentGateway to OpenAI\n- See
+    resource and LLM backend\n- Route traffic through Agentgateway to OpenAI\n- See
     the difference: `Agent → Gateway → LLM` vs `Agent → LLM`\n"
 tabs:
 - id: xyyfq8ho9qsz
@@ -44,7 +44,7 @@ Your OpenAI API key has already been stored as a Kubernetes Secret called `opena
 kubectl get secret openai-secret -n agentgateway-system
 ```
 
-> 💡 The important thing is that **agents never see this key** — only the gateway does. The secret contains the `Authorization` header value so AgentGateway can authenticate to OpenAI on behalf of your agents.
+> 💡 The important thing is that **agents never see this key** — only the gateway does. The secret contains the `Authorization` header value so Agentgateway can authenticate to OpenAI on behalf of your agents.
 
 ## Step 2: Create a Gateway
 
@@ -81,7 +81,7 @@ kubectl wait --for=condition=Programmed gateway/ai-gateway \
 
 ## Step 3: Create an OpenAI Backend and Route
 
-Now create a Backend that tells AgentGateway how to reach OpenAI, and an HTTPRoute that sends traffic there:
+Now create a Backend that tells Agentgateway how to reach OpenAI, and an HTTPRoute that sends traffic there:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -148,11 +148,11 @@ curl -s http://localhost:8080/openai/v1/chat/completions \
   }' | jq .
 ```
 
-You should see a real response from OpenAI! The important thing: **the request went through AgentGateway**, not directly to OpenAI. Your agent never needed the API key.
+You should see a real response from OpenAI! The important thing: **the request went through Agentgateway**, not directly to OpenAI. Your agent never needed the API key.
 
 ## What Changed?
 
 Before: `Agent → OpenAI (direct, unmonitored)`
-After: `Agent → AgentGateway → OpenAI (proxied, logged, controlled)`
+After: `Agent → Agentgateway → OpenAI (proxied, logged, controlled)`
 
 The agent doesn't need the API key. It doesn't even need to know it's talking to OpenAI. It just calls the gateway.

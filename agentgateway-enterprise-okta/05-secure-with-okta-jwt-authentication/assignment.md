@@ -42,7 +42,7 @@ enhanced_loading: null
 
 ## Step 1: Create the Okta JWKS Backend
 
-AgentGateway needs to fetch Okta's public keys to validate JWTs. Create `/root/okta-jwks.yaml`:
+Agentgateway needs to fetch Okta's public keys to validate JWTs. Create `/root/okta-jwks.yaml`:
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1

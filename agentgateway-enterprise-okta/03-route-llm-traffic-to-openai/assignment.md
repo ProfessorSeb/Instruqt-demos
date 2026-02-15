@@ -93,7 +93,7 @@ curl -s "localhost:8080/openai" \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-4o-mini",
-    "messages": [{"role": "user", "content": "What is AgentGateway in one sentence?"}]
+    "messages": [{"role": "user", "content": "What is Agentgateway in one sentence?"}]
   }' | jq
 ```
 

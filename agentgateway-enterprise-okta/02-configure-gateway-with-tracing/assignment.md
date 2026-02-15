@@ -7,7 +7,7 @@ teaser: Create an Enterprise Gateway with full observability — tracing, struct
   logging, and shared extensions.
 notes:
 - type: text
-  contents: "# Gateway Configuration \U0001F527\n\nEnterprise AgentGateway uses **EnterpriseAgentgatewayParameters**
+  contents: "# Gateway Configuration \U0001F527\n\nEnterprise Agentgateway uses **EnterpriseAgentgatewayParameters**
     to configure the data plane with:\n- **Tracing** — OpenTelemetry traces to Tempo
     with GenAI semantic conventions\n- **Structured logging** — JSON logs with request/response
     bodies and JWT claims\n- **Shared extensions** — ext-auth, rate-limiter, and ext-cache
@@ -40,7 +40,7 @@ In this challenge, you'll create two resources:
 
 ## Step 1: Create EnterpriseAgentgatewayParameters
 
-This resource configures the AgentGateway data plane with full observability and shared extensions.
+This resource configures the Agentgateway data plane with full observability and shared extensions.
 
 Create the file `/root/agentgateway-params.yaml`:
 

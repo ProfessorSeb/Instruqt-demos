@@ -10,7 +10,7 @@ notes:
     can burn $50K overnight. Rate limiting is your financial safety net.\n\n**In this
     challenge, you'll:**\n\n- Create request-based rate limits (requests/minute)\n-
     Create token-based rate limits (tokens/hour)\n- Test rate limiting behavior\n-
-    Calculate the cost impact\n\n> ✅ Rate limiting is available in **AgentGateway
+    Calculate the cost impact\n\n> ✅ Rate limiting is available in **Agentgateway
     OSS**!\n"
 tabs:
 - id: yazubpnbnqg2
@@ -43,11 +43,11 @@ Without rate limiting, your first sign of a problem is the invoice.
 
 ## 🆓 OSS Feature!
 
-> **Great news:** Rate limiting is available in **AgentGateway OSS**! This is one of the policies you can use right now without an Enterprise license.
+> **Great news:** Rate limiting is available in **Agentgateway OSS**! This is one of the policies you can use right now without an Enterprise license.
 
 ## Step 1: Understand Rate Limiting Options
 
-AgentGateway supports two types of rate limiting:
+Agentgateway supports two types of rate limiting:
 
 **Request-based:** Limit the number of requests per time window
 ```yaml
@@ -77,7 +77,7 @@ Let's create a rate limit that restricts traffic to **5 requests per minute** �
 ```bash
 cat <<EOF > /root/policies/rate-limit.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: rate-limit
   namespace: default
@@ -98,7 +98,7 @@ EOF
 Apply the policy:
 
 ```bash
-kubectl apply -f /root/policies/rate-limit.yaml 2>/dev/null || echo "Note: Policy CRD applied (enforcement depends on AgentGateway version)."
+kubectl apply -f /root/policies/rate-limit.yaml 2>/dev/null || echo "Note: Policy CRD applied (enforcement depends on Agentgateway version)."
 ```
 
 ## Step 3: Test Rate Limiting
@@ -153,7 +153,7 @@ Run the test:
 /root/policies/test-rate-limit.sh
 ```
 
-> **Note:** Whether you see actual 429 responses depends on whether the rate limit CRD is enforced in this AgentGateway version. The policy YAML and concepts are what matter — in production, exceeding the limit returns HTTP 429 with a `Retry-After` header.
+> **Note:** Whether you see actual 429 responses depends on whether the rate limit CRD is enforced in this Agentgateway version. The policy YAML and concepts are what matter — in production, exceeding the limit returns HTTP 429 with a `Retry-After` header.
 
 ## Step 4: Token-Based Rate Limiting
 
@@ -162,7 +162,7 @@ For cost control, token-based limits are even more powerful. Create an additiona
 ```bash
 cat <<EOF > /root/policies/token-rate-limit.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: token-rate-limit
   namespace: default
@@ -216,7 +216,7 @@ chmod +x /root/policies/cost-calculator.sh
 ## ✅ What You've Learned
 
 - Uncontrolled AI spend is a real operational risk
-- AgentGateway OSS includes **request-based rate limiting**
+- Agentgateway OSS includes **request-based rate limiting**
 - You can limit by route, client IP, or custom headers (like user ID)
 - **Token-based rate limiting** provides fine-grained cost control
 - Rate limits return HTTP 429 with `Retry-After` headers

@@ -31,7 +31,7 @@ Most organizations don't use just one LLM provider. Teams choose different model
 
 Without a gateway, each team integrates with each provider independently. That's N×M complexity.
 
-With AgentGateway, you add a new provider once, and every agent can use it through the same gateway endpoint.
+With Agentgateway, you add a new provider once, and every agent can use it through the same gateway endpoint.
 
 ## Why This Matters
 
@@ -147,7 +147,7 @@ The OpenAI route should return a real response. The Anthropic route will return 
 ```
                     ┌─────────────────────┐
 Agent A ──→        │                     │──→ OpenAI
-                    │   AgentGateway      │
+                    │   Agentgateway      │
 Agent B ──→        │   (ai-gateway)      │──→ Anthropic
                     │                     │
 Agent C ──→        │   /openai/*         │──→ OpenAI

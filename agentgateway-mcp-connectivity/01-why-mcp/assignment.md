@@ -10,7 +10,7 @@ notes:
   contents: "# \U0001F50C The Tool Integration Problem\n\nAI agents don't just chat
     — they **use tools**. They fetch web pages, query databases, create tickets, send
     messages.\n\nBut every tool has a different API. Every integration is custom.
-    Sound familiar?\n\n**MCP (Model Context Protocol)** fixes this — and AgentGateway
+    Sound familiar?\n\n**MCP (Model Context Protocol)** fixes this — and Agentgateway
     makes it secure.\n"
 tabs:
 - id: 04scbzltkksg
@@ -58,7 +58,7 @@ The agent uses standard JSON-RPC messages:
 - `tools/list` — "What tools do you have?"
 - `tools/call` — "Run this tool with these parameters"
 
-## Why AgentGateway for MCP? 🛡️
+## Why Agentgateway for MCP? 🛡️
 
 MCP solves the **integration** problem. But who controls:
 - Which agents can call which tools?
@@ -66,7 +66,7 @@ MCP solves the **integration** problem. But who controls:
 - Who authenticates the requests?
 - Where's the audit trail?
 
-**AgentGateway** is the answer. It sits between agents and MCP servers, providing:
+**Agentgateway** is the answer. It sits between agents and MCP servers, providing:
 - ✅ **Routing** — Direct traffic to the right MCP server
 - ✅ **Authorization** — Control which tools agents can use
 - ✅ **Rate limiting** — Prevent runaway agents from exhausting APIs
@@ -78,7 +78,7 @@ MCP solves the **integration** problem. But who controls:
 In this track, you'll build the following architecture:
 
 ```
-Agent → AgentGateway Proxy (port 8080) → AgentgatewayBackend → MCP Server
+Agent → Agentgateway Proxy (port 8080) → AgentgatewayBackend → MCP Server
 ```
 
 The `agentgateway-proxy` Gateway is already deployed and port-forwarded to `localhost:8080` for you.
@@ -87,11 +87,11 @@ The `agentgateway-proxy` Gateway is already deployed and port-forwarded to `loca
 
 Let's make sure you understand the "why" before we dive into the "how."
 
-**Create a file** at `/root/mcp-benefits.txt` that lists at least 4 benefits of using AgentGateway as an MCP gateway (one per line):
+**Create a file** at `/root/mcp-benefits.txt` that lists at least 4 benefits of using Agentgateway as an MCP gateway (one per line):
 
 ```bash
 cat > /root/mcp-benefits.txt << 'EOF'
-Benefits of AgentGateway for MCP:
+Benefits of Agentgateway for MCP:
 1. Centralized routing to multiple MCP tool servers
 2. Fine-grained tool authorization (allow/deny specific tools)
 3. Rate limiting to protect upstream tool APIs
@@ -100,10 +100,10 @@ Benefits of AgentGateway for MCP:
 EOF
 ```
 
-Also, let's verify your cluster is ready and AgentGateway is installed:
+Also, let's verify your cluster is ready and Agentgateway is installed:
 
 ```bash
 kubectl get pods -n agentgateway-system
 ```
 
-You should see the AgentGateway pods running, including the `agentgateway-proxy`. In the next challenge, we'll deploy our first MCP server and route traffic to it! 🚀
+You should see the Agentgateway pods running, including the `agentgateway-proxy`. In the next challenge, we'll deploy our first MCP server and route traffic to it! 🚀

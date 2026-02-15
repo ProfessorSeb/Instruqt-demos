@@ -30,7 +30,7 @@ enhanced_loading: null
 
 # MCP Federation 🌐 Multi-Server Routing
 
-Real-world agents use many tools. A coding agent might need GitHub for repositories, Slack for notifications, and a web fetcher for research. Instead of configuring each tool separately, AgentGateway can **federate** them behind a single gateway.
+Real-world agents use many tools. A coding agent might need GitHub for repositories, Slack for notifications, and a web fetcher for research. Instead of configuring each tool separately, Agentgateway can **federate** them behind a single gateway.
 
 ```
 Agent → /mcp/github  → GitHub MCP Server

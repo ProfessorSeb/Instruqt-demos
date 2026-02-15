@@ -35,7 +35,7 @@ enhanced_loading: null
 
 AI agents can enter loops. A coding agent debugging a test might call tools hundreds of times. Without rate limiting, your upstream APIs get hammered, costs spike, and you might get rate-limited by the provider itself.
 
-AgentGateway lets you set **rate limits** on MCP routes using the `traffic.rateLimit` section of `AgentgatewayPolicy`.
+Agentgateway lets you set **rate limits** on MCP routes using the `traffic.rateLimit` section of `AgentgatewayPolicy`.
 
 ## Step 1: Create a Rate Limiting Policy
 

@@ -51,15 +51,15 @@ These aren't theoretical. They happen in production. And once an agent is compro
 
 ## 🏢 OSS vs Enterprise
 
-> **Important:** Prompt injection detection is an **AgentGateway Enterprise** feature. It uses ML-based classification to detect injection attempts. In this challenge, we'll create the policy and simulate detection.
+> **Important:** Prompt injection detection is an **Agentgateway Enterprise** feature. It uses ML-based classification to detect injection attempts. In this challenge, we'll create the policy and simulate detection.
 
 ## Step 1: Understand the Policy
 
-Here's an AgentGateway prompt injection guard policy:
+Here's an Agentgateway prompt injection guard policy:
 
 ```yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: prompt-injection-guard
 spec:
@@ -92,7 +92,7 @@ Key concepts:
 ```bash
 cat <<EOF > /root/policies/prompt-injection.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+kind: AgentgatewayPolicy
 metadata:
   name: prompt-injection-guard
   namespace: default
@@ -218,7 +218,7 @@ Both go through. With Enterprise, the first would be blocked with a 403.
 
 - Prompt injection is the top security risk for LLM applications
 - Attacks include jailbreaks, role hijacking, and data exfiltration
-- AgentGateway Enterprise uses **ML-based detection** plus custom patterns
+- Agentgateway Enterprise uses **ML-based detection** plus custom patterns
 - Policies can **BLOCK** (reject) or **LOG** (allow but alert) injection attempts
 - Detection happens at the gateway — no changes to your agents or LLM calls
 
