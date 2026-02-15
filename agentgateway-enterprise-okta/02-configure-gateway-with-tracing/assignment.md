@@ -1,34 +1,35 @@
 ---
 slug: configure-gateway-with-tracing
-id: configure-gateway-with-tracing
+id: pbv4zyt2vpzd
 type: challenge
 title: Configure the Gateway with Tracing
-teaser: Create an Enterprise Gateway with full observability — tracing, structured logging, and shared extensions.
+teaser: Create an Enterprise Gateway with full observability — tracing, structured
+  logging, and shared extensions.
 notes:
 - type: text
-  contents: |-
-    # Gateway Configuration 🔧
-
-    Enterprise AgentGateway uses **EnterpriseAgentgatewayParameters** to configure the data plane with:
-    - **Tracing** — OpenTelemetry traces to Tempo with GenAI semantic conventions
-    - **Structured logging** — JSON logs with request/response bodies and JWT claims
-    - **Shared extensions** — ext-auth, rate-limiter, and ext-cache sidecars
-
-    This is the foundation everything else builds on.
+  contents: "# Gateway Configuration \U0001F527\n\nEnterprise AgentGateway uses **EnterpriseAgentgatewayParameters**
+    to configure the data plane with:\n- **Tracing** — OpenTelemetry traces to Tempo
+    with GenAI semantic conventions\n- **Structured logging** — JSON logs with request/response
+    bodies and JWT claims\n- **Shared extensions** — ext-auth, rate-limiter, and ext-cache
+    sidecars\n\nThis is the foundation everything else builds on."
 tabs:
-- title: Terminal
+- id: ydbd5tdhptvr
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: nkqzdyc6vtyn
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: eatyrcem5xit
+  title: Grafana
   type: service
   hostname: server
   port: 3000
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Configure the Gateway with Tracing

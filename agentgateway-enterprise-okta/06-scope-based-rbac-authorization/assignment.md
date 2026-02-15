@@ -1,35 +1,40 @@
 ---
 slug: scope-based-rbac-authorization
-id: scope-based-rbac-authorization
+id: 9vbpfq7fmbki
 type: challenge
 title: Scope-Based RBAC Authorization
-teaser: Build CEL-based authorization policies that check JWT scopes for fine-grained access control.
+teaser: Build CEL-based authorization policies that check JWT scopes for fine-grained
+  access control.
 notes:
 - type: text
-  contents: |-
-    # Scope-Based RBAC 🛡️
-
-    Authentication tells you WHO someone is. **Authorization** tells you WHAT they can do.
-
-    You'll use **CEL expressions** (Common Expression Language) to inspect JWT claims and enforce scope-based access control. This is how you build the "On Behalf Of" pattern — where AI agents act with the user's identity and permissions.
+  contents: "# Scope-Based RBAC \U0001F6E1️\n\nAuthentication tells you WHO someone
+    is. **Authorization** tells you WHAT they can do.\n\nYou'll use **CEL expressions**
+    (Common Expression Language) to inspect JWT claims and enforce scope-based access
+    control. This is how you build the \"On Behalf Of\" pattern — where AI agents
+    act with the user's identity and permissions."
 tabs:
-- title: Terminal
+- id: xtdbpfyxsc3m
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: snokp55ckqct
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: yfagyptuurmk
+  title: Grafana
   type: service
   hostname: server
   port: 3000
-- title: MCP Inspector
+- id: 0rvxzrw0wybx
+  title: MCP Inspector
   type: service
   hostname: server
   port: 6274
 difficulty: intermediate
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Scope-Based RBAC Authorization

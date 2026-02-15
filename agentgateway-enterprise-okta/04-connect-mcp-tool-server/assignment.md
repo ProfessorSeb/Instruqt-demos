@@ -1,35 +1,39 @@
 ---
 slug: connect-mcp-tool-server
-id: connect-mcp-tool-server
+id: dzm9kytvd2yo
 type: challenge
 title: Connect an MCP Tool Server
-teaser: Deploy an MCP tool server, route it through the gateway, and test with MCP Inspector.
+teaser: Deploy an MCP tool server, route it through the gateway, and test with MCP
+  Inspector.
 notes:
 - type: text
-  contents: |-
-    # MCP Tool Server 🔌
-
-    The Model Context Protocol (MCP) lets AI agents discover and use tools dynamically. You'll deploy a real MCP server that can fetch website content, then route it through AgentGateway.
-
-    The **MCP Inspector** tab lets you interactively test tool discovery and invocation.
+  contents: "# MCP Tool Server \U0001F50C\n\nThe Model Context Protocol (MCP) lets
+    AI agents discover and use tools dynamically. You'll deploy a real MCP server
+    that can fetch website content, then route it through AgentGateway.\n\nThe **MCP
+    Inspector** tab lets you interactively test tool discovery and invocation."
 tabs:
-- title: Terminal
+- id: f8dmttnf9i1m
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: dodbjf3qzo2t
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: 8ysqqjfoe2kk
+  title: Grafana
   type: service
   hostname: server
   port: 3000
-- title: MCP Inspector
+- id: lbylxrxxglcr
+  title: MCP Inspector
   type: service
   hostname: server
   port: 6274
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Connect an MCP Tool Server

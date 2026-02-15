@@ -1,31 +1,34 @@
 ---
 slug: route-llm-traffic-to-openai
-id: route-llm-traffic-to-openai
+id: 7ehmfsjpgbxm
 type: challenge
 title: Route Real LLM Traffic to OpenAI
-teaser: Create an OpenAI backend and route, send real requests, and see traces in Grafana.
+teaser: Create an OpenAI backend and route, send real requests, and see traces in
+  Grafana.
 notes:
 - type: text
-  contents: |-
-    # Real LLM Traffic 🤖
-
-    Now that your gateway is running with tracing enabled, let's route actual LLM requests through it.
-
-    You'll create an **AgentgatewayBackend** pointing to OpenAI and an **HTTPRoute** to expose it, then watch the traces flow into Grafana/Tempo.
+  contents: "# Real LLM Traffic \U0001F916\n\nNow that your gateway is running with
+    tracing enabled, let's route actual LLM requests through it.\n\nYou'll create
+    an **AgentgatewayBackend** pointing to OpenAI and an **HTTPRoute** to expose it,
+    then watch the traces flow into Grafana/Tempo."
 tabs:
-- title: Terminal
+- id: hwklqmxnjjvc
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 8mfxfenasfcz
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: 8zcxpmkiofbs
+  title: Grafana
   type: service
   hostname: server
   port: 3000
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Route Real LLM Traffic to OpenAI

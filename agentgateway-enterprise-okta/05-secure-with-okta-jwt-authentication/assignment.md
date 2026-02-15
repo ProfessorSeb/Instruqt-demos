@@ -1,40 +1,41 @@
 ---
 slug: secure-with-okta-jwt-authentication
-id: secure-with-okta-jwt-authentication
+id: xtaqh8lfmbng
 type: challenge
 title: Secure with Okta JWT Authentication
-teaser: Integrate Okta as your identity provider with dynamic JWKS validation and strict JWT enforcement.
+teaser: Integrate Okta as your identity provider with dynamic JWKS validation and
+  strict JWT enforcement.
 notes:
 - type: text
-  contents: |-
-    # Identity-Aware Gateway 🔑
-
-    Your gateway is routing LLM and MCP traffic — but anyone can access it! In production, you need to know WHO is calling your agents.
-
-    You'll integrate **Okta** as the identity provider using:
-    - A **JWKS backend** that dynamically fetches Okta's public signing keys
-    - An **EnterpriseAgentgatewayPolicy** with strict JWT authentication
-    - Real **OAuth2 client_credentials** flow to obtain tokens
-
-    After this, every request must carry a valid Okta JWT.
+  contents: "# Identity-Aware Gateway \U0001F511\n\nYour gateway is routing LLM and
+    MCP traffic — but anyone can access it! In production, you need to know WHO is
+    calling your agents.\n\nYou'll integrate **Okta** as the identity provider using:\n-
+    A **JWKS backend** that dynamically fetches Okta's public signing keys\n- An **EnterpriseAgentgatewayPolicy**
+    with strict JWT authentication\n- Real **OAuth2 client_credentials** flow to obtain
+    tokens\n\nAfter this, every request must carry a valid Okta JWT."
 tabs:
-- title: Terminal
+- id: xcrbqqgqbuen
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: rt91g9amsy7k
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: p4jmnxweevqj
+  title: Grafana
   type: service
   hostname: server
   port: 3000
-- title: MCP Inspector
+- id: 9alsyski05ls
+  title: MCP Inspector
   type: service
   hostname: server
   port: 6274
 difficulty: intermediate
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Secure with Okta JWT Authentication

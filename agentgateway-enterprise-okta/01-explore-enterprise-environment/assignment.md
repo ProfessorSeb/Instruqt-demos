@@ -1,35 +1,32 @@
 ---
 slug: explore-enterprise-environment
-id: explore-enterprise-environment
+id: hgelffzgay6j
 type: challenge
 title: Explore the Enterprise Environment
-teaser: Orient yourself with the Enterprise AgentGateway installation and monitoring stack.
+teaser: Orient yourself with the Enterprise AgentGateway installation and monitoring
+  stack.
 notes:
 - type: text
-  contents: |-
-    # Welcome to Enterprise AgentGateway + Okta! 🔐
-
-    In this workshop, you'll build an **identity-aware AI gateway** using Enterprise AgentGateway and Okta.
-
-    Your environment comes pre-installed with:
-    - **Kubernetes cluster** (k3d)
-    - **Enterprise AgentGateway controller** (v2.1.1)
-    - **Monitoring stack** (Grafana + Tempo + Prometheus)
-    - **OpenAI API key** (as a Kubernetes secret)
-
-    Your job: configure the gateway, route traffic, and lock it down with Okta identity.
-
-    Let's start by exploring what's already running!
+  contents: "# Welcome to Enterprise AgentGateway + Okta! \U0001F510\n\nIn this workshop,
+    you'll build an **identity-aware AI gateway** using Enterprise AgentGateway and
+    Okta.\n\nYour environment comes pre-installed with:\n- **Kubernetes cluster**
+    (k3d)\n- **Enterprise AgentGateway controller** (v2.1.1)\n- **Monitoring stack**
+    (Grafana + Tempo + Prometheus)\n- **OpenAI API key** (as a Kubernetes secret)\n\nYour
+    job: configure the gateway, route traffic, and lock it down with Okta identity.\n\nLet's
+    start by exploring what's already running!"
 tabs:
-- title: Terminal
+- id: 9rzwyjirqm2y
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: dqp7tvddmgdd
+  title: Code Editor
   type: code
   hostname: server
   path: /root
 difficulty: basic
 timelimit: 600
+enhanced_loading: null
 ---
 
 # Explore the Enterprise Environment

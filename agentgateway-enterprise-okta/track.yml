@@ -1,34 +1,34 @@
 slug: agentgateway-enterprise-okta
+id: my9ancacehvj
 title: 'Enterprise AgentGateway + Okta: Identity-Aware AI Agents'
-teaser: Build a production-grade AI gateway with real OAuth authentication, tracing, and scope-based MCP authorization.
-description: |-
-  Your AI gateway is routing traffic and enforcing security policies. But in production, you need **identity** — knowing WHO is calling your agents and WHAT they're authorized to do.
-
-  In this advanced workshop, you'll build an identity-aware AI gateway from scratch using **Enterprise AgentGateway** and **Okta** as your identity provider. The cluster and Enterprise AgentGateway are pre-installed — you focus entirely on configuring the gateway.
-
-  You'll:
-
-  - 🔧 Configure EnterpriseAgentgatewayParameters with tracing, logging, and extensions
-  - 🌐 Create a Gateway with OpenTelemetry tracing connected to Grafana/Tempo
-  - 🤖 Route real LLM traffic to OpenAI through the gateway
-  - 🔌 Connect an MCP tool server and test with MCP Inspector
-  - 🔑 Integrate Okta for JWT authentication with dynamic JWKS validation
-  - 🛡️ Build CEL-based RBAC policies using Okta JWT claims
-
-  **Prerequisites:** Familiarity with Kubernetes, Gateway API concepts, and basic OAuth/JWT understanding. Completing Tracks 1-3 recommended.
+teaser: Build a production-grade AI gateway with real OAuth authentication, tracing,
+  and scope-based MCP authorization.
+description: "Your AI gateway is routing traffic and enforcing security policies.
+  But in production, you need **identity** — knowing WHO is calling your agents and
+  WHAT they're authorized to do.\n\nIn this advanced workshop, you'll build an identity-aware
+  AI gateway from scratch using **Enterprise AgentGateway** and **Okta** as your identity
+  provider. The cluster and Enterprise AgentGateway are pre-installed — you focus
+  entirely on configuring the gateway.\n\nYou'll:\n\n- \U0001F527 Configure EnterpriseAgentgatewayParameters
+  with tracing, logging, and extensions\n- \U0001F310 Create a Gateway with OpenTelemetry
+  tracing connected to Grafana/Tempo\n- \U0001F916 Route real LLM traffic to OpenAI
+  through the gateway\n- \U0001F50C Connect an MCP tool server and test with MCP Inspector\n-
+  \U0001F511 Integrate Okta for JWT authentication with dynamic JWKS validation\n-
+  \U0001F6E1️ Build CEL-based RBAC policies using Okta JWT claims\n\n**Prerequisites:**
+  Familiarity with Kubernetes, Gateway API concepts, and basic OAuth/JWT understanding.
+  Completing Tracks 1-3 recommended."
 icon: ""
 tags:
+- identity
 - ai
 - enterprise
-- okta
-- oauth
-- jwt
 - kubernetes
+- oauth
 - agentgateway
 - solo-io
-- gateway-api
+- okta
+- jwt
 - mcp
-- identity
+- gateway-api
 owner: soloio
 developers:
 - sebastian.maniak@solo.io
@@ -40,3 +40,5 @@ lab_config:
   feedback_tab_enabled: false
   loadingMessages: true
   hideStopButton: false
+checksum: "4832908695451147471"
+enhanced_loading: false
