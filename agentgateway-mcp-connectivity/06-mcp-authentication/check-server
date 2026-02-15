@@ -3,7 +3,7 @@ set -euxo pipefail
 
 # Check Keycloak is running
 if ! kubectl -n keycloak get deployment keycloak &>/dev/null; then
-  fail-message "Keycloak deployment was not found in the 'keycloak' namespace. Please deploy it as described."
+  fail-message "Keycloak deployment was not found in the 'keycloak' namespace."
   exit 1
 fi
 
@@ -12,15 +12,15 @@ kubectl -n keycloak wait --for=condition=Ready pod -l app=keycloak --timeout=30s
   exit 1
 }
 
-# Check auth policy
+# Check auth policy exists
 if ! kubectl -n agentgateway-system get agentgatewaypolicy mcp-oauth-auth &>/dev/null; then
   fail-message "The mcp-oauth-auth AgentgatewayPolicy was not found. Please create it as described."
   exit 1
 fi
 
-# Verify it has oauth config
-if ! kubectl -n agentgateway-system get agentgatewaypolicy mcp-oauth-auth -o yaml | grep -q "oauth"; then
-  fail-message "The mcp-oauth-auth policy doesn't have OAuth configuration. Check the spec."
+# Verify it has MCP authentication configured
+if ! kubectl -n agentgateway-system get agentgatewaypolicy mcp-oauth-auth -o yaml | grep -q "authentication"; then
+  fail-message "The mcp-oauth-auth policy doesn't have MCP authentication configured. Check the spec."
   exit 1
 fi
 

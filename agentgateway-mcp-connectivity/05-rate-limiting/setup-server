@@ -2,7 +2,6 @@
 set -euxo pipefail
 
 # Ensure previous resources exist
-kubectl -n agentgateway-system get httproute github-mcp-route
-kubectl -n agentgateway-system get httproute slack-mcp-route
+kubectl -n agentgateway-system get httproute mcp-route
 
 echo "Challenge 5 setup complete"

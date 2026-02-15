@@ -9,7 +9,7 @@ notes:
   contents: "# \U0001F512 MCP Tool Authorization\n\nJust because a tool exists doesn't
     mean every agent should use it. `delete_repo`? `drop_table`? No thanks.\n\nIn
     this challenge, you'll use AgentgatewayPolicy to control exactly which MCP tools
-    agents can call.\n"
+    agents can call using CEL expressions.\n"
 tabs:
 - id: gaycyxorx6zq
   title: Terminal
@@ -33,93 +33,90 @@ enhanced_loading: null
 
 Your MCP servers expose tools through the gateway. But should every agent be able to call every tool? **Absolutely not.** 🚫
 
-AgentGateway's `AgentgatewayPolicy` with `toolAuth` lets you control exactly which tools agents can call.
+AgentGateway's `AgentgatewayPolicy` lets you define **MCP authorization rules** using CEL (Common Expression Language) to control which tools agents can access.
 
-## Step 1: Create a Read-Only Policy for GitHub
+## Step 1: See All Available Tools
 
-Let's create a policy that only allows read-only tools on the GitHub route:
+First, let's confirm that all tools are currently accessible:
 
 ```bash
-cat > /root/github-tool-policy.yaml << 'YAML'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
-metadata:
-  name: github-read-only
-  namespace: agentgateway-system
-spec:
-  targetRefs:
-  - kind: HTTPRoute
-    name: github-mcp-route
-  backend:
-    mcp:
-      toolAuth:
-        defaultAction: Deny
-        rules:
-        - tools:
-          - "get_*"
-          - "list_*"
-          - "fetch"
-          action: Allow
-YAML
-
-kubectl apply -f /root/github-tool-policy.yaml
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq '.result.tools[].name'
 ```
 
-This policy:
-- **Denies all tools by default** (`defaultAction: Deny`)
-- **Allows** only tools matching `get_*`, `list_*`, or `fetch` patterns
-- Any other tools are **blocked** ❌
+You should see all tools listed — including potentially dangerous ones like `delete_*` or `drop_*` operations. 😬
 
-## Step 2: Create a Messaging Policy for Slack
-
-For Slack, let's allow listing and reading but block destructive operations:
+Try calling a tool to confirm it works:
 
 ```bash
-cat > /root/slack-tool-policy.yaml << 'YAML'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
-metadata:
-  name: slack-messaging
-  namespace: agentgateway-system
-spec:
-  targetRefs:
-  - kind: HTTPRoute
-    name: slack-mcp-route
-  backend:
-    mcp:
-      toolAuth:
-        defaultAction: Deny
-        rules:
-        - tools:
-          - "list_*"
-          - "get_*"
-          - "send_message"
-          - "fetch"
-          action: Allow
-        - tools:
-          - "delete_*"
-          action: Deny
-YAML
-
-kubectl apply -f /root/slack-tool-policy.yaml
-```
-
-## Step 3: Test the Policies 🧪
-
-**Test allowed tools** — `fetch` on GitHub (should work ✅):
-
-```bash
-curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
-```
-
-**Test the tool authorization** by calling a tool:
-
-```bash
-curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}},"id":2}' | jq .
 ```
 
-You can also verify the policies using the **MCP Inspector** tab.
+## Step 2: Create a Tool Authorization Policy 🛡️
+
+Let's create a policy that **denies** any tools starting with `delete` or `drop` — blocking destructive operations at the gateway:
+
+```bash
+cat > /root/mcp-tool-auth.yaml << 'YAML'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: mcp-tool-auth
+  namespace: agentgateway-system
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: mcp-route
+  backend:
+    mcp:
+      authorization:
+        action: Deny
+        policy:
+          matchExpressions:
+            - "tool.name.startsWith('delete')"
+            - "tool.name.startsWith('drop')"
+YAML
+
+kubectl apply -f /root/mcp-tool-auth.yaml
+```
+
+This policy uses **CEL expressions** to match tools:
+- `action: Deny` — matching tools are **blocked**
+- `matchExpressions` — array of CEL expressions evaluated against each tool
+- `tool.name` — the CEL variable representing the tool's name
+
+## Step 3: Verify the Policy Works 🧪
+
+**Check that denied tools are filtered from `tools/list`:**
+
+```bash
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":3}' | jq '.result.tools[].name'
+```
+
+Any tools starting with `delete` or `drop` should no longer appear in the list! ✅
+
+**Try calling a denied tool directly (should be rejected):**
+
+```bash
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"delete_something","arguments":{}},"id":4}' | jq .
+```
+
+The gateway blocks the call before it ever reaches the MCP server! 🛡️
+
+**Verify the policy exists on the cluster:**
+
+```bash
+kubectl -n agentgateway-system get agentgatewaypolicies
+```
 
 🎉 **Tool authorization in action!** Agents can use the tools they need, but dangerous operations are blocked at the gateway level — before they ever reach the MCP server.
+
+> **💡 Pro tip:** You can also use `action: Allow` with `matchExpressions` to create an allowlist instead — only explicitly matched tools will be accessible. CEL gives you powerful pattern matching beyond just prefixes!

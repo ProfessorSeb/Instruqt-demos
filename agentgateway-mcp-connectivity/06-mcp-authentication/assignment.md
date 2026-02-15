@@ -33,7 +33,7 @@ enhanced_loading: null
 
 So far, anyone who can reach the gateway can call MCP tools. In production, you need to verify **who** is calling — is it an authorized agent? Which team does it belong to?
 
-AgentGateway supports OAuth authentication for MCP endpoints. We'll use **Keycloak** as the identity provider (IdP).
+AgentGateway supports **MCP-native authentication** via the `backend.mcp.authentication` policy. We'll use **Keycloak** as the identity provider (IdP), which has already been deployed and configured for you.
 
 ## The OAuth Flow for MCP
 
@@ -43,144 +43,50 @@ AgentGateway supports OAuth authentication for MCP endpoints. We'll use **Keyclo
 3. Agent → Keycloak: "Here are my credentials"
 4. Keycloak → Agent: "Here's your access token"
 5. Agent → Gateway: "Here's my token + tool call"
-6. Gateway → Keycloak: "Is this token valid?"
+6. Gateway validates JWT via Keycloak's JWKS endpoint
 7. Gateway → MCP Server: (forwards the call)
 ```
 
-## Step 1: Deploy Keycloak
+## Step 1: Verify Keycloak is Running
+
+Keycloak has been pre-deployed in the `keycloak` namespace. Let's verify:
 
 ```bash
-cat > /root/keycloak.yaml << 'YAML'
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keycloak
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: keycloak
-  namespace: keycloak
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: keycloak
-  template:
-    metadata:
-      labels:
-        app: keycloak
-    spec:
-      containers:
-      - name: keycloak
-        image: quay.io/keycloak/keycloak:24.0
-        args: ["start-dev"]
-        env:
-        - name: KEYCLOAK_ADMIN
-          value: admin
-        - name: KEYCLOAK_ADMIN_PASSWORD
-          value: admin
-        - name: KC_HTTP_PORT
-          value: "8180"
-        ports:
-        - containerPort: 8180
-        readinessProbe:
-          httpGet:
-            path: /realms/master
-            port: 8180
-          initialDelaySeconds: 30
-          periodSeconds: 10
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: keycloak
-  namespace: keycloak
-spec:
-  selector:
-    app: keycloak
-  ports:
-  - port: 8180
-    targetPort: 8180
-YAML
-
-kubectl apply -f /root/keycloak.yaml
+kubectl -n keycloak get pods
+kubectl -n keycloak get svc keycloak
 ```
 
-Wait for Keycloak to be ready (this may take a minute):
+Set up a port-forward so we can interact with Keycloak:
 
 ```bash
-kubectl -n keycloak wait --for=condition=Ready pod -l app=keycloak --timeout=180s
-```
-
-## Step 2: Configure Keycloak
-
-Set up port-forward to Keycloak and create a realm and client:
-
-```bash
-kubectl -n keycloak port-forward svc/keycloak 8180:8180 &
+kubectl -n keycloak port-forward svc/keycloak 8180:8080 &
 sleep 3
 ```
 
-Get an admin token:
+Test that Keycloak is accessible and the `agentgateway` realm exists:
 
 ```bash
-ADMIN_TOKEN=$(curl -s http://localhost:8180/realms/master/protocol/openid-connect/token \
-  -d "client_id=admin-cli" \
-  -d "username=admin" \
-  -d "password=admin" \
+curl -s http://localhost:8180/realms/agentgateway | jq .realm
+```
+
+## Step 2: Test Getting a Token 🎫
+
+A client (`mcp-agent`) and user (`agent-user`) have been pre-configured. Let's get a token:
+
+```bash
+TOKEN=$(curl -s http://localhost:8180/realms/agentgateway/protocol/openid-connect/token \
+  -d "client_id=mcp-agent" \
+  -d "client_secret=agent-secret-123" \
+  -d "username=agent-user" \
+  -d "password=agent-pass" \
   -d "grant_type=password" | jq -r '.access_token')
 
-echo "Admin token obtained: ${ADMIN_TOKEN:0:20}..."
+echo "Token obtained: ${TOKEN:0:30}..."
 ```
 
-Create an `agentgateway` realm:
+## Step 3: Create the MCP Authentication Policy 🛡️
 
-```bash
-curl -s -X POST http://localhost:8180/admin/realms \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "realm": "agentgateway",
-    "enabled": true
-  }'
-echo "Realm created"
-```
-
-Create a client for agents:
-
-```bash
-curl -s -X POST http://localhost:8180/admin/realms/agentgateway/clients \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "clientId": "mcp-agent",
-    "enabled": true,
-    "clientAuthenticatorType": "client-secret",
-    "secret": "agent-secret-123",
-    "directAccessGrantsEnabled": true,
-    "serviceAccountsEnabled": true
-  }'
-echo "Client created"
-```
-
-Create a test user:
-
-```bash
-curl -s -X POST http://localhost:8180/admin/realms/agentgateway/users \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "agent-user",
-    "enabled": true,
-    "credentials": [{"type": "password", "value": "agent-pass", "temporary": false}]
-  }'
-echo "User created"
-```
-
-## Step 3: Create Authentication Policy
-
-Now configure AgentGateway to require OAuth for the fetch MCP route:
+Now let's configure AgentGateway to require JWT authentication on the MCP route:
 
 ```bash
 cat > /root/mcp-auth-policy.yaml << 'YAML'
@@ -191,16 +97,40 @@ metadata:
   namespace: agentgateway-system
 spec:
   targetRefs:
-  - kind: HTTPRoute
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
     name: mcp-route
-  auth:
-    oauth:
-      issuerUrl: http://keycloak.keycloak.svc.cluster.local:8180/realms/agentgateway
-      clientId: mcp-agent
+  backend:
+    mcp:
+      authentication:
+        issuer: "http://keycloak.keycloak.svc.cluster.local:8080/realms/agentgateway"
+        audiences:
+          - "mcp-agent"
+        jwks:
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            port: 8080
+          jwksPath: "/realms/agentgateway/protocol/openid-connect/certs"
+        mode: Strict
+        provider: Keycloak
+        resourceMetadata:
+          resource: "http://mcp-server.default.svc.cluster.local"
+          scopesSupported:
+            - "openid"
+          bearerMethodsSupported:
+            - "header"
 YAML
 
 kubectl apply -f /root/mcp-auth-policy.yaml
 ```
+
+Key configuration:
+- **`issuer`** — must match the `iss` claim in JWT tokens
+- **`audiences`** — required `aud` claim in the token
+- **`jwks`** — tells the gateway where to fetch public keys for token verification
+- **`mode: Strict`** — all requests must have a valid token (use `Optional` to allow unauthenticated access)
+- **`provider: Keycloak`** — the IdP type (Keycloak or Auth0)
 
 ## Step 4: Test Authentication 🧪
 
@@ -212,9 +142,12 @@ curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8080/mcp \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
-**Get an access token from Keycloak**:
+You should get a `401 Unauthorized` — the gateway rejects unauthenticated requests!
+
+**With a valid token** (should work ✅):
 
 ```bash
+# Get a fresh token
 TOKEN=$(curl -s http://localhost:8180/realms/agentgateway/protocol/openid-connect/token \
   -d "client_id=mcp-agent" \
   -d "client_secret=agent-secret-123" \
@@ -222,12 +155,6 @@ TOKEN=$(curl -s http://localhost:8180/realms/agentgateway/protocol/openid-connec
   -d "password=agent-pass" \
   -d "grant_type=password" | jq -r '.access_token')
 
-echo "Agent token: ${TOKEN:0:30}..."
-```
-
-**With a valid token** (should work ✅):
-
-```bash
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
@@ -244,9 +171,9 @@ In this track, you've built a complete MCP security stack:
 |-------|------|----------|
 | 🔌 Routing | Direct MCP traffic to the right server | `HTTPRoute` + `AgentgatewayBackend` |
 | 🌐 Federation | Multiple MCP servers, one gateway | Path-based `HTTPRoute` matching |
-| 🔒 Authorization | Control which tools agents can call | `AgentgatewayPolicy` with `toolAuth` |
-| ⏱️ Rate Limiting | Prevent runaway agents | `AgentgatewayPolicy` with `rateLimit` |
-| 🔑 Authentication | Verify agent identity | `AgentgatewayPolicy` with `auth.oauth` |
+| 🔒 Authorization | Control which tools agents can call | `AgentgatewayPolicy` with `backend.mcp.authorization` |
+| ⏱️ Rate Limiting | Prevent runaway agents | `AgentgatewayPolicy` with `traffic.rateLimit` |
+| 🔑 Authentication | Verify agent identity | `AgentgatewayPolicy` with `backend.mcp.authentication` |
 
 **AgentGateway gives you enterprise-grade security for AI agent tool access — all on Kubernetes, all using the Gateway API.**
 

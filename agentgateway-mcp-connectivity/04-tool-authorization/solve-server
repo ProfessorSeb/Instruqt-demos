@@ -1,52 +1,24 @@
 #!/bin/bash
 set -euxo pipefail
 
-cat > /root/github-tool-policy.yaml << 'YAML'
+cat > /root/mcp-tool-auth.yaml << 'YAML'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayPolicy
 metadata:
-  name: github-read-only
+  name: mcp-tool-auth
   namespace: agentgateway-system
 spec:
   targetRefs:
-  - kind: HTTPRoute
-    name: github-mcp-route
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: mcp-route
   backend:
     mcp:
-      toolAuth:
-        defaultAction: Deny
-        rules:
-        - tools:
-          - "get_*"
-          - "list_*"
-          - "fetch"
-          action: Allow
+      authorization:
+        action: Deny
+        policy:
+          matchExpressions:
+            - "tool.name.startsWith('delete')"
+            - "tool.name.startsWith('drop')"
 YAML
-kubectl apply -f /root/github-tool-policy.yaml
-
-cat > /root/slack-tool-policy.yaml << 'YAML'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
-metadata:
-  name: slack-messaging
-  namespace: agentgateway-system
-spec:
-  targetRefs:
-  - kind: HTTPRoute
-    name: slack-mcp-route
-  backend:
-    mcp:
-      toolAuth:
-        defaultAction: Deny
-        rules:
-        - tools:
-          - "list_*"
-          - "get_*"
-          - "send_message"
-          - "fetch"
-          action: Allow
-        - tools:
-          - "delete_*"
-          action: Deny
-YAML
-kubectl apply -f /root/slack-tool-policy.yaml
+kubectl apply -f /root/mcp-tool-auth.yaml
