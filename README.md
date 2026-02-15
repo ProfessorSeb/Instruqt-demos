@@ -59,6 +59,23 @@ Built for the [Instruqt](https://instruqt.com/) platform by the Solo.io GTM team
 
 ---
 
+### Track 4: [Enterprise AgentGateway + Okta: Identity-Aware AI Agents](https://play.instruqt.com/soloio/tracks/agentgateway-enterprise-okta)
+
+> Build a production-grade AI gateway with real OAuth authentication, tracing, and scope-based authorization.
+
+| # | Challenge | What You'll Learn |
+|---|-----------|-------------------|
+| 1 | Explore the Enterprise Environment | Enterprise CRDs, monitoring stack, GatewayClass |
+| 2 | Configure the Gateway with Tracing | EnterpriseAgentgatewayParameters + OpenTelemetry to Grafana/Tempo |
+| 3 | Route Real LLM Traffic to OpenAI | AgentgatewayBackend + HTTPRoute with real API responses |
+| 4 | Connect an MCP Tool Server | Deploy MCP server, test with MCP Inspector |
+| 5 | Secure with Okta JWT Authentication | Dynamic JWKS validation with Okta as IdP |
+| 6 | Scope-Based RBAC Authorization | CEL expressions on JWT claims (mcp:read/write/admin) |
+
+**Time:** ~90 min · **Level:** Advanced · **Prerequisites:** Tracks 1-3 recommended, basic OAuth/JWT understanding
+
+---
+
 ## 🏗️ Architecture
 
 All tracks run on Instruqt with:

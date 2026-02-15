@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+export NVM_DIR="/root/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nohup npx @modelcontextprotocol/inspector > /tmp/mcp-inspector.log 2>&1 &

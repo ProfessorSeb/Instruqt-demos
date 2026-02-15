@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euxo pipefail
+# Ensure gateway proxy port-forward is running
+if ! systemctl is-active agentgateway-proxy &>/dev/null; then
+  cat <<SVCEOF >/etc/systemd/system/agentgateway-proxy.service
+[Unit]
+Description=AgentGateway Proxy Port Forward
+After=cloud-final.service
+[Service]
+Restart=always
+RestartSec=5s
+Environment="KUBECONFIG=/root/.kube/config"
+ExecStart=/usr/local/bin/kubectl -n enterprise-agentgateway port-forward svc/agentgateway 8080:8080 --address 0.0.0.0
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+  systemctl daemon-reload
+  systemctl enable agentgateway-proxy
+  systemctl start agentgateway-proxy
+fi

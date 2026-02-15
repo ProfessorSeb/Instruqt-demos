@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euxo pipefail
+# Write Okta env vars for terminal use (secrets only available in lifecycle scripts)
+cat >> /root/.bashrc << EOF
+export OKTA_ISSUER="${OKTA_ISSUER:-https://integrator-7147223.okta.com/oauth2/aus104zseyg64swj3698}"
+export OKTA_CLIENT_ID="${OKTA_CLIENT_ID:-0oa104zvj88F21SEe698}"
+export OKTA_SERVICE_CLIENT_ID="${OKTA_SERVICE_CLIENT_ID:-0oa104zvbj26VVleo698}"
+export OKTA_SERVICE_CLIENT_SECRET="${OKTA_SERVICE_CLIENT_SECRET:-placeholder}"
+EOF

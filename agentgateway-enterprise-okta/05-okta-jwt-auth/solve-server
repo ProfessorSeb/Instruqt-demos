@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat > /root/okta-jwks.yaml << 'EOF'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: okta-jwks
+  namespace: enterprise-agentgateway
+spec:
+  static:
+    host: integrator-7147223.okta.com
+    port: 443
+  policies:
+    tls: {}
+EOF
+kubectl apply -f /root/okta-jwks.yaml
+
+cat > /root/okta-jwt-auth.yaml << 'EOF'
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: okta-jwt-auth
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway
+  traffic:
+    jwtAuthentication:
+      mode: Strict
+      providers:
+      - issuer: https://integrator-7147223.okta.com/oauth2/aus104zseyg64swj3698
+        jwks:
+          remote:
+            backendRef:
+              name: okta-jwks
+              namespace: enterprise-agentgateway
+              kind: AgentgatewayBackend
+              group: agentgateway.dev
+            jwksPath: /oauth2/aus104zseyg64swj3698/v1/keys
+EOF
+kubectl apply -f /root/okta-jwt-auth.yaml

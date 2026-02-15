@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+if ! kubectl get deployment mcp-website-fetcher -n enterprise-agentgateway &>/dev/null; then
+  fail-message "Deployment 'mcp-website-fetcher' not found in enterprise-agentgateway namespace."
+fi
+if ! kubectl get service mcp-website-fetcher -n enterprise-agentgateway &>/dev/null; then
+  fail-message "Service 'mcp-website-fetcher' not found in enterprise-agentgateway namespace."
+fi
+if ! kubectl get agentgatewaybackend mcp-backend -n enterprise-agentgateway &>/dev/null; then
+  fail-message "AgentgatewayBackend 'mcp-backend' not found."
+fi
+if ! kubectl get httproute mcp -n enterprise-agentgateway &>/dev/null; then
+  fail-message "HTTPRoute 'mcp' not found."
+fi

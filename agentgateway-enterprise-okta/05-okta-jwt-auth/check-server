@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euxo pipefail
+if ! kubectl get agentgatewaybackend okta-jwks -n enterprise-agentgateway &>/dev/null; then
+  fail-message "AgentgatewayBackend 'okta-jwks' not found."
+fi
+if ! kubectl get enterpriseagentgatewaypolicy okta-jwt-auth -n enterprise-agentgateway &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayPolicy 'okta-jwt-auth' not found."
+fi

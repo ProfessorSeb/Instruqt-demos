@@ -1,0 +1,99 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat > /root/agentgateway-params.yaml << 'EOF'
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayParameters
+metadata:
+  name: agentgateway-params
+  namespace: enterprise-agentgateway
+spec:
+  sharedExtensions:
+    extauth:
+      enabled: true
+      deployment:
+        spec:
+          replicas: 1
+    ratelimiter:
+      enabled: true
+      deployment:
+        spec:
+          replicas: 1
+    extCache:
+      enabled: true
+      deployment:
+        spec:
+          replicas: 1
+  logging:
+    level: info
+  rawConfig:
+    config:
+      logging:
+        fields:
+          add:
+            jwt: 'jwt'
+            request.body: json(request.body)
+            response.body: json(response.body)
+        format: json
+      tracing:
+        otlpProtocol: grpc
+        otlpEndpoint: http://tempo-distributor.monitoring.svc.cluster.local:4317
+        randomSampling: 'true'
+        fields:
+          add:
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.prompt: 'llm.prompt'
+            gen_ai.completion: 'llm.completion.map(c, {"role":"assistant", "content": c})'
+            gen_ai.request.model: "llm.requestModel"
+            gen_ai.response.model: "llm.responseModel"
+            gen_ai.usage.completion_tokens: "llm.outputTokens"
+            gen_ai.usage.prompt_tokens: "llm.inputTokens"
+            jwt: 'jwt'
+  deployment:
+    spec:
+      replicas: 1
+EOF
+kubectl apply -f /root/agentgateway-params.yaml
+
+cat > /root/gateway.yaml << 'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway
+  namespace: enterprise-agentgateway
+spec:
+  gatewayClassName: enterprise-agentgateway
+  infrastructure:
+    parametersRef:
+      name: agentgateway-params
+      group: enterpriseagentgateway.solo.io
+      kind: EnterpriseAgentgatewayParameters
+  listeners:
+  - name: http
+    port: 8080
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
+EOF
+kubectl apply -f /root/gateway.yaml
+
+kubectl -n enterprise-agentgateway wait --for=condition=Available deployment --all --timeout=180s
+
+# Set up port-forward for gateway proxy
+cat <<SVCEOF >/etc/systemd/system/agentgateway-proxy.service
+[Unit]
+Description=AgentGateway Proxy Port Forward
+After=cloud-final.service
+[Service]
+Restart=always
+RestartSec=5s
+Environment="KUBECONFIG=/root/.kube/config"
+ExecStart=/usr/local/bin/kubectl -n enterprise-agentgateway port-forward svc/agentgateway 8080:8080 --address 0.0.0.0
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+systemctl daemon-reload
+systemctl enable agentgateway-proxy
+systemctl start agentgateway-proxy

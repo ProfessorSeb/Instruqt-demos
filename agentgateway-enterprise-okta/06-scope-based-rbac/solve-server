@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat > /root/okta-rbac.yaml << 'EOF'
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: okta-rbac
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway
+  traffic:
+    authorization:
+      policy:
+        matchExpressions:
+        - 'jwt.scp.exists(s, s == "mcp:admin")'
+EOF
+kubectl apply -f /root/okta-rbac.yaml

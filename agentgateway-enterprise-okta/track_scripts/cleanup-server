@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+systemctl stop grafana || true
+k3d cluster delete my-k8s-cluster || true
+echo "Cleanup complete"

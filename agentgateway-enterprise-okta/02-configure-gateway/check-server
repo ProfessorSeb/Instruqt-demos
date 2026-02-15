@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euxo pipefail
+if ! kubectl get enterpriseagentgatewayparameters agentgateway-params -n enterprise-agentgateway &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayParameters 'agentgateway-params' not found."
+fi
+if ! kubectl get gateway agentgateway -n enterprise-agentgateway &>/dev/null; then
+  fail-message "Gateway 'agentgateway' not found."
+fi
+if ! kubectl get pods -n enterprise-agentgateway -l app.kubernetes.io/name=agentgateway --no-headers 2>/dev/null | grep -q Running; then
+  fail-message "AgentGateway proxy pod is not running yet. Wait a moment and try again."
+fi

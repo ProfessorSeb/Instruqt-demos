@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+if ! kubectl get enterpriseagentgatewaypolicy okta-rbac -n enterprise-agentgateway &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayPolicy 'okta-rbac' not found."
+fi
