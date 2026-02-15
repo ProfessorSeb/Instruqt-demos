@@ -79,6 +79,15 @@ spec:
 EOF
 kubectl apply -f /root/gateway.yaml
 
+# Wait for the proxy pod to be created and running
+echo "Waiting for agentgateway proxy pod..."
+for i in $(seq 1 60); do
+  if kubectl get pods -n enterprise-agentgateway -l app.kubernetes.io/name=agentgateway --no-headers 2>/dev/null | grep -q Running; then
+    echo "Proxy pod is running!"
+    break
+  fi
+  sleep 5
+done
 kubectl -n enterprise-agentgateway wait --for=condition=Available deployment --all --timeout=180s
 
 # Set up port-forward for gateway proxy
