@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-if ! kubectl get secret anthropic-api-key -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-api-key' secret was not found."
+if ! kubectl get secret anthropic-secret -n agentgateway-system &>/dev/null; then
+  fail-message "The 'anthropic-secret' secret was not found."
   exit 1
 fi
 

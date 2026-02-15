@@ -51,13 +51,7 @@ This is the exact same problem we solved for microservices with API gateways and
 
 Let's simulate what a typical agent does — call an LLM directly with no gateway.
 
-First, let's set a placeholder API key (we'll use a real one later):
-
-```bash
-export OPENAI_API_KEY="sk-placeholder-not-a-real-key"
-```
-
-Now, try calling OpenAI directly:
+Your environment has a real OpenAI API key pre-configured as `$OPENAI_API_KEY`. Let's use it to call OpenAI directly:
 
 ```bash
 curl -s https://api.openai.com/v1/chat/completions \
@@ -70,7 +64,7 @@ curl -s https://api.openai.com/v1/chat/completions \
   }' | jq .
 ```
 
-You'll get an authentication error — that's expected. But notice what just happened:
+You should get a real response from OpenAI. But notice what just happened:
 
 1. **The API key was embedded directly in the request** — if this agent's code is in a repo, the key is in the repo
 2. **There's no record of this call** anywhere except OpenAI's dashboard

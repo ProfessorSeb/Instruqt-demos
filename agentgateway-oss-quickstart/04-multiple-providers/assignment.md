@@ -43,11 +43,15 @@ A single gateway for multiple providers means:
 
 ## Step 1: Add an Anthropic API Key Secret
 
+For this demo, we'll use a placeholder Anthropic key. The OpenAI route will return real responses, while the Anthropic route demonstrates the multi-provider routing concept:
+
 ```bash
-kubectl create secret generic anthropic-api-key \
+kubectl create secret generic anthropic-secret \
   --namespace agentgateway-system \
-  --from-literal=api-key="sk-ant-demo-placeholder-key"
+  --from-literal="Authorization=Bearer sk-ant-demo-placeholder-key"
 ```
+
+> 💡 In production, you'd use a real Anthropic API key here. The point is that adding a new provider is just one Backend + one Route.
 
 ## Step 2: Create the Anthropic Backend and Route
 
@@ -66,7 +70,7 @@ spec:
   policies:
     auth:
       secretRef:
-        name: anthropic-api-key
+        name: anthropic-secret
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -136,7 +140,7 @@ curl -s http://localhost:8080/anthropic/v1/messages \
   }' | jq .
 ```
 
-Both routes go through the **same gateway** but reach **different providers**. Your agents just need to know one hostname.
+The OpenAI route should return a real response. The Anthropic route will return an auth error (placeholder key), but it proves the routing works — both go through the **same gateway** to **different providers**. Your agents just need to know one hostname.
 
 ## The Big Picture
 

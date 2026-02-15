@@ -2,8 +2,8 @@
 set -euxo pipefail
 
 # Check secret exists
-if ! kubectl get secret openai-api-key -n agentgateway-system &>/dev/null; then
-  fail-message "The 'openai-api-key' secret was not found in the agentgateway-system namespace."
+if ! kubectl get secret openai-secret -n agentgateway-system &>/dev/null; then
+  fail-message "The 'openai-secret' secret was not found in the agentgateway-system namespace."
   exit 1
 fi
 

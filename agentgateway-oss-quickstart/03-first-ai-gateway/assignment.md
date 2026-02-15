@@ -36,17 +36,15 @@ With a gateway in the middle, you get:
 - **Centralized logging** — every request is logged at the gateway
 - **A single endpoint** — agents call `gateway:8080` instead of memorizing provider URLs
 
-## Step 1: Store Your API Key as a Secret
+## Step 1: Verify Your API Key Secret
 
-First, store your OpenAI API key as a Kubernetes Secret. For this demo, we'll use a placeholder:
+Your OpenAI API key has already been stored as a Kubernetes Secret called `openai-secret` during track setup. Verify it exists:
 
 ```bash
-kubectl create secret generic openai-api-key \
-  --namespace agentgateway-system \
-  --from-literal=api-key="sk-demo-placeholder-key"
+kubectl get secret openai-secret -n agentgateway-system
 ```
 
-> 💡 In production, you'd use a real key here. The important thing is that **agents never see this key** — only the gateway does.
+> 💡 The important thing is that **agents never see this key** — only the gateway does. The secret contains the `Authorization` header value so AgentGateway can authenticate to OpenAI on behalf of your agents.
 
 ## Step 2: Create a Gateway
 
@@ -100,7 +98,7 @@ spec:
   policies:
     auth:
       secretRef:
-        name: openai-api-key
+        name: openai-secret
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -138,7 +136,7 @@ kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
 sleep 3
 ```
 
-Now test it! (This will get an auth error since we used a placeholder key, but it proves the gateway is routing correctly):
+Now test it! The gateway will use your real API key to call OpenAI:
 
 ```bash
 curl -s http://localhost:8080/openai/v1/chat/completions \
@@ -150,7 +148,7 @@ curl -s http://localhost:8080/openai/v1/chat/completions \
   }' | jq .
 ```
 
-You should see a response from OpenAI (even if it's an auth error). The important thing: **the request went through AgentGateway**, not directly to OpenAI.
+You should see a real response from OpenAI! The important thing: **the request went through AgentGateway**, not directly to OpenAI. Your agent never needed the API key.
 
 ## What Changed?
 

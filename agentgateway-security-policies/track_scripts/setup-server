@@ -145,4 +145,17 @@ kubectl rollout status deployment/mock-llm --timeout=120s
 
 mkdir -p /root/policies
 
+# Create OpenAI API key secret for use in challenges
+if [ -n "$OPENAI_API_KEY" ]; then
+  kubectl create secret generic openai-secret -n agentgateway-system \
+    --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
+    --dry-run=client -oyaml | kubectl apply -f -
+  echo "=== OpenAI API key secret created ==="
+else
+  echo "=== WARNING: OPENAI_API_KEY not set, using placeholder ==="
+  kubectl create secret generic openai-secret -n agentgateway-system \
+    --from-literal="Authorization=Bearer sk-demo-placeholder-key" \
+    --dry-run=client -oyaml | kubectl apply -f -
+fi
+
 echo "=== Track setup complete ==="
