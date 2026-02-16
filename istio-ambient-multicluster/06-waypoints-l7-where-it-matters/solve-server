@@ -1,0 +1,36 @@
+#!/bin/bash
+set -euxo pipefail
+
+export CTX_CLUSTER1=k3d-cluster-1
+export CTX_CLUSTER2=k3d-cluster-2
+
+istioctl waypoint apply -n accounts --enroll-namespace --context=$CTX_CLUSTER1
+istioctl waypoint apply -n accounts --enroll-namespace --context=$CTX_CLUSTER2
+
+# Wait for waypoint pods
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx -n accounts wait --for=condition=Ready pod -l gateway.istio.io/managed=istio.io-mesh-controller --timeout=120s
+done
+
+# Apply L7 policy
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx apply -n accounts -f - <<EOF
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-get-only
+spec:
+  targetRefs:
+  - kind: Service
+    group: ""
+    name: accounts
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        namespaces: ["finance"]
+    to:
+    - operation:
+        methods: ["GET"]
+EOF
+done

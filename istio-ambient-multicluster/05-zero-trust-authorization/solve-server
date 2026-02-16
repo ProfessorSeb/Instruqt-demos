@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euxo pipefail
+
+export CTX_CLUSTER1=k3d-cluster-1
+export CTX_CLUSTER2=k3d-cluster-2
+
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx apply -n accounts -f - <<EOF
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+spec:
+  {}
+EOF
+
+  kubectl --context=$ctx apply -n accounts -f - <<EOF
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-finance
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        namespaces: ["finance"]
+EOF
+done
+
+# Create test namespace
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx create namespace test || true
+  kubectl --context=$ctx apply -n test -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl-test
+  template:
+    metadata:
+      labels:
+        app: curl-test
+    spec:
+      containers:
+      - name: curl
+        image: curlimages/curl:8.5.0
+        command: ["sleep", "infinity"]
+EOF
+done

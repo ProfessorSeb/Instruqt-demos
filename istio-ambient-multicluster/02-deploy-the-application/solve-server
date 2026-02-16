@@ -1,0 +1,127 @@
+#!/bin/bash
+set -euxo pipefail
+
+export CTX_CLUSTER1=k3d-cluster-1
+export CTX_CLUSTER2=k3d-cluster-2
+
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx create namespace finance
+  kubectl --context=$ctx create namespace accounts
+done
+
+# Deploy accounts on cluster-1
+kubectl --context=$CTX_CLUSTER1 apply -n accounts -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: accounts
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accounts
+  template:
+    metadata:
+      labels:
+        app: accounts
+    spec:
+      serviceAccountName: accounts
+      containers:
+      - name: accounts
+        image: hashicorp/http-echo:1.0
+        args: ["-text=accounts-cluster-1", "-listen=:8080"]
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounts
+spec:
+  selector:
+    app: accounts
+  ports:
+  - port: 8080
+    targetPort: 8080
+EOF
+
+# Deploy accounts on cluster-2
+kubectl --context=$CTX_CLUSTER2 apply -n accounts -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: accounts
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accounts
+  template:
+    metadata:
+      labels:
+        app: accounts
+    spec:
+      serviceAccountName: accounts
+      containers:
+      - name: accounts
+        image: hashicorp/http-echo:1.0
+        args: ["-text=accounts-cluster-2", "-listen=:8080"]
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounts
+spec:
+  selector:
+    app: accounts
+  ports:
+  - port: 8080
+    targetPort: 8080
+EOF
+
+# Deploy curl on both clusters
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx apply -n finance -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: curl
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl
+  template:
+    metadata:
+      labels:
+        app: curl
+    spec:
+      serviceAccountName: curl
+      containers:
+      - name: curl
+        image: curlimages/curl:8.5.0
+        command: ["sleep", "infinity"]
+EOF
+done
+
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx -n accounts wait --for=condition=Ready pod -l app=accounts --timeout=120s
+  kubectl --context=$ctx -n finance wait --for=condition=Ready pod -l app=curl --timeout=120s
+done

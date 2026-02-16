@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euxo pipefail
+
+export CTX_CLUSTER1=k3d-cluster-1
+export CTX_CLUSTER2=k3d-cluster-2
+
+# Check namespaces exist
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx get namespace finance || { fail-message "Namespace 'finance' not found in $ctx"; exit 1; }
+  kubectl --context=$ctx get namespace accounts || { fail-message "Namespace 'accounts' not found in $ctx"; exit 1; }
+done
+
+# Check deployments exist and pods are ready
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  kubectl --context=$ctx -n accounts get deployment accounts || { fail-message "Deployment 'accounts' not found in $ctx"; exit 1; }
+  kubectl --context=$ctx -n finance get deployment curl || { fail-message "Deployment 'curl' not found in $ctx"; exit 1; }
+  kubectl --context=$ctx -n accounts wait --for=condition=Ready pod -l app=accounts --timeout=30s || { fail-message "accounts pods not ready in $ctx"; exit 1; }
+  kubectl --context=$ctx -n finance wait --for=condition=Ready pod -l app=curl --timeout=30s || { fail-message "curl pods not ready in $ctx"; exit 1; }
+done
+
+echo "All deployments verified!"

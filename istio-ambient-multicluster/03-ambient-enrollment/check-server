@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+export CTX_CLUSTER1=k3d-cluster-1
+export CTX_CLUSTER2=k3d-cluster-2
+
+# Check ambient labels
+for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
+  for ns in finance accounts; do
+    LABEL=$(kubectl --context=$ctx get namespace $ns -o jsonpath='{.metadata.labels.istio\.io/dataplane-mode}')
+    if [ "$LABEL" != "ambient" ]; then
+      fail-message "Namespace '$ns' in $ctx is not labeled with istio.io/dataplane-mode=ambient"
+      exit 1
+    fi
+  done
+done
+
+# Test connectivity
+RESULT=$(kubectl --context=$CTX_CLUSTER1 exec -n finance deploy/curl -- curl -s --max-time 10 accounts.accounts.svc.cluster.local:8080 2>/dev/null || true)
+if [ -z "$RESULT" ]; then
+  fail-message "Cannot reach accounts service from finance namespace in cluster-1"
+  exit 1
+fi
+
+echo "Ambient enrollment verified!"
