@@ -32,6 +32,7 @@ VIMRC
 # ──────────────────────────────────────────────
 # Create ONE k3d cluster
 # ──────────────────────────────────────────────
+k3d cluster delete my-k8s-cluster 2>/dev/null || true
 k3d cluster create my-k8s-cluster --agents 1 --k3s-arg '--disable=traefik@server:*' --wait
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 

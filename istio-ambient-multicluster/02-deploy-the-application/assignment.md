@@ -1,13 +1,16 @@
 ---
 slug: deploy-the-application
+id: fyre4qrlzwb7
 type: challenge
 title: Deploy the Application
 teaser: Deploy a multi-namespace application and test baseline connectivity.
 tabs:
-- title: Terminal
+- id: vaccwlxmenyh
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: xvqvwgcipwej
+  title: Code Editor
   type: code
   hostname: server
   path: /root

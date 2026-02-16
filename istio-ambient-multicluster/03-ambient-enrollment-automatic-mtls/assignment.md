@@ -1,13 +1,17 @@
 ---
 slug: ambient-enrollment-automatic-mtls
+id: x3c4aa9qvq6m
 type: challenge
 title: Ambient Enrollment — Automatic mTLS
-teaser: Enroll namespaces in the ambient mesh and get automatic mTLS with zero app changes.
+teaser: Enroll namespaces in the ambient mesh and get automatic mTLS with zero app
+  changes.
 tabs:
-- title: Terminal
+- id: 7ofb2pucuxex
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: iih8quhy2sfh
+  title: Code Editor
   type: code
   hostname: server
   path: /root

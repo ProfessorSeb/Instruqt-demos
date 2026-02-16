@@ -1,13 +1,17 @@
 ---
 slug: zero-trust-authorization-policies
+id: c3lcp1ud6dya
 type: challenge
 title: Zero Trust Authorization Policies
-teaser: Enforce deny-by-default policies and allow only authorized service-to-service traffic.
+teaser: Enforce deny-by-default policies and allow only authorized service-to-service
+  traffic.
 tabs:
-- title: Terminal
+- id: x3qzqrvxry9h
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 4g9ql5yyqzbw
+  title: Code Editor
   type: code
   hostname: server
   path: /root

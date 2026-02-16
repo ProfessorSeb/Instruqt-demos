@@ -1,13 +1,16 @@
 ---
 slug: explore-the-ambient-environment
+id: rhy7oj2snh1e
 type: challenge
 title: Explore the Ambient Environment
 teaser: Verify your Istio ambient mesh is running and understand its architecture.
 tabs:
-- title: Terminal
+- id: ri3m5otxdxyu
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: nichrp8qj2al
+  title: Code Editor
   type: code
   hostname: server
   path: /root

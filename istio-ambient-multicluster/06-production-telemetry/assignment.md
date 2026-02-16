@@ -1,13 +1,16 @@
 ---
 slug: production-telemetry
+id: 9thh8ktlbfct
 type: challenge
 title: Production Telemetry
 teaser: Configure custom telemetry with tag overrides for production observability.
 tabs:
-- title: Terminal
+- id: qsxbmaa9lxzn
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: r8rzbkydwchw
+  title: Code Editor
   type: code
   hostname: server
   path: /root

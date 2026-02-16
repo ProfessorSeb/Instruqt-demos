@@ -1,13 +1,16 @@
 ---
 slug: whats-next-multi-cluster-and-gitops
+id: ws9i3voecbxy
 type: challenge
 title: What's Next — Multi-Cluster & GitOps
 teaser: Structure your mesh config for GitOps and learn how to extend to multi-cluster.
 tabs:
-- title: Terminal
+- id: 8l1f8n9fghps
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 3nu7wozj5vqf
+  title: Code Editor
   type: code
   hostname: server
   path: /root

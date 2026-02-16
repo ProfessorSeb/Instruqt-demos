@@ -1,13 +1,16 @@
 ---
 slug: waypoints-l7-where-it-matters
+id: gsngygxnqboc
 type: challenge
 title: Waypoints — L7 Where It Matters
 teaser: Deploy a waypoint proxy for HTTP-aware authorization and traffic management.
 tabs:
-- title: Terminal
+- id: fhff7spj3k2s
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: b8tsqhfqqwbu
+  title: Code Editor
   type: code
   hostname: server
   path: /root
