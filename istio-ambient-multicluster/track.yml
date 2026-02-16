@@ -1,7 +1,8 @@
 slug: istio-ambient-multicluster
-id: ""
-title: "Istio Ambient Multi-Cluster: Zero Trust Across Regions"
-teaser: "Build a two-cluster ambient mesh with cross-cluster connectivity, authorization policies, waypoints, and production telemetry."
+id: xysmlayusixk
+title: 'Istio Ambient Multi-Cluster: Zero Trust Across Regions'
+teaser: Build a two-cluster ambient mesh with cross-cluster connectivity, authorization
+  policies, waypoints, and production telemetry.
 description: |-
   In this hands-on workshop, you'll build a production-grade Istio ambient multi-cluster mesh from the ground up.
 
@@ -15,142 +16,25 @@ description: |-
   - How to structure your mesh configuration for GitOps workflows
 icon: https://istio.io/latest/img/istio-whitelogo-bluebackground-framed.svg
 tags:
+- waypoint
+- service-mesh
+- telemetry
+- multi-cluster
+- zero-trust
+- gitops
+- kubernetes
 - istio
 - ambient
-- multi-cluster
-- kubernetes
-- zero-trust
-- service-mesh
-- waypoint
-- telemetry
-- gitops
 owner: soloio
 developers:
 - sebastian.maniak@solo.io
-lab_config:
-  overlay: false
-  width: 33
-  position: right
-  enableLoadingMessages: true
 idle_timeout: 3000
 timelimit: 9000
-challenges:
-- slug: explore-two-cluster-environment
-  id: ""
-  type: challenge
-  title: "Explore the Two-Cluster Environment"
-  teaser: "Verify your two-cluster Istio ambient mesh is up and running."
-  assignment: 01-explore-two-cluster-environment/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: basic
-  timelimit: 900
-- slug: deploy-the-application
-  id: ""
-  type: challenge
-  title: "Deploy the Application"
-  teaser: "Deploy the accounts service and curl clients across both clusters."
-  assignment: 02-deploy-the-application/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: basic
-  timelimit: 900
-- slug: ambient-enrollment
-  id: ""
-  type: challenge
-  title: "Ambient Enrollment — L4 Zero Trust Everywhere"
-  teaser: "Enroll namespaces into the ambient mesh and verify automatic mTLS."
-  assignment: 03-ambient-enrollment/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: basic
-  timelimit: 900
-- slug: multi-cluster-connectivity
-  id: ""
-  type: challenge
-  title: "Multi-Cluster Connectivity"
-  teaser: "Verify cross-cluster service discovery and load balancing."
-  assignment: 04-multi-cluster-connectivity/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: intermediate
-  timelimit: 900
-- slug: zero-trust-authorization
-  id: ""
-  type: challenge
-  title: "Zero Trust Authorization Policies"
-  teaser: "Enforce deny-by-default policies and allow only authorized traffic."
-  assignment: 05-zero-trust-authorization/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: intermediate
-  timelimit: 1200
-- slug: waypoints-l7-where-it-matters
-  id: ""
-  type: challenge
-  title: "Waypoints — L7 Where It Matters"
-  teaser: "Deploy L7 waypoint proxies for advanced traffic management."
-  assignment: 06-waypoints-l7-where-it-matters/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: intermediate
-  timelimit: 1200
-- slug: telemetry-and-gitops
-  id: ""
-  type: challenge
-  title: "Telemetry with Dynamic Tags + GitOps Structure"
-  teaser: "Configure production telemetry and organize your mesh config for GitOps."
-  assignment: 07-telemetry-and-gitops/assignment.md
-  notes: []
-  tabs:
-  - title: Terminal
-    type: terminal
-    hostname: server
-  - title: Code Editor
-    type: code
-    hostname: server
-    path: /root
-  difficulty: intermediate
-  timelimit: 1200
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  hideStopButton: false
+checksum: "860585942607622718"
+enhanced_loading: false

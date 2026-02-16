@@ -1,16 +1,21 @@
 ---
 slug: zero-trust-authorization
+id: tcxhgpleo1rv
 type: challenge
-title: "Zero Trust Authorization Policies"
-teaser: "Enforce deny-by-default policies and allow only authorized traffic."
+title: Zero Trust Authorization Policies
+teaser: Enforce deny-by-default policies and allow only authorized traffic.
 tabs:
-- title: Terminal
+- id: 7co0yerfvpnp
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: gta5ok72y4as
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Zero Trust Authorization Policies

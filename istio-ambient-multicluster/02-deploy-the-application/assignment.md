@@ -1,16 +1,21 @@
 ---
 slug: deploy-the-application
+id: ma9hdey3ecxh
 type: challenge
-title: "Deploy the Application"
-teaser: "Deploy the accounts service and curl clients across both clusters."
+title: Deploy the Application
+teaser: Deploy the accounts service and curl clients across both clusters.
 tabs:
-- title: Terminal
+- id: elgn6wtdh7en
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: crul8lcwwopn
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Deploy the Application

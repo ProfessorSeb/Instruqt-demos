@@ -1,16 +1,21 @@
 ---
 slug: ambient-enrollment
+id: 3g4ktfq16awe
 type: challenge
-title: "Ambient Enrollment — L4 Zero Trust Everywhere"
-teaser: "Enroll namespaces into the ambient mesh and verify automatic mTLS."
+title: Ambient Enrollment — L4 Zero Trust Everywhere
+teaser: Enroll namespaces into the ambient mesh and verify automatic mTLS.
 tabs:
-- title: Terminal
+- id: b3bypb6nxjey
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: lbeuluff3scp
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Ambient Enrollment — L4 Zero Trust Everywhere

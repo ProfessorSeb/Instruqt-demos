@@ -1,16 +1,21 @@
 ---
 slug: telemetry-and-gitops
+id: mpedlenuhjsu
 type: challenge
-title: "Telemetry with Dynamic Tags + GitOps Structure"
-teaser: "Configure production telemetry and organize your mesh config for GitOps."
+title: Telemetry with Dynamic Tags + GitOps Structure
+teaser: Configure production telemetry and organize your mesh config for GitOps.
 tabs:
-- title: Terminal
+- id: uiy9eaoajyqe
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: rwvmfhstppf6
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Telemetry with Dynamic Tags + GitOps Structure

@@ -1,16 +1,21 @@
 ---
 slug: waypoints-l7-where-it-matters
+id: qpcqloadayry
 type: challenge
-title: "Waypoints — L7 Where It Matters"
-teaser: "Deploy L7 waypoint proxies for advanced traffic management."
+title: Waypoints — L7 Where It Matters
+teaser: Deploy L7 waypoint proxies for advanced traffic management.
 tabs:
-- title: Terminal
+- id: u5bxvpoveees
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 7gh9x8lt4dza
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Waypoints — L7 Where It Matters

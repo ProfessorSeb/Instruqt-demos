@@ -1,16 +1,21 @@
 ---
 slug: multi-cluster-connectivity
+id: yrrtidhxvjbb
 type: challenge
-title: "Multi-Cluster Connectivity"
-teaser: "Verify cross-cluster service discovery and load balancing."
+title: Multi-Cluster Connectivity
+teaser: Verify cross-cluster service discovery and load balancing.
 tabs:
-- title: Terminal
+- id: wwtnmcx3ujoj
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: lxvbzuy2ceay
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Multi-Cluster Connectivity

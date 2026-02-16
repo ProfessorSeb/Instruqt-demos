@@ -1,16 +1,21 @@
 ---
 slug: explore-two-cluster-environment
+id: 4lmnj9cvmcin
 type: challenge
-title: "Explore the Two-Cluster Environment"
-teaser: "Verify your two-cluster Istio ambient mesh is up and running."
+title: Explore the Two-Cluster Environment
+teaser: Verify your two-cluster Istio ambient mesh is up and running.
 tabs:
-- title: Terminal
+- id: bgsczh2yfjcn
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: iauoejysgowq
+  title: Code Editor
   type: code
   hostname: server
   path: /root
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Explore the Two-Cluster Environment
