@@ -50,17 +50,22 @@ kubectl --context=$CTX_CLUSTER1 wait --for=condition=Ready nodes --all --timeout
 kubectl --context=$CTX_CLUSTER2 wait --for=condition=Ready nodes --all --timeout=120s
 
 # ──────────────────────────────────────────────
-# Install istioctl
+# Install istioctl + Helm repo
 # ──────────────────────────────────────────────
+export ISTIO_VERSION=1.25.2
+
 cd /root
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.2 sh -
-cp istio-1.25.2/bin/istioctl /usr/local/bin/
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION sh -
+cp istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/
 istioctl version --remote=false
+
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
 
 # ──────────────────────────────────────────────
 # Generate shared CA certificates
 # ──────────────────────────────────────────────
-cd /root/istio-1.25.2
+cd /root/istio-$ISTIO_VERSION
 mkdir -p certs && cd certs
 make -f ../tools/certs/Makefile.selfsigned.mk root-ca
 make -f ../tools/certs/Makefile.selfsigned.mk cluster1-cacerts
@@ -83,94 +88,77 @@ kubectl --context=$CTX_CLUSTER2 create secret generic cacerts -n istio-system \
   --from-file=cluster2/cert-chain.pem
 
 # ──────────────────────────────────────────────
-# Install Istio ambient on cluster-1
+# Pre-pull Istio images into k3d clusters
 # ──────────────────────────────────────────────
-cat > /root/cluster-1.yaml << 'EOF'
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-spec:
-  profile: ambient
-  values:
-    global:
-      meshID: mesh1
-      multiCluster:
-        clusterName: cluster1
-      network: network1
-    cni:
-      repair:
-        enabled: false
-  components:
-    cni:
-      namespace: istio-system
-      enabled: true
-EOF
+ISTIO_IMAGES=(
+  "docker.io/istio/pilot:$ISTIO_VERSION"
+  "docker.io/istio/install-cni:$ISTIO_VERSION"
+  "docker.io/istio/ztunnel:$ISTIO_VERSION"
+  "docker.io/istio/proxyv2:$ISTIO_VERSION"
+)
 
-istioctl install --context=$CTX_CLUSTER1 -f /root/cluster-1.yaml -y
-
-# Wait for CNI and ztunnel DaemonSets with retries (k3d can be slow)
-for ds in istio-cni-node ztunnel; do
-  for i in $(seq 1 6); do
-    kubectl --context=$CTX_CLUSTER1 -n istio-system rollout status daemonset/$ds --timeout=120s && break
-    echo "Retry $i for $ds on cluster-1..."
-    sleep 10
-  done
+for img in "${ISTIO_IMAGES[@]}"; do
+  docker pull "$img"
 done
 
-kubectl --context=$CTX_CLUSTER1 label namespace istio-system topology.istio.io/network=network1
+k3d image import "${ISTIO_IMAGES[@]}" -c cluster-1
+k3d image import "${ISTIO_IMAGES[@]}" -c cluster-2
 
 # ──────────────────────────────────────────────
-# Install Istio ambient on cluster-2
+# Install Istio ambient via Helm on both clusters
 # ──────────────────────────────────────────────
-cat > /root/cluster-2.yaml << 'EOF'
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-spec:
-  profile: ambient
-  values:
-    global:
-      meshID: mesh1
-      multiCluster:
-        clusterName: cluster2
-      network: network2
-    cni:
-      repair:
-        enabled: false
-  components:
-    cni:
-      namespace: istio-system
-      enabled: true
-EOF
+install_istio_helm() {
+  local ctx=$1
+  local cluster_name=$2
+  local network=$3
 
-istioctl install --context=$CTX_CLUSTER2 -f /root/cluster-2.yaml -y
+  # Label namespace with network before install
+  kubectl --context=$ctx label namespace istio-system topology.istio.io/network=$network
 
-# Wait for CNI and ztunnel DaemonSets with retries
-for ds in istio-cni-node ztunnel; do
-  for i in $(seq 1 6); do
-    kubectl --context=$CTX_CLUSTER2 -n istio-system rollout status daemonset/$ds --timeout=120s && break
-    echo "Retry $i for $ds on cluster-2..."
-    sleep 10
-  done
-done
+  # 1. Install base (CRDs)
+  helm install istio-base istio/base -n istio-system \
+    --kube-context=$ctx \
+    --version $ISTIO_VERSION \
+    --wait
 
-kubectl --context=$CTX_CLUSTER2 label namespace istio-system topology.istio.io/network=network2
+  # 2. Install istiod
+  helm install istiod istio/istiod -n istio-system \
+    --kube-context=$ctx \
+    --version $ISTIO_VERSION \
+    --wait --timeout 5m \
+    --set profile=ambient \
+    --set global.meshID=mesh1 \
+    --set global.multiCluster.clusterName=$cluster_name \
+    --set global.network=$network \
+    --set pilot.env.AMBIENT_ENABLE_MULTI_NETWORK=true
+
+  # 3. Install CNI
+  helm install istio-cni istio/cni -n istio-system \
+    --kube-context=$ctx \
+    --version $ISTIO_VERSION \
+    --wait --timeout 10m \
+    --set profile=ambient \
+    --set cni.repair.enabled=false
+
+  # 4. Install ztunnel
+  helm install ztunnel istio/ztunnel -n istio-system \
+    --kube-context=$ctx \
+    --version $ISTIO_VERSION \
+    --wait --timeout 10m
+}
+
+install_istio_helm $CTX_CLUSTER1 cluster1 network1
+install_istio_helm $CTX_CLUSTER2 cluster2 network2
 
 # ──────────────────────────────────────────────
 # Deploy east-west gateways
 # ──────────────────────────────────────────────
-cd /root/istio-1.25.2
+cd /root/istio-$ISTIO_VERSION
 
-# Try with --ambient flag first, fall back to without
-if samples/multicluster/gen-eastwest-gateway.sh --help 2>&1 | grep -q ambient; then
-  samples/multicluster/gen-eastwest-gateway.sh --network network1 --ambient | \
-    kubectl apply --context=$CTX_CLUSTER1 -f -
-  samples/multicluster/gen-eastwest-gateway.sh --network network2 --ambient | \
-    kubectl apply --context=$CTX_CLUSTER2 -f -
-else
-  samples/multicluster/gen-eastwest-gateway.sh --network network1 | \
-    kubectl apply --context=$CTX_CLUSTER1 -f -
-  samples/multicluster/gen-eastwest-gateway.sh --network network2 | \
-    kubectl apply --context=$CTX_CLUSTER2 -f -
-fi
+samples/multicluster/gen-eastwest-gateway.sh --network network1 --ambient | \
+  kubectl apply --context=$CTX_CLUSTER1 -f -
+samples/multicluster/gen-eastwest-gateway.sh --network network2 --ambient | \
+  kubectl apply --context=$CTX_CLUSTER2 -f -
 
 # Wait for east-west gateways
 kubectl --context=$CTX_CLUSTER1 -n istio-system wait --for=condition=Available deployment/istio-eastwestgateway --timeout=300s || true
