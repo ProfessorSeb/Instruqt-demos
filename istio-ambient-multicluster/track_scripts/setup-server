@@ -132,19 +132,31 @@ install_istio_helm() {
     --set global.network=$network \
     --set pilot.env.AMBIENT_ENABLE_MULTI_NETWORK=true
 
-  # 3. Install CNI
+  # 3. Install CNI (no --wait, k3d CNI DaemonSet is slow to become ready)
   helm install istio-cni istio/cni -n istio-system \
     --kube-context=$ctx \
     --version $ISTIO_VERSION \
-    --wait --timeout 10m \
     --set profile=ambient \
     --set cni.repair.enabled=false
 
-  # 4. Install ztunnel
+  # Wait for CNI DaemonSet with retries
+  for i in $(seq 1 12); do
+    kubectl --context=$ctx -n istio-system rollout status daemonset/istio-cni-node --timeout=120s && break
+    echo "Retry $i for istio-cni-node on $ctx..."
+    sleep 15
+  done
+
+  # 4. Install ztunnel (no --wait)
   helm install ztunnel istio/ztunnel -n istio-system \
     --kube-context=$ctx \
-    --version $ISTIO_VERSION \
-    --wait --timeout 10m
+    --version $ISTIO_VERSION
+
+  # Wait for ztunnel DaemonSet with retries
+  for i in $(seq 1 12); do
+    kubectl --context=$ctx -n istio-system rollout status daemonset/ztunnel --timeout=120s && break
+    echo "Retry $i for ztunnel on $ctx..."
+    sleep 15
+  done
 }
 
 install_istio_helm $CTX_CLUSTER1 cluster1 network1
