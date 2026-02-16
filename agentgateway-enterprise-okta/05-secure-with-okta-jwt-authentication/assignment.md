@@ -85,7 +85,7 @@ spec:
     jwtAuthentication:
       mode: Strict
       providers:
-      - issuer: https://integrator-7147223.okta.com/oauth2/aus104zseyg64swj3698
+      - issuer: https://integrator-7147223.okta.com/oauth2/default
         jwks:
           remote:
             backendRef:
@@ -93,7 +93,7 @@ spec:
               namespace: enterprise-agentgateway
               kind: AgentgatewayBackend
               group: agentgateway.dev
-            jwksPath: /oauth2/aus104zseyg64swj3698/v1/keys
+            jwksPath: /oauth2/default/v1/keys
 ```
 
 Apply it:
@@ -126,7 +126,7 @@ The Okta credentials are pre-configured in your environment. Get a token using t
 
 ```bash
 export TOKEN=$(curl -s -X POST \
-  "https://integrator-7147223.okta.com/oauth2/aus104zseyg64swj3698/v1/token" \
+  "https://integrator-7147223.okta.com/oauth2/default/v1/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=$OKTA_SERVICE_CLIENT_ID" \

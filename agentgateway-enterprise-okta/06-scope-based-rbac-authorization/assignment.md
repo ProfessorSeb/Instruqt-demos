@@ -78,7 +78,7 @@ Get a token with the right scopes and test:
 
 ```bash
 export TOKEN=$(curl -s -X POST \
-  "https://integrator-7147223.okta.com/oauth2/aus104zseyg64swj3698/v1/token" \
+  "https://integrator-7147223.okta.com/oauth2/default/v1/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=$OKTA_SERVICE_CLIENT_ID" \

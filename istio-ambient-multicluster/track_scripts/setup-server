@@ -96,13 +96,26 @@ spec:
       multiCluster:
         clusterName: cluster1
       network: network1
+    cni:
+      repair:
+        enabled: false
   components:
     cni:
       namespace: istio-system
-      enabled: false
+      enabled: true
 EOF
 
 istioctl install --context=$CTX_CLUSTER1 -f /root/cluster-1.yaml -y
+
+# Wait for CNI and ztunnel DaemonSets with retries (k3d can be slow)
+for ds in istio-cni-node ztunnel; do
+  for i in $(seq 1 6); do
+    kubectl --context=$CTX_CLUSTER1 -n istio-system rollout status daemonset/$ds --timeout=120s && break
+    echo "Retry $i for $ds on cluster-1..."
+    sleep 10
+  done
+done
+
 kubectl --context=$CTX_CLUSTER1 label namespace istio-system topology.istio.io/network=network1
 
 # ──────────────────────────────────────────────
@@ -119,13 +132,26 @@ spec:
       multiCluster:
         clusterName: cluster2
       network: network2
+    cni:
+      repair:
+        enabled: false
   components:
     cni:
       namespace: istio-system
-      enabled: false
+      enabled: true
 EOF
 
 istioctl install --context=$CTX_CLUSTER2 -f /root/cluster-2.yaml -y
+
+# Wait for CNI and ztunnel DaemonSets with retries
+for ds in istio-cni-node ztunnel; do
+  for i in $(seq 1 6); do
+    kubectl --context=$CTX_CLUSTER2 -n istio-system rollout status daemonset/$ds --timeout=120s && break
+    echo "Retry $i for $ds on cluster-2..."
+    sleep 10
+  done
+done
+
 kubectl --context=$CTX_CLUSTER2 label namespace istio-system topology.istio.io/network=network2
 
 # ──────────────────────────────────────────────
