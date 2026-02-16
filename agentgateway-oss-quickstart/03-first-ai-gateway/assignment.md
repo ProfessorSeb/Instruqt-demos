@@ -38,7 +38,7 @@ With a gateway in the middle, you get:
 
 ## Step 1: Verify Your API Key Secret
 
-Your OpenAI API key has already been stored as a Kubernetes Secret called `openai-secret` during track setup. Verify it exists:
+Your OpenAI API key was stored as a Kubernetes Secret called `openai-secret` in the previous challenge. Verify it exists:
 
 ```bash
 kubectl get secret openai-secret -n agentgateway-system

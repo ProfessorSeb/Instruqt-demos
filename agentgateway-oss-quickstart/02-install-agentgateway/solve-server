@@ -20,6 +20,14 @@ helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
   --namespace agentgateway-system \
   --wait --timeout 120s
 
+# Create OpenAI secret if key is available
+if [ -f /root/.openai-api-key ]; then
+  OPENAI_API_KEY=$(cat /root/.openai-api-key)
+  kubectl create secret generic openai-secret -n agentgateway-system \
+    --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
+    --dry-run=client -oyaml | kubectl apply -f -
+fi
+
 # Verify
 kubectl get pods -n agentgateway-system
 kubectl get gatewayclass

@@ -103,6 +103,22 @@ kubectl get gatewayclass
 
 You should see an `agentgateway` GatewayClass — this tells Kubernetes that Agentgateway is available as a gateway implementation.
 
+## Create the OpenAI API Key Secret
+
+Your environment includes an OpenAI API key. Create a Kubernetes secret so the gateway can authenticate with OpenAI:
+
+```bash
+OPENAI_API_KEY=$(cat /root/.openai-api-key)
+kubectl create secret generic openai-secret -n agentgateway-system \
+  --from-literal="Authorization=Bearer $OPENAI_API_KEY"
+```
+
+Verify it was created:
+
+```bash
+kubectl get secret openai-secret -n agentgateway-system
+```
+
 ## What Just Happened?
 
 You installed:
