@@ -1,25 +1,24 @@
 slug: istio-ambient-multicluster
 id: xysmlayusixk
-title: 'Istio Ambient Multi-Cluster: Zero Trust Across Regions'
-teaser: Build a two-cluster ambient mesh with cross-cluster connectivity, authorization
-  policies, waypoints, and production telemetry.
+title: 'Istio Ambient Mesh: Zero Trust Without Sidecars'
+teaser: Deploy Istio ambient mesh, enroll workloads for automatic mTLS, enforce zero-trust
+  policies, deploy L7 waypoints, and configure production telemetry.
 description: |-
-  In this hands-on workshop, you'll build a production-grade Istio ambient multi-cluster mesh from the ground up.
+  In this hands-on workshop, you'll build a production-grade Istio ambient mesh from the ground up — on a single cluster, the way most teams actually start.
 
-  You'll start with two pre-configured Kubernetes clusters running Istio in ambient mode with a shared certificate authority. From there, you'll deploy applications across clusters, enroll them in the mesh for automatic mTLS, verify cross-cluster service discovery, enforce zero-trust authorization policies, deploy L7 waypoints where you need them, and configure production telemetry.
+  You'll explore the ambient architecture (ztunnel for L4, waypoints for L7), deploy applications, enroll them in the mesh for automatic mTLS, enforce zero-trust authorization policies, deploy L7 waypoints where you need them, and configure production telemetry.
 
   By the end of this track, you'll understand:
   - How Istio ambient mesh eliminates sidecars while maintaining zero-trust security
-  - How multi-cluster service discovery works with shared trust domains
   - The L4 (ztunnel) vs L7 (waypoint) architecture and when to use each
-  - How to enforce authorization policies that span cluster boundaries
+  - How to enforce fine-grained authorization policies
   - How to structure your mesh configuration for GitOps workflows
+  - How to extend to multi-cluster when you're ready
 icon: https://istio.io/latest/img/istio-whitelogo-bluebackground-framed.svg
 tags:
 - waypoint
 - service-mesh
 - telemetry
-- multi-cluster
 - zero-trust
 - gitops
 - kubernetes
@@ -36,5 +35,5 @@ lab_config:
   feedback_tab_enabled: false
   loadingMessages: true
   hideStopButton: false
-checksum: "2011585657470239971"
+checksum: "538243147411761956"
 enhanced_loading: false

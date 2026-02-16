@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat <<EOF | kubectl apply -f -
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: accounts
+spec:
+  {}
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-finance
+  namespace: accounts
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        namespaces: ["finance"]
+EOF
+
+kubectl create namespace rogue || true
+kubectl label namespace rogue istio.io/dataplane-mode=ambient --overwrite
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rogue-curl
+  namespace: rogue
+  labels:
+    app: rogue-curl
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl:8.5.0
+    command: ["sleep", "infinity"]
+EOF
+kubectl wait --for=condition=Ready pod/rogue-curl -n rogue --timeout=60s

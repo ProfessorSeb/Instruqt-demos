@@ -12,23 +12,13 @@ done
 # ──────────────────────────────────────────────
 # Workdir + shell config
 # ──────────────────────────────────────────────
-apt-get update && apt-get install -y make
-
 cd /root
 
 cat >> /root/.bashrc << 'BASHRC'
 export WORKDIR=/root
 cd $WORKDIR
 alias k=kubectl
-alias kc1='kubectl --context=k3d-cluster-1'
-alias kc2='kubectl --context=k3d-cluster-2'
-export CTX_CLUSTER1=k3d-cluster-1
-export CTX_CLUSTER2=k3d-cluster-2
 BASHRC
-
-# Source for this script
-export CTX_CLUSTER1=k3d-cluster-1
-export CTX_CLUSTER2=k3d-cluster-2
 
 # Vim config
 cat > /root/.vimrc << 'VIMRC'
@@ -40,21 +30,16 @@ syntax on
 VIMRC
 
 # ──────────────────────────────────────────────
-# Create TWO k3d clusters
+# Create ONE k3d cluster
 # ──────────────────────────────────────────────
-k3d cluster create cluster-1 --agents 1 --k3s-arg '--disable=traefik@server:*' --wait
-k3d cluster create cluster-2 --agents 1 --k3s-arg '--disable=traefik@server:*' --wait
-
-# Verify clusters are ready
-kubectl --context=$CTX_CLUSTER1 wait --for=condition=Ready nodes --all --timeout=120s
-kubectl --context=$CTX_CLUSTER2 wait --for=condition=Ready nodes --all --timeout=120s
+k3d cluster create my-k8s-cluster --agents 1 --k3s-arg '--disable=traefik@server:*' --wait
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
 # ──────────────────────────────────────────────
 # Install istioctl + Helm repo
 # ──────────────────────────────────────────────
 export ISTIO_VERSION=1.25.2
 
-cd /root
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION sh -
 cp istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/
 istioctl version --remote=false
@@ -63,146 +48,63 @@ helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo update
 
 # ──────────────────────────────────────────────
-# Generate shared CA certificates
+# Pre-pull Istio images into k3d cluster
 # ──────────────────────────────────────────────
-cd /root/istio-$ISTIO_VERSION
-mkdir -p certs && cd certs
-make -f ../tools/certs/Makefile.selfsigned.mk root-ca
-make -f ../tools/certs/Makefile.selfsigned.mk cluster1-cacerts
-make -f ../tools/certs/Makefile.selfsigned.mk cluster2-cacerts
-
-# Create istio-system namespace and load certs
-kubectl --context=$CTX_CLUSTER1 create ns istio-system
-kubectl --context=$CTX_CLUSTER2 create ns istio-system
-
-kubectl --context=$CTX_CLUSTER1 create secret generic cacerts -n istio-system \
-  --from-file=cluster1/ca-cert.pem \
-  --from-file=cluster1/ca-key.pem \
-  --from-file=cluster1/root-cert.pem \
-  --from-file=cluster1/cert-chain.pem
-
-kubectl --context=$CTX_CLUSTER2 create secret generic cacerts -n istio-system \
-  --from-file=cluster2/ca-cert.pem \
-  --from-file=cluster2/ca-key.pem \
-  --from-file=cluster2/root-cert.pem \
-  --from-file=cluster2/cert-chain.pem
-
-# ──────────────────────────────────────────────
-# Pre-pull Istio images into k3d clusters
-# ──────────────────────────────────────────────
-ISTIO_IMAGES=(
-  "docker.io/istio/pilot:$ISTIO_VERSION"
-  "docker.io/istio/install-cni:$ISTIO_VERSION"
-  "docker.io/istio/ztunnel:$ISTIO_VERSION"
-  "docker.io/istio/proxyv2:$ISTIO_VERSION"
-)
-
-for img in "${ISTIO_IMAGES[@]}"; do
-  docker pull "$img"
+for img in pilot install-cni ztunnel proxyv2; do
+  docker pull docker.io/istio/$img:$ISTIO_VERSION
 done
 
-k3d image import "${ISTIO_IMAGES[@]}" -c cluster-1
-k3d image import "${ISTIO_IMAGES[@]}" -c cluster-2
+k3d image import \
+  docker.io/istio/pilot:$ISTIO_VERSION \
+  docker.io/istio/install-cni:$ISTIO_VERSION \
+  docker.io/istio/ztunnel:$ISTIO_VERSION \
+  docker.io/istio/proxyv2:$ISTIO_VERSION \
+  -c my-k8s-cluster
 
 # ──────────────────────────────────────────────
-# Install Istio ambient via Helm on both clusters
+# Install Istio ambient via Helm
 # ──────────────────────────────────────────────
-install_istio_helm() {
-  local ctx=$1
-  local cluster_name=$2
-  local network=$3
+kubectl create ns istio-system
 
-  # Label namespace with network before install
-  kubectl --context=$ctx label namespace istio-system topology.istio.io/network=$network
+helm install istio-base istio/base -n istio-system \
+  --version $ISTIO_VERSION --wait
 
-  # 1. Install base (CRDs)
-  helm install istio-base istio/base -n istio-system \
-    --kube-context=$ctx \
-    --version $ISTIO_VERSION \
-    --wait
+helm install istiod istio/istiod -n istio-system \
+  --version $ISTIO_VERSION --wait --timeout 5m \
+  --set profile=ambient
 
-  # 2. Install istiod
-  helm install istiod istio/istiod -n istio-system \
-    --kube-context=$ctx \
-    --version $ISTIO_VERSION \
-    --wait --timeout 5m \
-    --set profile=ambient \
-    --set global.meshID=mesh1 \
-    --set global.multiCluster.clusterName=$cluster_name \
-    --set global.network=$network \
-    --set pilot.env.AMBIENT_ENABLE_MULTI_NETWORK=true
+helm install istio-cni istio/cni -n istio-system \
+  --version $ISTIO_VERSION \
+  --set profile=ambient
 
-  # 3. Install CNI (no --wait, k3d CNI DaemonSet is slow to become ready)
-  helm install istio-cni istio/cni -n istio-system \
-    --kube-context=$ctx \
-    --version $ISTIO_VERSION \
-    --set profile=ambient \
-    --set cni.repair.enabled=false
+# Wait for CNI DaemonSet with retries
+for i in $(seq 1 12); do
+  kubectl -n istio-system rollout status daemonset/istio-cni-node --timeout=120s && break
+  echo "Retry $i for istio-cni-node..."
+  sleep 15
+done
 
-  # Wait for CNI DaemonSet with retries
-  for i in $(seq 1 12); do
-    kubectl --context=$ctx -n istio-system rollout status daemonset/istio-cni-node --timeout=120s && break
-    echo "Retry $i for istio-cni-node on $ctx..."
-    sleep 15
-  done
+helm install ztunnel istio/ztunnel -n istio-system \
+  --version $ISTIO_VERSION
 
-  # 4. Install ztunnel (no --wait)
-  helm install ztunnel istio/ztunnel -n istio-system \
-    --kube-context=$ctx \
-    --version $ISTIO_VERSION
-
-  # Wait for ztunnel DaemonSet with retries
-  for i in $(seq 1 12); do
-    kubectl --context=$ctx -n istio-system rollout status daemonset/ztunnel --timeout=120s && break
-    echo "Retry $i for ztunnel on $ctx..."
-    sleep 15
-  done
-}
-
-install_istio_helm $CTX_CLUSTER1 cluster1 network1
-install_istio_helm $CTX_CLUSTER2 cluster2 network2
-
-# ──────────────────────────────────────────────
-# Deploy east-west gateways
-# ──────────────────────────────────────────────
-cd /root/istio-$ISTIO_VERSION
-
-samples/multicluster/gen-eastwest-gateway.sh --network network1 --ambient | \
-  kubectl apply --context=$CTX_CLUSTER1 -f -
-samples/multicluster/gen-eastwest-gateway.sh --network network2 --ambient | \
-  kubectl apply --context=$CTX_CLUSTER2 -f -
-
-# Wait for east-west gateways
-kubectl --context=$CTX_CLUSTER1 -n istio-system wait --for=condition=Available deployment/istio-eastwestgateway --timeout=300s || true
-kubectl --context=$CTX_CLUSTER2 -n istio-system wait --for=condition=Available deployment/istio-eastwestgateway --timeout=300s || true
-
-# Expose services via east-west gateway
-kubectl --context=$CTX_CLUSTER1 apply -n istio-system -f samples/multicluster/expose-services.yaml
-kubectl --context=$CTX_CLUSTER2 apply -n istio-system -f samples/multicluster/expose-services.yaml
-
-# ──────────────────────────────────────────────
-# Exchange remote secrets for cross-cluster discovery
-# ──────────────────────────────────────────────
-istioctl create-remote-secret --context=$CTX_CLUSTER1 --name=cluster1 | \
-  kubectl apply --context=$CTX_CLUSTER2 -f -
-
-istioctl create-remote-secret --context=$CTX_CLUSTER2 --name=cluster2 | \
-  kubectl apply --context=$CTX_CLUSTER1 -f -
+# Wait for ztunnel DaemonSet with retries
+for i in $(seq 1 12); do
+  kubectl -n istio-system rollout status daemonset/ztunnel --timeout=120s && break
+  echo "Retry $i for ztunnel..."
+  sleep 15
+done
 
 # ──────────────────────────────────────────────
 # Wait for all Istio components to be ready
 # ──────────────────────────────────────────────
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx -n istio-system wait --for=condition=Ready pods --all --timeout=300s
-done
+kubectl -n istio-system wait --for=condition=Ready pods --all --timeout=300s
 
 # ──────────────────────────────────────────────
-# Pre-pull and import images
+# Pre-pull and import app images
 # ──────────────────────────────────────────────
 docker pull hashicorp/http-echo:1.0
 docker pull curlimages/curl:8.5.0
 
-k3d image import hashicorp/http-echo:1.0 curlimages/curl:8.5.0 -c cluster-1
-k3d image import hashicorp/http-echo:1.0 curlimages/curl:8.5.0 -c cluster-2
+k3d image import hashicorp/http-echo:1.0 curlimages/curl:8.5.0 -c my-k8s-cluster
 
 echo "Setup complete!"

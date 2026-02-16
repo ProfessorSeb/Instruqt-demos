@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check GitOps directory structure exists
+if [ ! -d /root/mesh-lab/base ]; then
+  fail-message "The /root/mesh-lab/base directory does not exist. Please create the GitOps structure."
+  exit 1
+fi
+
+if [ ! -d /root/mesh-lab/policies ]; then
+  fail-message "The /root/mesh-lab/policies directory does not exist."
+  exit 1
+fi
+
+if [ ! -d /root/mesh-lab/telemetry ]; then
+  fail-message "The /root/mesh-lab/telemetry directory does not exist."
+  exit 1
+fi
+
+if [ ! -f /root/mesh-lab/MULTI-CLUSTER-ROADMAP.md ]; then
+  fail-message "The /root/mesh-lab/MULTI-CLUSTER-ROADMAP.md file does not exist."
+  exit 1
+fi
+
+echo "Challenge 7 passed!"

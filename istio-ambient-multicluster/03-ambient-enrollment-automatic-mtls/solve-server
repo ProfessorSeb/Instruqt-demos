@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euxo pipefail
+kubectl label namespace finance istio.io/dataplane-mode=ambient --overwrite
+kubectl label namespace accounts istio.io/dataplane-mode=ambient --overwrite

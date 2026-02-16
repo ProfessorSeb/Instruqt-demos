@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check deny-all policy exists
+kubectl get authorizationpolicy deny-all -n accounts || {
+  fail-message "The 'deny-all' AuthorizationPolicy does not exist in the accounts namespace."
+  exit 1
+}
+
+# Check allow-finance policy exists
+kubectl get authorizationpolicy allow-finance -n accounts || {
+  fail-message "The 'allow-finance' AuthorizationPolicy does not exist in the accounts namespace."
+  exit 1
+}
+
+echo "Challenge 4 passed!"

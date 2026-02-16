@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check Telemetry CR exists
+kubectl get telemetry accounts-telemetry -n accounts || {
+  fail-message "The 'accounts-telemetry' Telemetry resource does not exist in the accounts namespace."
+  exit 1
+}
+
+echo "Challenge 6 passed!"

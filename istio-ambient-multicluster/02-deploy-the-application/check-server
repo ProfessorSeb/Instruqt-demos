@@ -1,21 +1,27 @@
 #!/bin/bash
 set -euxo pipefail
 
-export CTX_CLUSTER1=k3d-cluster-1
-export CTX_CLUSTER2=k3d-cluster-2
+# Check accounts deployment exists
+kubectl get deployment accounts -n accounts || {
+  fail-message "The 'accounts' deployment does not exist in the accounts namespace."
+  exit 1
+}
 
-# Check namespaces exist
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx get namespace finance || { fail-message "Namespace 'finance' not found in $ctx"; exit 1; }
-  kubectl --context=$ctx get namespace accounts || { fail-message "Namespace 'accounts' not found in $ctx"; exit 1; }
-done
+# Check curl pod exists
+kubectl get pod curl -n finance || {
+  fail-message "The 'curl' pod does not exist in the finance namespace."
+  exit 1
+}
 
-# Check deployments exist and pods are ready
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx -n accounts get deployment accounts || { fail-message "Deployment 'accounts' not found in $ctx"; exit 1; }
-  kubectl --context=$ctx -n finance get deployment curl || { fail-message "Deployment 'curl' not found in $ctx"; exit 1; }
-  kubectl --context=$ctx -n accounts wait --for=condition=Ready pod -l app=accounts --timeout=30s || { fail-message "accounts pods not ready in $ctx"; exit 1; }
-  kubectl --context=$ctx -n finance wait --for=condition=Ready pod -l app=curl --timeout=30s || { fail-message "curl pods not ready in $ctx"; exit 1; }
-done
+# Check pods are running
+kubectl wait --for=condition=Ready pod -l app=accounts -n accounts --timeout=10s || {
+  fail-message "The accounts pod is not ready."
+  exit 1
+}
 
-echo "All deployments verified!"
+kubectl wait --for=condition=Ready pod/curl -n finance --timeout=10s || {
+  fail-message "The curl pod is not ready."
+  exit 1
+}
+
+echo "Challenge 2 passed!"

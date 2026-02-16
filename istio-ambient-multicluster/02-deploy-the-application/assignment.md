@@ -1,16 +1,13 @@
 ---
 slug: deploy-the-application
-id: ma9hdey3ecxh
 type: challenge
 title: Deploy the Application
-teaser: Deploy the accounts service and curl clients across both clusters.
+teaser: Deploy a multi-namespace application and test baseline connectivity.
 tabs:
-- id: elgn6wtdh7en
-  title: Terminal
+- title: Terminal
   type: terminal
   hostname: server
-- id: crul8lcwwopn
-  title: Code Editor
+- title: Code Editor
   type: code
   hostname: server
   path: /root
@@ -20,47 +17,30 @@ enhanced_loading: null
 
 # Deploy the Application
 
-## Why This Architecture?
+## The Scenario
 
-Before we can demonstrate multi-cluster service mesh capabilities, we need workloads. We'll deploy a simple but realistic pattern:
+You're building a platform where a **finance** team needs to call an **accounts** service. Different teams, different namespaces — a common Kubernetes pattern.
 
-- An **accounts** service that serves HTTP responses (simulating a backend API)
-- A **curl** client in a separate **finance** namespace (simulating a frontend calling the backend)
+Right now, there's no mesh enrollment. Traffic flows in plain text. Let's set that up as a baseline, then we'll lock it down.
 
-By deploying the same service to **both clusters**, we set up the foundation for cross-cluster load balancing — a common pattern for high availability.
+## Your Tasks
 
-> 🏢 **Enterprise Value Beat:** Running the same service across multiple clusters gives you automatic failover. If one region goes down, traffic seamlessly shifts to the other.
-
-## Your Task
-
-### Step 1: Create Namespaces on Both Clusters
-
-Create the `finance` and `accounts` namespaces on both clusters:
+### 1. Create the Namespaces
 
 ```bash
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx create namespace finance
-  kubectl --context=$ctx create namespace accounts
-done
+kubectl create namespace finance
+kubectl create namespace accounts
 ```
 
-### Step 2: Deploy the Accounts Service
-
-Deploy the `accounts` service on **both clusters**. Note that cluster-1 returns "accounts-cluster-1" and cluster-2 returns "accounts-cluster-2" — this lets us see which cluster responds.
-
-**Cluster 1:**
+### 2. Deploy the Accounts Service
 
 ```bash
-kubectl --context=$CTX_CLUSTER1 apply -n accounts -f - <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: accounts
----
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: accounts
+  namespace: accounts
 spec:
   replicas: 1
   selector:
@@ -71,11 +51,10 @@ spec:
       labels:
         app: accounts
     spec:
-      serviceAccountName: accounts
       containers:
       - name: accounts
         image: hashicorp/http-echo:1.0
-        args: ["-text=accounts-cluster-1", "-listen=:8080"]
+        args: ["-listen=:8080", "-text=accounts-v1 responding"]
         ports:
         - containerPort: 8080
 ---
@@ -83,6 +62,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: accounts
+  namespace: accounts
 spec:
   selector:
     app: accounts
@@ -92,103 +72,47 @@ spec:
 EOF
 ```
 
-**Cluster 2:**
+### 3. Deploy the Curl Client
 
 ```bash
-kubectl --context=$CTX_CLUSTER2 apply -n accounts -f - <<EOF
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
-kind: ServiceAccount
+kind: Pod
 metadata:
-  name: accounts
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: accounts
+  name: curl
+  namespace: finance
+  labels:
+    app: curl
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: accounts
-  template:
-    metadata:
-      labels:
-        app: accounts
-    spec:
-      serviceAccountName: accounts
-      containers:
-      - name: accounts
-        image: hashicorp/http-echo:1.0
-        args: ["-text=accounts-cluster-2", "-listen=:8080"]
-        ports:
-        - containerPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: accounts
-spec:
-  selector:
-    app: accounts
-  ports:
-  - port: 8080
-    targetPort: 8080
+  containers:
+  - name: curl
+    image: curlimages/curl:8.5.0
+    command: ["sleep", "infinity"]
 EOF
 ```
 
-### Step 3: Deploy the Curl Client
-
-Deploy a `curl` pod in the `finance` namespace on both clusters:
+### 4. Wait for Pods and Test Connectivity
 
 ```bash
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx apply -n finance -f - <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: curl
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: curl
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: curl
-  template:
-    metadata:
-      labels:
-        app: curl
-    spec:
-      serviceAccountName: curl
-      containers:
-      - name: curl
-        image: curlimages/curl:8.5.0
-        command: ["sleep", "infinity"]
-EOF
-done
+kubectl wait --for=condition=Ready pod -l app=accounts -n accounts --timeout=60s
+kubectl wait --for=condition=Ready pod/curl -n finance --timeout=60s
 ```
 
-### Step 4: Wait for Pods to Be Ready
+Now test that finance can reach accounts:
 
 ```bash
-for ctx in $CTX_CLUSTER1 $CTX_CLUSTER2; do
-  kubectl --context=$ctx -n accounts wait --for=condition=Ready pod -l app=accounts --timeout=60s
-  kubectl --context=$ctx -n finance wait --for=condition=Ready pod -l app=curl --timeout=60s
-done
+kubectl exec curl -n finance -- curl -sS accounts.accounts:8080
 ```
 
-### Step 5: Verify Deployments
+You should see: `accounts-v1 responding`
+
+> 🏢 **Enterprise Value Beat:** This is your "day zero" baseline — plain HTTP, no encryption, no identity, no authorization. Any pod in the cluster can call any service. In the next challenge, we'll fix that with a single label.
+
+### 5. Verify Pod Count
 
 ```bash
-echo "=== Cluster 1 ==="
-kubectl --context=$CTX_CLUSTER1 get pods -n accounts
-kubectl --context=$CTX_CLUSTER1 get pods -n finance
-echo "=== Cluster 2 ==="
-kubectl --context=$CTX_CLUSTER2 get pods -n accounts
-kubectl --context=$CTX_CLUSTER2 get pods -n finance
+kubectl get pods -n accounts
+kubectl get pods -n finance
 ```
 
-Click **Check** when all pods are running!
+Notice: **one container per pod**. No sidecars. That won't change even after we enroll in the mesh.

@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check that namespaces are labeled
+FINANCE_LABEL=$(kubectl get namespace finance -o jsonpath='{.metadata.labels.istio\.io/dataplane-mode}')
+if [ "$FINANCE_LABEL" != "ambient" ]; then
+  fail-message "The 'finance' namespace is not labeled with istio.io/dataplane-mode=ambient."
+  exit 1
+fi
+
+ACCOUNTS_LABEL=$(kubectl get namespace accounts -o jsonpath='{.metadata.labels.istio\.io/dataplane-mode}')
+if [ "$ACCOUNTS_LABEL" != "ambient" ]; then
+  fail-message "The 'accounts' namespace is not labeled with istio.io/dataplane-mode=ambient."
+  exit 1
+fi
+
+echo "Challenge 3 passed!"

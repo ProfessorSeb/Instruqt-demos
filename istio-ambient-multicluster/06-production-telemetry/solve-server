@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat <<EOF | kubectl apply -f -
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: accounts-telemetry
+  namespace: accounts
+spec:
+  metrics:
+  - providers:
+    - name: prometheus
+    overrides:
+    - match:
+        metric: REQUEST_COUNT
+        mode: SERVER
+      tagOverrides:
+        error_type:
+          operation: UPSERT
+          value: "response.code >= 500 ? 'server_error' : response.code >= 400 ? 'client_error' : 'none'"
+        slow_request:
+          operation: UPSERT
+          value: "request.duration > '500ms' ? 'true' : 'false'"
+EOF

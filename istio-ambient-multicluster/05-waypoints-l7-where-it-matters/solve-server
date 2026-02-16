@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euxo pipefail
+
+istioctl waypoint apply -n accounts --enroll-namespace
+kubectl wait --for=condition=Ready pod -l gateway.networking.k8s.io/gateway-name=waypoint -n accounts --timeout=120s
+
+cat <<EOF | kubectl apply -f -
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-get-only
+  namespace: accounts
+spec:
+  targetRefs:
+  - kind: Service
+    group: ""
+    name: accounts
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        namespaces: ["finance"]
+    to:
+    - operation:
+        methods: ["GET"]
+EOF

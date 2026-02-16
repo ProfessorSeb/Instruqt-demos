@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check waypoint is running
+WAYPOINT_COUNT=$(kubectl get pods -n accounts -l gateway.networking.k8s.io/gateway-name=waypoint --no-headers 2>/dev/null | grep -c Running || true)
+if [ "$WAYPOINT_COUNT" -lt 1 ]; then
+  fail-message "No waypoint proxy is running in the accounts namespace."
+  exit 1
+fi
+
+# Check L7 policy exists
+kubectl get authorizationpolicy allow-get-only -n accounts || {
+  fail-message "The 'allow-get-only' AuthorizationPolicy does not exist in the accounts namespace."
+  exit 1
+}
+
+echo "Challenge 5 passed!"
