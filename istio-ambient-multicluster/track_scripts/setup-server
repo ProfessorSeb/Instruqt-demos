@@ -102,7 +102,7 @@ spec:
       enabled: true
 EOF
 
-istioctl install --context=$CTX_CLUSTER1 -f /root/cluster-1.yaml -y
+istioctl install --context=$CTX_CLUSTER1 -f /root/cluster-1.yaml -y --readiness-timeout 10m0s
 kubectl --context=$CTX_CLUSTER1 label namespace istio-system topology.istio.io/network=network1
 
 # ──────────────────────────────────────────────
@@ -125,7 +125,7 @@ spec:
       enabled: true
 EOF
 
-istioctl install --context=$CTX_CLUSTER2 -f /root/cluster-2.yaml -y
+istioctl install --context=$CTX_CLUSTER2 -f /root/cluster-2.yaml -y --readiness-timeout 10m0s
 kubectl --context=$CTX_CLUSTER2 label namespace istio-system topology.istio.io/network=network2
 
 # ──────────────────────────────────────────────
