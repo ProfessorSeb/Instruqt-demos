@@ -12,6 +12,8 @@ done
 # ──────────────────────────────────────────────
 # Workdir + shell config
 # ──────────────────────────────────────────────
+apt-get update && apt-get install -y make
+
 cd /root
 
 cat >> /root/.bashrc << 'BASHRC'
