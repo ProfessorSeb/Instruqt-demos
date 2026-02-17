@@ -17,10 +17,10 @@ for i in $(seq 1 5); do
 done
 
 # Check logs
-kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=20 || true
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway --tail=20 || true
 
 # Check metrics
-AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy -o jsonpath='{.items[0].metadata.name}') || true
+AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway -o jsonpath='{.items[0].metadata.name}') || true
 kubectl port-forward -n agentgateway-system $AG_POD 9091:9091 &
 sleep 2
 curl -s http://localhost:9091/metrics | grep -i "agentgateway\|llm\|ai_\|envoy" | head -30 || true

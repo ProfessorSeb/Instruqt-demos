@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Just verify the proxy pods are running (logs and metrics were explored interactively)
-kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --no-headers | grep -q Running
+kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway --no-headers | grep -q Running
 if [ $? -ne 0 ]; then
   fail-message "Agentgateway proxy pods are not running. Check 'kubectl get pods -n agentgateway-system'."
   exit 1

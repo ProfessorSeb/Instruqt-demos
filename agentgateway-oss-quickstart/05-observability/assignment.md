@@ -53,7 +53,7 @@ kubectl get pods -n agentgateway-system --show-labels
 Now check the gateway proxy logs — this is where request-level data lives:
 
 ```bash
-kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=50
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway --tail=50
 ```
 
 You'll see structured log entries for each request that passed through the gateway, including:
@@ -89,7 +89,7 @@ done
 Now check the logs again:
 
 ```bash
-kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=20
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway --tail=20
 ```
 
 ## Step 3: Explore Gateway Metrics
@@ -98,7 +98,7 @@ Agentgateway exposes Prometheus-compatible metrics. Let's check what's available
 
 ```bash
 # Find the proxy pod
-AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy -o jsonpath='{.items[0].metadata.name}')
+AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway -o jsonpath='{.items[0].metadata.name}')
 
 # Port-forward to the metrics endpoint
 kubectl port-forward -n agentgateway-system $AG_POD 9091:9091 &
