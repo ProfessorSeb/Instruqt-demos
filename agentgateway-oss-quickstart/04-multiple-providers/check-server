@@ -1,18 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-if ! kubectl get secret anthropic-secret -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-secret' secret was not found."
-  exit 1
-fi
-
-if ! kubectl get agentgatewaybackend anthropic-backend -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-backend' AgentgatewayBackend was not found."
-  exit 1
-fi
-
-if ! kubectl get httproute anthropic-route -n agentgateway-system &>/dev/null; then
-  fail-message "The 'anthropic-route' HTTPRoute was not found."
+if ! kubectl get agentgatewaybackend openai-gpt4o-backend -n agentgateway-system &>/dev/null; then
+  fail-message "The 'openai-gpt4o-backend' AgentgatewayBackend was not found. Create a second OpenAI backend for GPT-4o."
   exit 1
 fi
 
@@ -22,4 +12,11 @@ if [ "$BACKEND_COUNT" -lt 2 ]; then
   exit 1
 fi
 
-echo "Multi-provider routing is configured!"
+# Check that the route has multiple backendRefs (weighted)
+WEIGHT_COUNT=$(kubectl get httproute openai-route -n agentgateway-system -o json | jq '.spec.rules[0].backendRefs | length')
+if [ "$WEIGHT_COUNT" -lt 2 ]; then
+  fail-message "The 'openai-route' HTTPRoute should have at least 2 weighted backendRefs for load balancing."
+  exit 1
+fi
+
+echo "Model load balancing is configured!"

@@ -2,15 +2,21 @@
 slug: multiple-providers
 id: gr3edurbowtx
 type: challenge
-title: Add Multiple LLM Providers
-teaser: Route to both OpenAI and Anthropic through a single gateway with path-based
-  routing.
+title: Load Balance Across OpenAI Models
+teaser: Distribute traffic across multiple OpenAI models through a single gateway
+  route using weighted load balancing.
 notes:
 - type: text
-  contents: "# \U0001F500 Multi-Provider Routing\n\nMost teams use multiple LLM providers.
-    Without a gateway, that's N×M complexity.\n\n**In this challenge, you'll:**\n\n-
-    Add Anthropic as a second LLM backend\n- Configure path-based routing (`/openai/*`
-    and `/anthropic/*`)\n- Test both routes through a single gateway endpoint\n"
+  contents: |
+    # ⚖️ Model Load Balancing
+
+    Not every request needs the same model. Agentgateway can distribute traffic across models automatically.
+
+    **In this challenge, you'll:**
+
+    - Create multiple OpenAI backends (GPT-4o-mini and GPT-4o)
+    - Configure weighted load balancing across models
+    - Test traffic distribution through a single route
 tabs:
 - id: yby5cmiejbio
   title: Terminal
@@ -25,57 +31,55 @@ difficulty: ""
 enhanced_loading: null
 ---
 
-# Add Multiple LLM Providers
+# Load Balance Across OpenAI Models
 
-Most organizations don't use just one LLM provider. Teams choose different models for different use cases — GPT-4o for general tasks, Claude for long-context analysis, Gemini for multimodal work.
+In production, you often want to distribute traffic across different models. Maybe you send 80% of traffic to a cheaper model (GPT-4o-mini) and 20% to a more capable one (GPT-4o) for quality comparison. Or you want to gradually shift traffic during a model migration.
 
-Without a gateway, each team integrates with each provider independently. That's N×M complexity.
-
-With Agentgateway, you add a new provider once, and every agent can use it through the same gateway endpoint.
+Agentgateway makes this simple with **weighted backend references** — the same pattern Kubernetes Gateway API uses for canary deployments.
 
 ## Why This Matters
 
-A single gateway for multiple providers means:
-- **One endpoint** for agents to call, regardless of provider
-- **Path-based routing** — `/openai/*` goes to OpenAI, `/anthropic/*` goes to Anthropic
-- **Swap providers** without changing agent code
-- **Compare providers** by routing the same traffic to both
+Model load balancing gives you:
+- **Cost optimization** — route most traffic to cheaper models, expensive models only when needed
+- **A/B testing** — compare model quality on real traffic
+- **Gradual migration** — shift traffic from one model to another without downtime
+- **Resilience** — if one model has issues, traffic flows to the other
 
-## Step 1: Add an Anthropic API Key Secret
+## Step 1: Create a Second OpenAI Backend
 
-For this demo, we'll use a placeholder Anthropic key. The OpenAI route will return real responses, while the Anthropic route demonstrates the multi-provider routing concept:
-
-```bash
-kubectl create secret generic anthropic-secret \
-  --namespace agentgateway-system \
-  --from-literal="Authorization=Bearer sk-ant-demo-placeholder-key"
-```
-
-> 💡 In production, you'd use a real Anthropic API key here. The point is that adding a new provider is just one Backend + one Route.
-
-## Step 2: Create the Anthropic Backend and Route
+You already have `openai-backend` pointing to `gpt-4o-mini`. Let's add a second backend for `gpt-4o`:
 
 ```bash
 cat <<EOF | kubectl apply -f -
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: anthropic-backend
+  name: openai-gpt4o-backend
   namespace: agentgateway-system
 spec:
   ai:
     provider:
-      anthropic:
-        model: claude-sonnet-4-20250514
+      openai:
+        model: gpt-4o
   policies:
     auth:
       secretRef:
-        name: anthropic-secret
----
+        name: openai-secret
+EOF
+```
+
+Both backends use the same `openai-secret` — same API key, different models.
+
+## Step 2: Update the Route for Weighted Load Balancing
+
+Now update the OpenAI route to distribute traffic across both backends. We'll send **80% to GPT-4o-mini** (fast and cheap) and **20% to GPT-4o** (more capable):
+
+```bash
+cat <<EOF | kubectl apply -f -
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: anthropic-route
+  name: openai-route
   namespace: agentgateway-system
 spec:
   parentRefs:
@@ -85,15 +89,20 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /anthropic
+            value: /openai
       backendRefs:
         - group: agentgateway.dev
           kind: AgentgatewayBackend
-          name: anthropic-backend
+          name: openai-backend
+          weight: 80
+        - group: agentgateway.dev
+          kind: AgentgatewayBackend
+          name: openai-gpt4o-backend
+          weight: 20
 EOF
 ```
 
-## Step 3: Verify Your Multi-Provider Setup
+## Step 3: Verify Your Load Balancing Setup
 
 Check all the resources:
 
@@ -101,11 +110,17 @@ Check all the resources:
 kubectl get agentgatewaybackend,httproute -n agentgateway-system
 ```
 
-You should see two backends (openai-backend, anthropic-backend) and two routes (openai-route, anthropic-route).
+You should see two backends (`openai-backend` and `openai-gpt4o-backend`) and the updated route.
 
-## Step 4: Test Both Routes
+Inspect the route to confirm the weights:
 
-Make sure port-forward is running (start it if it's not):
+```bash
+kubectl get httproute openai-route -n agentgateway-system -o yaml | grep -A 10 backendRefs
+```
+
+## Step 4: Test Load Balancing
+
+Make sure port-forward is running:
 
 ```bash
 # Kill any existing port-forward
@@ -114,45 +129,36 @@ kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
 sleep 3
 ```
 
-Test the OpenAI route:
+Send several requests and observe which model responds:
 
 ```bash
-echo "--- Testing OpenAI route ---"
-curl -s http://localhost:8080/openai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-4o-mini",
-    "messages": [{"role": "user", "content": "Hello from OpenAI route!"}],
-    "max_tokens": 50
-  }' | jq .
+for i in $(seq 1 5); do
+  echo "--- Request $i ---"
+  curl -s http://localhost:8080/openai/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "gpt-4o-mini",
+      "messages": [{"role": "user", "content": "What model are you? Reply in 5 words."}],
+      "max_tokens": 20
+    }' | jq -r '.model // .error.message'
+  echo
+done
 ```
 
-Test the Anthropic route:
+You should see responses from both `gpt-4o-mini` and `gpt-4o` — roughly 80/20 split. The gateway overrides the model based on which backend receives the request.
 
-```bash
-echo "--- Testing Anthropic route ---"
-curl -s http://localhost:8080/anthropic/v1/messages \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "claude-sonnet-4-20250514",
-    "max_tokens": 50,
-    "messages": [{"role": "user", "content": "Hello from Anthropic route!"}]
-  }' | jq .
-```
-
-The OpenAI route should return a real response. The Anthropic route will return an auth error (placeholder key), but it proves the routing works — both go through the **same gateway** to **different providers**. Your agents just need to know one hostname.
+> 💡 **Key insight:** The agent sends the same request every time. The gateway decides which model handles it. This is infrastructure-level control — no agent code changes needed.
 
 ## The Big Picture
 
 ```
-                    ┌─────────────────────┐
-Agent A ──→        │                     │──→ OpenAI
-                    │   Agentgateway      │
-Agent B ──→        │   (ai-gateway)      │──→ Anthropic
-                    │                     │
-Agent C ──→        │   /openai/*         │──→ OpenAI
-                    │   /anthropic/*      │──→ Anthropic
-                    └─────────────────────┘
+                    ┌─────────────────────────────┐
+                    │                             │──→ GPT-4o-mini (80%)
+Agent ──→ /openai/* │      Agentgateway           │
+                    │      (ai-gateway)           │──→ GPT-4o (20%)
+                    │                             │
+                    │   Weighted Load Balancing    │
+                    └─────────────────────────────┘
 ```
 
-One gateway. Multiple providers. Full control.
+One route. Multiple models. Automatic traffic distribution. Adjust the weights anytime — no agent restarts, no code changes.

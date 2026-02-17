@@ -40,7 +40,7 @@ Let's recap what you accomplished:
 
 ✅ **Created an AI Gateway** — single entry point for all agent traffic
 
-✅ **Multi-provider routing** — OpenAI and Anthropic through one gateway
+✅ **Model load balancing** — GPT-4o-mini and GPT-4o with weighted routing through one gateway
 
 ✅ **Observability** — structured logs and Prometheus metrics for every request
 

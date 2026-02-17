@@ -110,7 +110,7 @@ cat /root/observability-notes.txt
 
 With these metrics, you can answer questions like:
 - "Which agent is consuming the most tokens?" → Cost attribution
-- "Is OpenAI slower than Anthropic for our use case?" → Provider comparison
+- "Is GPT-4o slower than GPT-4o-mini for our use case?" → Model comparison
 - "How many requests are failing?" → Reliability monitoring
 - "What's our total LLM spend this week?" → Budget tracking
 

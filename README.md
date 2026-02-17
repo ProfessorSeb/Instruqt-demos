@@ -17,7 +17,7 @@ Built for the [Instruqt](https://instruqt.com/) platform by the Solo.io GTM team
 | 1 | The Problem — Agents Without Guardrails | Why direct agent-to-LLM calls are a problem |
 | 2 | Install Agentgateway on Kubernetes | Helm install with Gateway API CRDs |
 | 3 | Create Your First AI Gateway | Gateway + HTTPRoute + LLM backend |
-| 4 | Add Multiple LLM Providers | Multi-provider routing (OpenAI + Anthropic) |
+| 4 | Load Balance Across OpenAI Models | Weighted load balancing (GPT-4o-mini + GPT-4o) |
 | 5 | See What Your Agents Are Doing | Built-in observability and metrics |
 | 6 | What's Next — Security & Governance | Overview of enterprise capabilities |
 
