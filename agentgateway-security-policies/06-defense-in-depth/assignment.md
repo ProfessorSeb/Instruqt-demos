@@ -128,21 +128,13 @@ kubectl apply -f /root/policies/comprehensive-security.yaml 2>/dev/null || echo 
 
 ## Step 2: Run a Comprehensive Test
 
-Create a test that exercises all four protection layers:
+Test all four protection layers by sending different types of requests through the gateway:
 
 ```bash
-cat <<'SCRIPT' > /root/policies/test-all-policies.sh
-#!/bin/bash
 source /root/.bashrc
 
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║     Agentgateway Security — Comprehensive Test          ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
-
-# Test 1: PII Protection
 echo "━━━ Test 1: PII Protection ━━━"
-echo "📥 Sending request with SSN, email, phone, credit card..."
+echo "📥 Sending request with SSN, email, phone..."
 curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,7 +144,6 @@ curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
 echo "🛡️  With Enterprise: PII would be redacted before reaching LLM"
 echo ""
 
-# Test 2: Prompt Injection
 echo "━━━ Test 2: Prompt Injection Guard ━━━"
 echo "📥 Sending jailbreak attempt..."
 curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
@@ -164,7 +155,6 @@ curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
 echo "🛡️  With Enterprise: Request would be BLOCKED with HTTP 403"
 echo ""
 
-# Test 3: Credential Leak Prevention
 echo "━━━ Test 3: Credential Leak Prevention ━━━"
 echo "📥 Sending request that could cause credential echo..."
 curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
@@ -176,7 +166,6 @@ curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
 echo "🛡️  With Enterprise: Credentials would be redacted from response"
 echo ""
 
-# Test 4: Rate Limiting
 echo "━━━ Test 4: Rate Limiting ━━━"
 echo "📥 Sending 3 rapid requests..."
 for i in 1 2 3; do
@@ -186,24 +175,6 @@ for i in 1 2 3; do
   echo "   Request $i: HTTP $CODE"
 done
 echo "🛡️  Rate limiting prevents runaway costs from agent storms"
-echo ""
-
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║                    Test Complete!                        ║"
-echo "╠══════════════════════════════════════════════════════════╣"
-echo "║  ✅ PII Protection      — Redacts sensitive data        ║"
-echo "║  ✅ Prompt Injection     — Blocks jailbreak attempts     ║"
-echo "║  ✅ Credential Leak      — Scrubs secrets from responses ║"
-echo "║  ✅ Rate Limiting        — Controls cost & abuse         ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-SCRIPT
-chmod +x /root/policies/test-all-policies.sh
-```
-
-Run it:
-
-```bash
-/root/policies/test-all-policies.sh
 ```
 
 ## Step 3: Review Everything You've Built
@@ -224,45 +195,25 @@ done
 
 ## Step 4: What's Next
 
-You've built a comprehensive security posture for your AI gateway. Here's what to explore next:
+You've built a comprehensive security posture. Here's the roadmap:
 
-```bash
-cat <<'NEXT'
+**What you built today:**
+- ✅ PII Protection (Enterprise)
+- ✅ Prompt Injection Guard (Enterprise)
+- ✅ Credential Leak Prevention (Enterprise)
+- ✅ Rate Limiting (OSS)
 
-🗺️  Agentgateway Security Roadmap
-═══════════════════════════════════
+**What's coming next in the series:**
 
-What you built today:
-  ✅ PII Protection (Enterprise)
-  ✅ Prompt Injection Guard (Enterprise)
-  ✅ Credential Leak Prevention (Enterprise)
-  ✅ Rate Limiting (OSS)
+🔐 **Identity & Authentication** — JWT validation, per-user policies, OIDC integration
 
-What's coming next in the series:
+🔧 **MCP Security** — Tool-level authorization, schema validation, audit logging
 
-  🔐 Identity & Authentication
-     - JWT validation on AI routes
-     - Per-user/per-team policies
-     - OIDC integration
+📊 **Observability & Compliance** — Per-request cost tracking, compliance audit trails
 
-  🔧 MCP Security
-     - Tool-level authorization
-     - Schema validation for tool calls
-     - Audit logging for agent actions
+🌐 **Multi-Provider Governance** — Provider-specific policies, failover, data residency
 
-  📊 Observability & Compliance
-     - Per-request cost tracking
-     - Compliance audit trails
-     - Real-time security dashboards
-
-  🌐 Multi-Provider Governance
-     - Provider-specific policies
-     - Failover with security preservation
-     - Data residency enforcement
-
-Ready to try Enterprise? Visit solo.io/agentgateway
-NEXT
-```
+Ready to try Enterprise? Visit [solo.io/agentgateway](https://solo.io/agentgateway)
 
 ## ✅ What You've Accomplished
 

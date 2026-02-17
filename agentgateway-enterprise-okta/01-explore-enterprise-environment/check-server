@@ -1,5 +1,16 @@
 #!/bin/bash
 set -euxo pipefail
-if [ ! -f /root/environment-verified.txt ]; then
-  fail-message "Please create /root/environment-verified.txt with your findings."
+
+# Verify controller is running
+if ! kubectl get pods -n enterprise-agentgateway | grep -q Running; then
+  fail-message "Enterprise Agentgateway controller is not running. Check: kubectl get pods -n enterprise-agentgateway"
+  exit 1
 fi
+
+# Verify GatewayClass exists
+if ! kubectl get gatewayclass enterprise-agentgateway &>/dev/null; then
+  fail-message "GatewayClass 'enterprise-agentgateway' not found."
+  exit 1
+fi
+
+echo "Environment verified! Let's configure the gateway."

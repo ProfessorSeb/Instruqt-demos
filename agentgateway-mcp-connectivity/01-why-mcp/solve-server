@@ -1,13 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
 
-cat > /root/mcp-benefits.txt << 'EOF'
-Benefits of AgentGateway for MCP:
-1. Centralized routing to multiple MCP tool servers
-2. Fine-grained tool authorization (allow/deny specific tools)
-3. Rate limiting to protect upstream tool APIs
-4. OAuth authentication for agent identity verification
-5. Observability and audit trail for all tool calls
-EOF
-
 kubectl get pods -n agentgateway-system
+kubectl -n agentgateway-system get gateway agentgateway-proxy

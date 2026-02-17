@@ -103,11 +103,9 @@ kubectl apply -f /root/policies/rate-limit.yaml 2>/dev/null || echo "Note: Polic
 
 ## Step 3: Test Rate Limiting
 
-Create a script that sends rapid requests to demonstrate hitting the limit:
+Send 8 rapid requests to demonstrate hitting the limit:
 
 ```bash
-cat <<'SCRIPT' > /root/policies/test-rate-limit.sh
-#!/bin/bash
 source /root/.bashrc
 
 echo "=== Rate Limiting Test ==="
@@ -123,7 +121,6 @@ for i in $(seq 1 8); do
     }")
 
   HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-  BODY=$(echo "$RESPONSE" | head -n -1)
 
   if [ "$HTTP_CODE" = "429" ]; then
     echo "🚫 Request $i: HTTP $HTTP_CODE — RATE LIMITED"
@@ -133,24 +130,6 @@ for i in $(seq 1 8); do
     echo "⚠️  Request $i: HTTP $HTTP_CODE"
   fi
 done
-
-echo ""
-echo "=== Results ==="
-echo "With rate limiting enabled, requests beyond the limit receive HTTP 429."
-echo "This prevents runaway costs from misconfigured agents or retry storms."
-echo ""
-echo "In production, you'd set limits like:"
-echo "  - 100 requests/minute per user (reasonable usage)"
-echo "  - 50,000 tokens/minute per agent (cost control)"
-echo "  - 1,000 requests/hour per API key (abuse prevention)"
-SCRIPT
-chmod +x /root/policies/test-rate-limit.sh
-```
-
-Run the test:
-
-```bash
-/root/policies/test-rate-limit.sh
 ```
 
 > **Note:** Whether you see actual 429 responses depends on whether the rate limit CRD is enforced in this Agentgateway version. The policy YAML and concepts are what matter — in production, exceeding the limit returns HTTP 429 with a `Retry-After` header.
@@ -189,29 +168,18 @@ kubectl apply -f /root/policies/token-rate-limit.yaml 2>/dev/null || echo "Note:
 
 ## Step 5: Understand the Cost Impact
 
-Let's calculate what rate limiting saves:
+**GPT-4 pricing:** ~$30/million input tokens, ~$60/million output tokens
 
-```bash
-cat <<'CALC' > /root/policies/cost-calculator.sh
-#!/bin/bash
-echo "=== AI Spend Calculator ==="
-echo ""
-echo "GPT-4 pricing: ~$30/million input tokens, ~$60/million output tokens"
-echo ""
-echo "WITHOUT rate limiting:"
-echo "  Runaway agent: 10,000 requests × 2,000 tokens = 20M tokens"
-echo "  Cost: ~$600-1,200 in a single incident"
-echo ""
-echo "WITH rate limiting (50K tokens/hour/user):"
-echo "  Maximum per user per day: 1.2M tokens"
-echo "  Maximum cost per user/day: ~$36-72"
-echo "  Runaway agent contained automatically ✅"
-echo ""
-echo "Rate limiting is your financial safety net for AI operations."
-CALC
-chmod +x /root/policies/cost-calculator.sh
-/root/policies/cost-calculator.sh
-```
+**WITHOUT rate limiting:**
+- Runaway agent: 10,000 requests × 2,000 tokens = 20M tokens
+- Cost: **~$600-1,200 in a single incident**
+
+**WITH rate limiting (50K tokens/hour/user):**
+- Maximum per user per day: 1.2M tokens
+- Maximum cost per user/day: ~$36-72
+- Runaway agent contained automatically ✅
+
+Rate limiting is your financial safety net for AI operations.
 
 ## ✅ What You've Learned
 

@@ -2,7 +2,6 @@
 set -euxo pipefail
 mkdir -p /root/policies
 
-# Create PII protection policy
 cat <<EOF > /root/policies/pii-protection.yaml
 apiVersion: agentgateway.solo.io/v1alpha1
 kind: AgentGatewayPolicy
@@ -26,22 +25,3 @@ spec:
 EOF
 
 kubectl apply -f /root/policies/pii-protection.yaml 2>/dev/null || true
-
-# Create test script
-cat <<'SCRIPT' > /root/policies/test-pii.sh
-#!/bin/bash
-echo "=== PII Detection Test ==="
-INPUT="Process this customer: Jane Doe, SSN 987-65-4321, email jane.doe@company.com, phone 415-555-0199, card 4532-1234-5678-9012"
-echo "Original: $INPUT"
-REDACTED=$(echo "$INPUT" | \
-  sed 's/[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}/[SSN_REDACTED]/g' | \
-  sed 's/[a-zA-Z0-9.]*@[a-zA-Z0-9.]*\.[a-zA-Z]*/[EMAIL_REDACTED]/g' | \
-  sed 's/[0-9]\{3\}-[0-9]\{3\}-[0-9]\{4\}/[PHONE_REDACTED]/g' | \
-  sed 's/[0-9]\{4\}-[0-9]\{4\}-[0-9]\{4\}-[0-9]\{4\}/[CREDIT_CARD_REDACTED]/g')
-echo "Redacted: $REDACTED"
-echo "✅ Done"
-SCRIPT
-chmod +x /root/policies/test-pii.sh
-/root/policies/test-pii.sh
-
-echo "Challenge 2 solved!"

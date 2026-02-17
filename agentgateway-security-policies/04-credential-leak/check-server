@@ -16,9 +16,4 @@ if ! grep -q "API_KEY" /root/policies/credential-leak.yaml; then
   exit 1
 fi
 
-if [ ! -f /root/policies/test-credential-leak.sh ]; then
-  fail-message "Test script not found at /root/policies/test-credential-leak.sh. Please create it as shown in the instructions."
-  exit 1
-fi
-
 echo "Challenge 4 complete!"

@@ -26,18 +26,3 @@ spec:
 EOF
 
 kubectl apply -f /root/policies/credential-leak.yaml 2>/dev/null || true
-
-cat <<'SCRIPT' > /root/policies/test-credential-leak.sh
-#!/bin/bash
-echo "=== Credential Leak Detection Test ==="
-echo "Scanning for: API keys, AWS keys, JWTs, DB passwords"
-echo "🚫 DETECTED: sk-proj-abc123... (API Key)"
-echo "🚫 DETECTED: AKIAIOSFODNN7EXAMPLE (AWS Key)"
-echo "🚫 DETECTED: eyJhbGci... (JWT)"
-echo "✅ CLEAN: Normal text response"
-echo "Done"
-SCRIPT
-chmod +x /root/policies/test-credential-leak.sh
-/root/policies/test-credential-leak.sh
-
-echo "Challenge 4 solved!"

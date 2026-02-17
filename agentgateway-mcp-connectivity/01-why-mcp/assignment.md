@@ -83,24 +83,17 @@ Agent → Agentgateway Proxy (port 8080) → AgentgatewayBackend → MCP Server
 
 The `agentgateway-proxy` Gateway is already deployed and port-forwarded to `localhost:8080` for you.
 
-## Your Task 📝
+## Benefits of Agentgateway for MCP
 
-Let's make sure you understand the "why" before we dive into the "how."
+1. **Centralized routing** to multiple MCP tool servers
+2. **Fine-grained tool authorization** — allow/deny specific tools per agent
+3. **Rate limiting** to protect upstream tool APIs
+4. **OAuth authentication** for agent identity verification
+5. **Observability and audit trail** for all tool calls
 
-**Create a file** at `/root/mcp-benefits.txt` that lists at least 4 benefits of using Agentgateway as an MCP gateway (one per line):
+## Verify Your Environment
 
-```bash
-cat > /root/mcp-benefits.txt << 'EOF'
-Benefits of Agentgateway for MCP:
-1. Centralized routing to multiple MCP tool servers
-2. Fine-grained tool authorization (allow/deny specific tools)
-3. Rate limiting to protect upstream tool APIs
-4. OAuth authentication for agent identity verification
-5. Observability and audit trail for all tool calls
-EOF
-```
-
-Also, let's verify your cluster is ready and Agentgateway is installed:
+Let's confirm your cluster is ready and Agentgateway is installed:
 
 ```bash
 kubectl get pods -n agentgateway-system

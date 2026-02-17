@@ -158,25 +158,16 @@ Notice all the PII passes through. With Enterprise PII protection enabled, the L
 Process this customer: [NAME], SSN [SSN_REDACTED], email [EMAIL_REDACTED], phone [PHONE_REDACTED], card [CREDIT_CARD_REDACTED]
 ```
 
-## Step 4: Create a Test Script
+## Step 4: Simulate PII Detection
 
-Create a script that demonstrates PII detection (what Enterprise would catch):
+Let's see what Enterprise PII protection would catch. Run this to simulate detection and redaction:
 
 ```bash
-cat <<'SCRIPT' > /root/policies/test-pii.sh
-#!/bin/bash
-# PII Detection Test — shows what Agentgateway Enterprise would catch
-
-echo "=== PII Detection Test ==="
-echo ""
-
 INPUT="Process this customer: Jane Doe, SSN 987-65-4321, email jane.doe@company.com, phone 415-555-0199, card 4532-1234-5678-9012"
 
 echo "📥 Original input:"
 echo "   $INPUT"
 echo ""
-
-# Simulate PII detection
 echo "🔍 PII Detected:"
 echo "$INPUT" | grep -oP '\d{3}-\d{2}-\d{4}' && echo "   ↳ SSN found — would be REDACTED"
 echo "$INPUT" | grep -oP '[\w.]+@[\w.]+\.\w+' && echo "   ↳ Email found — would be REDACTED"
@@ -184,7 +175,6 @@ echo "$INPUT" | grep -oP '\d{3}-\d{3}-\d{4}' && echo "   ↳ Phone found — wou
 echo "$INPUT" | grep -oP '\d{4}-\d{4}-\d{4}-\d{4}' && echo "   ↳ Credit card found — would be REDACTED"
 echo ""
 
-# Show what would be sent to LLM
 REDACTED=$(echo "$INPUT" | \
   sed 's/[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}/[SSN_REDACTED]/g' | \
   sed 's/[a-zA-Z0-9.]*@[a-zA-Z0-9.]*\.[a-zA-Z]*/[EMAIL_REDACTED]/g' | \
@@ -193,16 +183,6 @@ REDACTED=$(echo "$INPUT" | \
 
 echo "📤 What the LLM would receive (with Enterprise PII protection):"
 echo "   $REDACTED"
-echo ""
-echo "✅ PII protection test complete"
-SCRIPT
-chmod +x /root/policies/test-pii.sh
-```
-
-Run the test:
-
-```bash
-/root/policies/test-pii.sh
 ```
 
 ## Step 5: Verify Your Work

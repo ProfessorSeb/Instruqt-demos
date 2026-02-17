@@ -80,19 +80,13 @@ kubectl get secret openai-secret -n enterprise-agentgateway
 
 This secret contains the OpenAI API key that the gateway will use to authenticate with OpenAI.
 
-## Record Your Findings
+## Summary
 
-Create a file to confirm you've explored the environment:
-
-```bash
-cat > /root/environment-verified.txt << 'EOF'
-Enterprise Agentgateway Environment Verified
-- Controller: running in enterprise-agentgateway namespace
-- GatewayClass: enterprise-agentgateway
-- CRDs: AgentgatewayBackend, EnterpriseAgentgatewayParameters, EnterpriseAgentgatewayPolicy
-- Monitoring: Grafana + Tempo + Prometheus in monitoring namespace
-- OpenAI secret: configured
-EOF
-```
+Your environment is pre-configured with:
+- **Controller** — running in `enterprise-agentgateway` namespace
+- **GatewayClass** — `enterprise-agentgateway`
+- **CRDs** — `AgentgatewayBackend`, `EnterpriseAgentgatewayParameters`, `EnterpriseAgentgatewayPolicy`
+- **Monitoring** — Grafana + Tempo + Prometheus in `monitoring` namespace
+- **OpenAI secret** — configured and ready
 
 Click **Check** when you're done exploring!

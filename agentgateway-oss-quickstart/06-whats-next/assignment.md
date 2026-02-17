@@ -68,38 +68,24 @@ For production deployments with strict security and compliance requirements, **A
 - **OpenTelemetry export** — send traces to your existing observability stack
 - **Cost dashboards** — real-time spend tracking across providers
 
-## Create a Recap File
+## What You Learned
 
-Summarize your learning:
-
-```bash
-cat > /root/workshop-recap.txt << 'EOF'
-Agentgateway OSS Quickstart - Workshop Recap
-
-What I learned:
 1. Direct agent-to-LLM calls create security and visibility gaps
 2. Agentgateway provides a Kubernetes-native gateway for AI traffic
-3. Built on Gateway API standard (GatewayClass, Gateway, HTTPRoute)
-4. Multi-provider routing through a single endpoint
+3. Built on Gateway API standard (GatewayClass → Gateway → HTTPRoute)
+4. Weighted load balancing across models through a single endpoint
 5. Built-in observability with structured logs and Prometheus metrics
 
-Architecture:
-  Agent -> Agentgateway (Gateway API) -> LLM Providers
-
-Key Resources:
-  - GatewayClass: registers Agentgateway as an implementation
-  - Gateway: the actual gateway instance (listeners)
-  - Backend: LLM provider connection details + credentials
-  - HTTPRoute: routing rules (path-based, header-based)
-
-Next steps:
-  - Try with real API keys
-  - Explore Agentgateway Enterprise for security features
-  - Set up Langfuse for full LLM observability
-EOF
-
-cat /root/workshop-recap.txt
+**Architecture:**
 ```
+Agent → Agentgateway (Gateway API) → LLM Providers
+```
+
+**Key Resources:**
+- **GatewayClass** — registers Agentgateway as an implementation
+- **Gateway** — the actual gateway instance (listeners)
+- **AgentgatewayBackend** — LLM provider connection details + credentials
+- **HTTPRoute** — routing rules (path-based, weighted)
 
 ## Resources
 

@@ -26,9 +26,4 @@ if ! grep -q "rateLimit" /root/policies/comprehensive-security.yaml; then
   exit 1
 fi
 
-if [ ! -f /root/policies/test-all-policies.sh ]; then
-  fail-message "Comprehensive test script not found at /root/policies/test-all-policies.sh. Please create it."
-  exit 1
-fi
-
 echo "🎉 Track complete! You've built a defense-in-depth security posture for your AI gateway."

@@ -114,63 +114,7 @@ Apply it:
 kubectl apply -f /root/policies/credential-leak.yaml 2>/dev/null || echo "Note: Credential leak prevention requires Enterprise. Policy file created for reference."
 ```
 
-## Step 3: Simulate Credential Detection
-
-Create a test that shows what credential leak prevention catches in responses:
-
-```bash
-cat <<'SCRIPT' > /root/policies/test-credential-leak.sh
-#!/bin/bash
-echo "=== Credential Leak Detection Test ==="
-echo ""
-echo "Scanning simulated LLM responses for leaked credentials..."
-echo ""
-
-# Simulated LLM responses that contain credentials
-declare -a RESPONSES=(
-  "API Key|Here's your config: OPENAI_API_KEY=sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234|sk-proj-[a-zA-Z0-9]+"
-  "AWS Key|Your AWS access key is AKIAIOSFODNN7EXAMPLE and secret is wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY|AKIA[0-9A-Z]{16}"
-  "JWT Token|Use this token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U|eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+"
-  "DB Connection|Connect to: postgresql://admin:SuperSecret123!@db.prod.internal:5432/myapp|://[^:]+:[^@]+@"
-  "Clean response|The capital of France is Paris. It has a population of about 2 million.|NO_MATCH"
-)
-
-LEAKED=0
-CLEAN=0
-
-for resp in "${RESPONSES[@]}"; do
-  IFS='|' read -r desc content pattern <<< "$resp"
-
-  if [ "$pattern" = "NO_MATCH" ]; then
-    echo "✅ CLEAN: $desc"
-    echo "   Response: \"${content:0:80}...\""
-    ((CLEAN++))
-  elif echo "$content" | grep -qP "$pattern"; then
-    echo "🚫 CREDENTIAL DETECTED: $desc"
-    echo "   Response: \"${content:0:80}...\""
-    echo "   → Would be REDACTED before reaching the client"
-    ((LEAKED++))
-  fi
-  echo ""
-done
-
-echo "=== Results ==="
-echo "🚫 Credentials caught: $LEAKED"
-echo "✅ Clean responses: $CLEAN"
-echo ""
-echo "With Enterprise credential leak prevention, detected secrets"
-echo "are automatically redacted in the response body."
-SCRIPT
-chmod +x /root/policies/test-credential-leak.sh
-```
-
-Run it:
-
-```bash
-/root/policies/test-credential-leak.sh
-```
-
-## Step 4: Show the Current Gap
+## Step 3: Show the Current Gap
 
 Send a request that would cause credential echo-back through our unprotected gateway:
 

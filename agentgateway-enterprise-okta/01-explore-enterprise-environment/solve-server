@@ -1,10 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
-cat > /root/environment-verified.txt << 'EOF'
-Enterprise AgentGateway Environment Verified
-- Controller: running in enterprise-agentgateway namespace
-- GatewayClass: enterprise-agentgateway
-- CRDs: AgentgatewayBackend, EnterpriseAgentgatewayParameters, EnterpriseAgentgatewayPolicy
-- Monitoring: Grafana + Tempo + Prometheus in monitoring namespace
-- OpenAI secret: configured
-EOF
+
+kubectl get pods -n enterprise-agentgateway
+kubectl get gatewayclass
+kubectl get pods -n monitoring
+kubectl get secret openai-secret -n enterprise-agentgateway

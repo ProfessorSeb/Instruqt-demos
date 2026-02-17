@@ -1,19 +1,9 @@
 #!/bin/bash
 set -euxo pipefail
 
-if [ ! -f /root/mcp-benefits.txt ]; then
-  fail-message "Please create the /root/mcp-benefits.txt file as described in the instructions."
-  exit 1
-fi
-
-if [ "$(wc -l < /root/mcp-benefits.txt)" -lt 4 ]; then
-  fail-message "The /root/mcp-benefits.txt file seems too short. Please list at least 4 benefits of using AgentGateway for MCP."
-  exit 1
-fi
-
 # Check AgentGateway is running
 if ! kubectl get pods -n agentgateway-system | grep -q Running; then
-  fail-message "AgentGateway pods don't seem to be running. Check: kubectl get pods -n agentgateway-system"
+  fail-message "Agentgateway pods don't seem to be running. Check: kubectl get pods -n agentgateway-system"
   exit 1
 fi
 
@@ -23,4 +13,4 @@ if ! kubectl -n agentgateway-system get gateway agentgateway-proxy &>/dev/null; 
   exit 1
 fi
 
-echo "Great job! You understand why MCP + AgentGateway matters. Let's build it!"
+echo "Great job! You understand why MCP + Agentgateway matters. Let's build it!"

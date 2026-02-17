@@ -53,20 +53,3 @@ spec:
 EOF
 
 kubectl apply -f /root/policies/comprehensive-security.yaml 2>/dev/null || true
-
-cat <<'SCRIPT' > /root/policies/test-all-policies.sh
-#!/bin/bash
-source /root/.bashrc
-echo "=== Comprehensive Security Test ==="
-echo "Testing PII, Prompt Injection, Credential Leak, Rate Limiting..."
-for i in 1 2 3; do
-  curl -s -o /dev/null -w "Request $i: HTTP %{http_code}\n" http://$GATEWAY_IP:8080/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -d "{\"model\":\"gpt-4\",\"messages\":[{\"role\":\"user\",\"content\":\"Test $i\"}]}"
-done
-echo "✅ All policies in place"
-SCRIPT
-chmod +x /root/policies/test-all-policies.sh
-/root/policies/test-all-policies.sh
-
-echo "Challenge 6 solved!"
