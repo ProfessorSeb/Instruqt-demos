@@ -42,6 +42,7 @@ First, let's confirm that all tools are currently accessible:
 ```bash
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq '.result.tools[].name'
 ```
 
@@ -52,6 +53,7 @@ Try calling a tool to confirm it works:
 ```bash
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}},"id":2}' | jq .
 ```
 
@@ -96,6 +98,7 @@ This policy uses **CEL expressions** to match tools:
 ```bash
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":3}' | jq '.result.tools[].name'
 ```
 
@@ -106,6 +109,7 @@ Any tools starting with `delete` or `drop` should no longer appear in the list! 
 ```bash
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"delete_something","arguments":{}},"id":4}' | jq .
 ```
 

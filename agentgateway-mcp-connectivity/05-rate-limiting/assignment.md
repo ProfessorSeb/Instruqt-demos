@@ -75,7 +75,7 @@ Let's hit the MCP endpoint rapidly and see what happens:
 ```bash
 echo "=== Sending 8 rapid requests to MCP endpoint ==="
 for i in $(seq 1 8); do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/mcp \
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/mcp \ -H "Accept: application/json, text/event-stream"
     -H "Content-Type: application/json" \
     -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":$i}")
   echo "Request $i: HTTP $STATUS"

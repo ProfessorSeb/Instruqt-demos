@@ -139,6 +139,7 @@ Key configuration:
 ```bash
 curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
@@ -157,6 +158,7 @@ TOKEN=$(curl -s http://localhost:8180/realms/agentgateway/protocol/openid-connec
 
 curl -s http://localhost:8080/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```

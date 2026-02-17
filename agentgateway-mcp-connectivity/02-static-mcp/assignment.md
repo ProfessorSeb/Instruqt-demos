@@ -141,20 +141,34 @@ kubectl apply -f /root/mcp-route.yaml
 
 ## Step 4: Test It! 🧪
 
-The agentgateway-proxy is already port-forwarded to `localhost:8080`. Test the MCP protocol — list available tools:
+The agentgateway-proxy is already port-forwarded to `localhost:8080`. Since the MCP backend uses SSE transport, you need to include the `Accept` header for both JSON and event-stream.
+
+List available tools:
 
 ```bash
-curl -s http://localhost:8080/mcp -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
 You should see the `fetch` tool listed! Now call it:
 
 ```bash
-curl -s http://localhost:8080/mcp -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}},"id":2}' | jq .
 ```
 
-You can also use the **MCP Inspector** tab to visually inspect and test your MCP server connection. Point it at `http://localhost:8080/mcp` to see available tools.
+## Step 5: Explore with MCP Inspector 🔍
+
+Switch to the **MCP Inspector** tab. In the inspector UI:
+
+1. Set the transport type to **SSE**
+2. Enter the URL: `http://localhost:8080/mcp`
+3. Click **Connect**
+
+You'll be able to browse available tools and test them interactively — much nicer than curl!
 
 🎉 You just routed MCP traffic through Agentgateway! The agent sends standard JSON-RPC, the gateway routes it to the right MCP server.

@@ -220,21 +220,21 @@ kubectl apply -f /root/federation-routes.yaml
 Test GitHub tools via the gateway:
 
 ```bash
-curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp/github -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
 Test Slack tools:
 
 ```bash
-curl -s http://localhost:8080/mcp/slack -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp/slack -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 
 The original fetch route still works too:
 
 ```bash
-curl -s http://localhost:8080/mcp -H "Content-Type: application/json" \
+curl -s http://localhost:8080/mcp -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq .
 ```
 

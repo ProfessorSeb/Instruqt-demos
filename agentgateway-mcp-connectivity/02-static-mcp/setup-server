@@ -5,8 +5,19 @@ set -euxo pipefail
 export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-# Start MCP Inspector in background (port 6274)
-nohup npx @modelcontextprotocol/inspector > /tmp/mcp-inspector.log 2>&1 &
+# Start MCP Inspector in background on port 6274
+# Use CLIENT_PORT for the UI and SERVER_PORT for the proxy
+nohup npx -y @modelcontextprotocol/inspector \
+  --port 6274 > /tmp/mcp-inspector.log 2>&1 &
+
+# Wait for inspector to be listening
+for i in $(seq 1 30); do
+  if ss -tlnp | grep -q ':6274'; then
+    echo "MCP Inspector is ready on port 6274"
+    break
+  fi
+  sleep 1
+done
 
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
