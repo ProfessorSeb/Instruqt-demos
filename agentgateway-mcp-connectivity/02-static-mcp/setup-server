@@ -5,10 +5,25 @@ set -euxo pipefail
 export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-# Start MCP Inspector in background on port 6274
-# Use CLIENT_PORT for the UI and SERVER_PORT for the proxy
-nohup npx -y @modelcontextprotocol/inspector \
-  --port 6274 > /tmp/mcp-inspector.log 2>&1 &
+# Create MCP Inspector as a systemd service so it persists across challenges
+cat <<'SVCEOF' > /etc/systemd/system/mcp-inspector.service
+[Unit]
+Description=MCP Inspector
+After=network.target
+[Service]
+Restart=always
+RestartSec=3s
+Environment="NVM_DIR=/root/.nvm"
+Environment="DANGEROUSLY_OMIT_AUTH=true"
+Environment="CLIENT_PORT=6274"
+Environment="HOST=0.0.0.0"
+ExecStart=/bin/bash -c 'source /root/.nvm/nvm.sh && npx -y @modelcontextprotocol/inspector'
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+systemctl daemon-reload
+systemctl enable mcp-inspector
+systemctl start mcp-inspector
 
 # Wait for inspector to be listening
 for i in $(seq 1 30); do
@@ -18,6 +33,9 @@ for i in $(seq 1 30); do
   fi
   sleep 1
 done
+
+# Ensure port-forward is running (systemd service from track setup)
+systemctl restart agentgateway-proxy || true
 
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
