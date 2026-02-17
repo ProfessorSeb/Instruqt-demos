@@ -31,6 +31,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 # Store OpenAI key for later use (namespace doesn't exist yet — created during challenge 2)
 if [ -n "${OPENAI_API_KEY:-}" ]; then
   echo "$OPENAI_API_KEY" > /root/.openai-api-key
+  echo "export OPENAI_API_KEY=${OPENAI_API_KEY}" >> ~/.bashrc
   echo "=== OpenAI API key stored for later use ==="
 else
   echo "=== WARNING: OPENAI_API_KEY not set ==="
