@@ -1,27 +1,26 @@
 #!/bin/bash
 set -euxo pipefail
+
+# Generate traffic
+pkill -f "port-forward.*ai-gateway" || true
+kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+sleep 3
+
+for i in $(seq 1 5); do
+  curl -s http://localhost:8080/openai/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "gpt-4o-mini",
+      "messages": [{"role": "user", "content": "Count to 3"}],
+      "max_tokens": 20
+    }' | jq -r '.choices[0].message.content' 2>/dev/null || true
+done
+
 # Check logs
-kubectl logs -n agentgateway-system -l app=agentgateway --tail=50 || true
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=20 || true
 
-# Create observability notes
-cat > /root/observability-notes.txt << 'EOF'
-AgentGateway OSS Observability:
-
-Structured Logs:
-- Every request logged with provider, model, status, latency
-- Accessible via kubectl logs or any log aggregator
-
-Prometheus Metrics:
-- Request count by provider/model/status
-- Latency histograms (p50, p95, p99)
-- Token usage (input/output)
-- Error rates
-
-What Enterprise Adds:
-- Langfuse integration for full LLM observability
-- Trace correlation across agent chains
-- Cost tracking and attribution by team/agent
-- Prompt/response content logging (opt-in)
-EOF
-
-cat /root/observability-notes.txt
+# Check metrics
+AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy -o jsonpath='{.items[0].metadata.name}') || true
+kubectl port-forward -n agentgateway-system $AG_POD 9091:9091 &
+sleep 2
+curl -s http://localhost:9091/metrics | grep -i "agentgateway\|llm\|ai_\|envoy" | head -30 || true

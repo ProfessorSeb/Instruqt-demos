@@ -1,14 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Check that observability notes were created
-if [ ! -f /root/observability-notes.txt ]; then
-  fail-message "Please create the /root/observability-notes.txt file as described in the instructions. This summarizes what AgentGateway observability gives you."
-  exit 1
-fi
-
-if ! grep -qi "metrics\|logs\|langfuse" /root/observability-notes.txt; then
-  fail-message "The observability-notes.txt file doesn't seem to contain the expected content. Please follow the instructions to create it with the observability summary."
+# Just verify the proxy pods are running (logs and metrics were explored interactively)
+kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --no-headers | grep -q Running
+if [ $? -ne 0 ]; then
+  fail-message "Agentgateway proxy pods are not running. Check 'kubectl get pods -n agentgateway-system'."
   exit 1
 fi
 

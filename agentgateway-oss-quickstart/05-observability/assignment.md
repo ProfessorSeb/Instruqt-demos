@@ -27,7 +27,7 @@ enhanced_loading: null
 
 # See What Your Agents Are Doing
 
-You've got a gateway routing traffic to multiple LLM providers. But one of the biggest reasons to use a gateway is **observability** — knowing what your agents are actually doing.
+You've got a gateway routing traffic to OpenAI models with load balancing. But one of the biggest reasons to use a gateway is **observability** — knowing what your agents are actually doing.
 
 ## The Observability Gap
 
@@ -38,16 +38,22 @@ When agents call LLMs directly, you're blind:
 - How long did the request take?
 - Did it fail? How often?
 
-You might get some of this from your LLM provider's dashboard, but it's fragmented across providers, delayed, and doesn't tie back to your agents.
+You might get some of this from your LLM provider's dashboard, but it's fragmented, delayed, and doesn't tie back to your agents.
 
 **Agentgateway captures all of this at the gateway layer** — in real time, across all providers.
 
 ## Step 1: Check Agentgateway Logs
 
-Agentgateway logs every proxied request. Let's look:
+First, let's see what pods are running:
 
 ```bash
-kubectl logs -n agentgateway-system -l app=agentgateway --tail=50
+kubectl get pods -n agentgateway-system --show-labels
+```
+
+Now check the gateway proxy logs — this is where request-level data lives:
+
+```bash
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=50
 ```
 
 You'll see structured log entries for each request that passed through the gateway, including:
@@ -56,20 +62,50 @@ You'll see structured log entries for each request that passed through the gatew
 - Response status code
 - Latency
 
-## Step 2: Explore Gateway Metrics
+> 💡 If logs are empty, send a few requests first (from the previous challenge) and check again.
+
+## Step 2: Generate Some Traffic
+
+Let's send a few requests so we have data to observe:
+
+```bash
+# Make sure port-forward is running
+pkill -f "port-forward.*ai-gateway" || true
+kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+sleep 3
+
+# Send 5 requests
+for i in $(seq 1 5); do
+  curl -s http://localhost:8080/openai/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "gpt-4o-mini",
+      "messages": [{"role": "user", "content": "Count to 3"}],
+      "max_tokens": 20
+    }' | jq -r '.choices[0].message.content' 2>/dev/null
+done
+```
+
+Now check the logs again:
+
+```bash
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy --tail=20
+```
+
+## Step 3: Explore Gateway Metrics
 
 Agentgateway exposes Prometheus-compatible metrics. Let's check what's available:
 
 ```bash
-# Find the Agentgateway pod
-AG_POD=$(kubectl get pods -n agentgateway-system -l app=agentgateway -o jsonpath='{.items[0].metadata.name}')
+# Find the proxy pod
+AG_POD=$(kubectl get pods -n agentgateway-system -l app.kubernetes.io/name=agentgateway-proxy -o jsonpath='{.items[0].metadata.name}')
 
 # Port-forward to the metrics endpoint
-kubectl port-forward -n agentgateway-system $AG_POD 9090:9090 &
+kubectl port-forward -n agentgateway-system $AG_POD 9091:9091 &
 sleep 2
 
 # Fetch metrics
-curl -s http://localhost:9090/metrics | grep -i "agentgateway\|llm\|ai_" | head -30
+curl -s http://localhost:9091/metrics | grep -i "agentgateway\|llm\|ai_\|envoy" | head -30
 ```
 
 These metrics include:
@@ -78,43 +114,25 @@ These metrics include:
 - **Token usage** (input and output tokens)
 - **Error rates** by provider
 
-## Step 3: Create an Observability Summary
+## What You Get Out of the Box
 
-Let's document what Agentgateway observability gives you out of the box:
-
-```bash
-cat > /root/observability-notes.txt << 'EOF'
-Agentgateway OSS Observability:
-
-Structured Logs:
+**Structured Logs:**
 - Every request logged with provider, model, status, latency
-- Accessible via kubectl logs or any log aggregator
+- Accessible via `kubectl logs` or any log aggregator (Datadog, Splunk, ELK)
 
-Prometheus Metrics:
+**Prometheus Metrics:**
 - Request count by provider/model/status
 - Latency histograms (p50, p95, p99)
 - Token usage (input/output)
 - Error rates
 
-What Enterprise Adds:
-- Langfuse integration for full LLM observability
-- Trace correlation across agent chains
-- Cost tracking and attribution by team/agent
-- Prompt/response content logging (opt-in)
-EOF
-
-cat /root/observability-notes.txt
-```
-
-## Why This Is a Big Deal
-
-With these metrics, you can answer questions like:
+With these, you can answer questions like:
 - "Which agent is consuming the most tokens?" → Cost attribution
 - "Is GPT-4o slower than GPT-4o-mini for our use case?" → Model comparison
 - "How many requests are failing?" → Reliability monitoring
 - "What's our total LLM spend this week?" → Budget tracking
 
-All from a single dashboard, regardless of how many providers you use.
+All from a single dashboard, regardless of how many models you use.
 
 ## Going Further: Langfuse Integration
 
