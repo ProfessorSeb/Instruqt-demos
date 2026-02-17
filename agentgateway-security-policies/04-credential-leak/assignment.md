@@ -21,6 +21,10 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---

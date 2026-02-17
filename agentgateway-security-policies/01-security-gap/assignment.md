@@ -23,6 +23,10 @@ tabs:
   type: code
   hostname: server
   path: /root
+- title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -66,7 +70,7 @@ kubectl get pods -l app=mock-llm
 
 ## Step 2: Create the Gateway Resource
 
-Create a Gateway that will be the entry point for all AI agent traffic:
+Create a Gateway that will be the entry point for all AI agent traffic. Notice we reference the `tracing` parameters so all requests are traced and visible in the Solo UI:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -77,6 +81,11 @@ metadata:
   namespace: default
 spec:
   gatewayClassName: enterprise-agentgateway
+  infrastructure:
+    parametersRef:
+      name: tracing
+      group: enterpriseagentgateway.solo.io
+      kind: EnterpriseAgentgatewayParameters
   listeners:
     - name: http
       port: 8080
@@ -163,11 +172,23 @@ Let's save the gateway address for use in later challenges:
 echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
 ```
 
+## Step 6: Explore the Solo UI
+
+Switch to the **Solo UI** tab. The Enterprise UI gives you real-time visibility into:
+
+- Request monitoring and traces
+- Policy visualization
+- Backend health status
+- Token usage metrics
+
+As you work through the remaining challenges, check the UI to see how each policy affects traffic in real time.
+
 ## ✅ What You've Learned
 
-- Agentgateway is installed and routing traffic
+- Enterprise Agentgateway is installed with tracing and the Solo UI
 - Without security policies, **everything passes through unchanged**
 - PII, prompt injections, and credentials flow freely
+- The Solo UI gives you visibility into all gateway traffic
 - You need gateway-level policies to fix this — and that's what the next 5 challenges are about
 
 **Next up:** PII Protection — your first line of defense.
