@@ -1,16 +1,4 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Check that the problems file was created
-if [ ! -f /root/problems.txt ]; then
-  fail-message "Please create the /root/problems.txt file as described in the instructions. This helps solidify the 'why' before we jump into the 'how'."
-  exit 1
-fi
-
-# Check it has meaningful content
-if [ "$(wc -l < /root/problems.txt)" -lt 3 ]; then
-  fail-message "The /root/problems.txt file seems too short. Please follow the instructions to create it with the list of problems with direct LLM access."
-  exit 1
-fi
-
-echo "Great job! You've identified the core problems. Let's fix them with AgentGateway."
+echo "You've seen the problems with direct LLM access. Let's fix them with Agentgateway."

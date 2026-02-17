@@ -71,27 +71,16 @@ You should get a real response from OpenAI. But notice what just happened:
 3. **No rate limiting** — this agent could fire 10,000 requests per second
 4. **No content filtering** — anything goes in the prompt and response
 
-## Create a File to Record What You've Learned
+## The Problems with Direct LLM Access
 
-Create a file that captures the problems with direct LLM access:
+Think about what just happened. Scale that to 20 agents across 5 teams:
 
-```bash
-cat > /root/problems.txt << 'EOF'
-Problems with direct agent-to-LLM communication:
-1. API keys scattered across agents and repos
-2. No centralized audit trail or logging
-3. No rate limiting or cost controls
-4. No content filtering or PII protection
-5. No unified observability across providers
-6. Each team solves these problems independently
-EOF
-```
-
-Now view it:
-
-```bash
-cat /root/problems.txt
-```
+1. **API keys scattered** across agents and repos
+2. **No centralized audit trail** or logging
+3. **No rate limiting** or cost controls
+4. **No content filtering** or PII protection
+5. **No unified observability** across providers
+6. **Each team solves these problems independently**
 
 ## The Solution
 
