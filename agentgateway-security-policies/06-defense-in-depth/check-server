@@ -6,23 +6,23 @@ if [ ! -f /root/policies/comprehensive-security.yaml ]; then
   exit 1
 fi
 
-if ! grep -q "pii" /root/policies/comprehensive-security.yaml; then
-  fail-message "Comprehensive policy should include PII protection."
+if ! grep -q "promptGuard" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include promptGuard configuration."
   exit 1
 fi
 
-if ! grep -q "promptInjection" /root/policies/comprehensive-security.yaml; then
-  fail-message "Comprehensive policy should include prompt injection guard."
+if ! grep -q "Reject" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include Reject action for request-side protection."
   exit 1
 fi
 
-if ! grep -q "credentialLeak" /root/policies/comprehensive-security.yaml; then
-  fail-message "Comprehensive policy should include credential leak prevention."
+if ! grep -q "Mask" /root/policies/comprehensive-security.yaml; then
+  fail-message "Comprehensive policy should include Mask action for response-side protection."
   exit 1
 fi
 
-if ! grep -q "rateLimit" /root/policies/comprehensive-security.yaml; then
-  fail-message "Comprehensive policy should include rate limiting."
+if ! kubectl get enterpriseagentgatewaypolicy comprehensive-security -n default &>/dev/null; then
+  fail-message "The comprehensive-security EnterpriseAgentgatewayPolicy is not applied to the cluster. Run: kubectl apply -f /root/policies/comprehensive-security.yaml"
   exit 1
 fi
 

@@ -24,23 +24,25 @@ fi
 
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
-echo "=== Installing Gateway API CRDs ==="
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+echo "=== Installing Gateway API CRDs (v1.4.0) ==="
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
 
-echo "=== Installing AgentGateway CRDs ==="
-helm install agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+echo "=== Installing Enterprise AgentGateway CRDs ==="
+helm upgrade -i --create-namespace \
   --namespace agentgateway-system \
-  --create-namespace \
-  --version v2.2.0 \
-  --wait
+  --version 2.1.1 \
+  enterprise-agentgateway-crds \
+  oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway-crds
 
-echo "=== Installing AgentGateway Control Plane ==="
-helm install agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
-  --namespace agentgateway-system \
-  --version v2.2.0 \
+echo "=== Installing Enterprise AgentGateway Control Plane ==="
+helm upgrade -i -n agentgateway-system \
+  enterprise-agentgateway \
+  oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway \
+  --version 2.1.1 \
+  --set-string licensing.licenseKey=${AGENTGATEWAY_LICENSE_KEY} \
   --wait --timeout 120s
 
-kubectl -n agentgateway-system rollout status deployment/agentgateway --timeout=120s
+kubectl -n agentgateway-system rollout status deployment/enterprise-agentgateway --timeout=120s
 
 echo "=== Deploying mock LLM backend ==="
 cat <<'K8SEOF' | kubectl apply -f -
@@ -159,4 +161,4 @@ else
     --dry-run=client -oyaml | kubectl apply -f -
 fi
 
-echo "=== Track setup complete ==="
+echo "=== Track setup complete (Enterprise AgentGateway) ==="

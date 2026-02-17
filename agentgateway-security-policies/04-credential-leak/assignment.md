@@ -8,10 +8,9 @@ notes:
 - type: text
   contents: "# \U0001F511 Credential Leak Prevention\n\nWe've protected what goes
     **in** to the LLM. Now let's protect what comes **out**.\n\n**In this challenge,
-    you'll:**\n\n- Create a credential leak detection policy\n- Scan for API keys,
-    AWS keys, JWTs, and passwords in responses\n- Understand response-side scanning
-    vs request-side filtering\n\n> ℹ️ Credential leak prevention is an **Enterprise**
-    feature.\n"
+    you'll:**\n\n- Create a response-side prompt guard policy\n- Scan for API keys
+    and secrets in LLM responses\n- See the gateway mask credentials before they reach
+    users\n"
 tabs:
 - id: gbokxxmdqy6y
   title: Terminal
@@ -49,74 +48,74 @@ An agent calls a tool that returns credentials, and the LLM passes them to the u
 
 In all cases, secrets end up in API responses — logged, cached, and potentially exposed.
 
-## 🏢 OSS vs Enterprise
-
-> **Important:** Credential leak prevention is an **Agentgateway Enterprise** feature. We'll create the policy and simulate the detection behavior.
-
 ## Step 1: Understand the Policy
 
-Credential leak prevention scans **LLM responses** (not requests) for secret patterns:
+Credential leak prevention uses **response-side prompt guards** to scan LLM responses for secret patterns and mask them:
 
 ```yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: credential-leak-prevention
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    security:
-      credentialLeak:
-        action: REDACT          # REDACT or BLOCK
-        detectors:
-          - type: API_KEY        # Generic API key patterns
-          - type: AWS_KEY        # AWS access key IDs
-          - type: PRIVATE_KEY    # RSA/SSH private keys
-          - type: JWT            # JSON Web Tokens
-          - type: PASSWORD_IN_URL # Passwords in connection strings
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        response:
+        - regex:
+            action: Mask
+            matches:
+            - "sk-[a-zA-Z0-9]{20,}"
+            - "ghp_[a-zA-Z0-9]{36}"
+            - "AKIA[0-9A-Z]{16}"
+            - "xoxb-[a-zA-Z0-9-]+"
 ```
 
-This is **response-side scanning** — it inspects what the LLM sends back, not what goes in.
+This is **response-side scanning** — it inspects what the LLM sends back, not what goes in. The `Mask` action replaces matched patterns with `X` characters.
 
 ## Step 2: Create the Policy
 
 ```bash
 cat <<EOF > /root/policies/credential-leak.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: credential-leak-prevention
   namespace: default
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    security:
-      credentialLeak:
-        action: REDACT
-        detectors:
-          - type: API_KEY
-          - type: AWS_KEY
-          - type: PRIVATE_KEY
-          - type: JWT
-          - type: PASSWORD_IN_URL
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        response:
+        - regex:
+            action: Mask
+            matches:
+            - "sk-[a-zA-Z0-9]{20,}"
+            - "ghp_[a-zA-Z0-9]{36}"
+            - "AKIA[0-9A-Z]{16}"
+            - "xoxb-[a-zA-Z0-9-]+"
 EOF
+
+kubectl apply -f /root/policies/credential-leak.yaml
 ```
 
-Apply it:
+Verify:
 
 ```bash
-kubectl apply -f /root/policies/credential-leak.yaml 2>/dev/null || echo "Note: Credential leak prevention requires Enterprise. Policy file created for reference."
+kubectl get enterpriseagentgatewaypolicies -n default
 ```
 
-## Step 3: Show the Current Gap
+## Step 3: Test Credential Masking
 
-Send a request that would cause credential echo-back through our unprotected gateway:
+Send a request that would cause credential echo-back:
 
 ```bash
 source /root/.bashrc
@@ -128,19 +127,37 @@ curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
     "messages": [
       {
         "role": "user",
-        "content": "Review my config: DATABASE_URL=postgresql://admin:P@ssw0rd123@db.prod.internal:5432/app OPENAI_KEY=sk-proj-abc123xyz"
+        "content": "Review my config: OPENAI_KEY=sk-proj-abc123xyz456789012345"
       }
     ]
-  }' | jq -r '.choices[0].message.content'
+  }' | jq .
 ```
 
-The credentials pass through in both directions. With Enterprise, the response would have them redacted.
+With the policy active, any `sk-` prefixed API keys in the response will be masked with `X` characters before reaching the user.
+
+Try with other credential patterns:
+
+```bash
+curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Check this AWS key: AKIAIOSFODNN7EXAMPLE"
+      }
+    ]
+  }' | jq .
+```
+
+The gateway masks credentials in responses regardless of how they got there — echo-back, RAG context, or training data leakage.
 
 ## ✅ What You've Learned
 
 - LLM responses can leak credentials through echo-back, RAG context, and training data
-- Agentgateway Enterprise scans **responses** for API keys, AWS keys, JWTs, and more
-- Detected credentials are **redacted** before reaching the client
+- Enterprise Agentgateway's response-side prompt guards scan and **mask secrets in responses**
+- Custom regex patterns catch API keys, AWS keys, GitHub tokens, and more
 - This is the response-side complement to request-side PII protection
 
 **Next up:** Rate Limiting — controlling AI spend before it controls you.

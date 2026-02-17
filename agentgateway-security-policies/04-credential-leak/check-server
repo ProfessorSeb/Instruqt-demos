@@ -6,13 +6,18 @@ if [ ! -f /root/policies/credential-leak.yaml ]; then
   exit 1
 fi
 
-if ! grep -q "credentialLeak" /root/policies/credential-leak.yaml; then
-  fail-message "Policy file doesn't contain credentialLeak configuration."
+if ! grep -q "promptGuard" /root/policies/credential-leak.yaml; then
+  fail-message "Policy file doesn't contain promptGuard configuration."
   exit 1
 fi
 
-if ! grep -q "API_KEY" /root/policies/credential-leak.yaml; then
-  fail-message "Policy should include API_KEY detector."
+if ! grep -q "Mask" /root/policies/credential-leak.yaml; then
+  fail-message "Policy should use action: Mask to mask credentials in responses."
+  exit 1
+fi
+
+if ! kubectl get enterpriseagentgatewaypolicy credential-leak-prevention -n default &>/dev/null; then
+  fail-message "The credential-leak-prevention EnterpriseAgentgatewayPolicy is not applied to the cluster. Run: kubectl apply -f /root/policies/credential-leak.yaml"
   exit 1
 fi
 

@@ -6,18 +6,24 @@ if [ ! -f /root/policies/pii-protection.yaml ]; then
   exit 1
 fi
 
-if ! grep -q "pii" /root/policies/pii-protection.yaml; then
-  fail-message "The policy file doesn't contain PII configuration. Check the file content matches the instructions."
+if ! grep -q "promptGuard" /root/policies/pii-protection.yaml; then
+  fail-message "The policy file doesn't contain promptGuard configuration. Check the file content matches the instructions."
   exit 1
 fi
 
-if ! grep -q "REDACT" /root/policies/pii-protection.yaml; then
-  fail-message "The policy file should have action: REDACT. Check the file content."
+if ! grep -q "Reject" /root/policies/pii-protection.yaml; then
+  fail-message "The policy should use action: Reject for request-side PII blocking."
   exit 1
 fi
 
-if ! grep -q "SSN" /root/policies/pii-protection.yaml; then
-  fail-message "The policy should include SSN detector. Check the detectors list."
+if ! grep -q "Ssn\|CreditCard" /root/policies/pii-protection.yaml; then
+  fail-message "The policy should include built-in PII matchers (Ssn, CreditCard). Check the builtins list."
+  exit 1
+fi
+
+# Check it's actually applied to the cluster
+if ! kubectl get enterpriseagentgatewaypolicy pii-protection -n default &>/dev/null; then
+  fail-message "The pii-protection EnterpriseAgentgatewayPolicy is not applied to the cluster. Run: kubectl apply -f /root/policies/pii-protection.yaml"
   exit 1
 fi
 

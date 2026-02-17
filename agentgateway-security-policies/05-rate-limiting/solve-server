@@ -3,7 +3,7 @@ set -euxo pipefail
 mkdir -p /root/policies
 
 cat <<EOF > /root/policies/rate-limit.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: AgentGatewayPolicy
 metadata:
   name: rate-limit
@@ -24,7 +24,7 @@ EOF
 kubectl apply -f /root/policies/rate-limit.yaml 2>/dev/null || true
 
 cat <<EOF > /root/policies/token-rate-limit.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: AgentGatewayPolicy
 metadata:
   name: token-rate-limit

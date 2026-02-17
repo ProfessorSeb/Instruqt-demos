@@ -3,16 +3,15 @@ slug: pii-protection
 id: 3o8dxkorzzke
 type: challenge
 title: PII Protection — Stop Sensitive Data from Reaching LLMs
-teaser: Redact personally identifiable information at the gateway before it reaches
+teaser: Block personally identifiable information at the gateway before it reaches
   third-party LLMs.
 notes:
 - type: text
   contents: "# \U0001F6E1️ PII Protection\n\nSSNs, emails, credit cards — all flowing
     to third-party LLMs unfiltered.\n\n**In this challenge, you'll:**\n\n- Create
-    an AgentgatewayPolicy for PII redaction\n- Understand REDACT vs BLOCK vs LOG actions\n-
-    Simulate what PII protection looks like in practice\n- See how the gateway transforms
-    requests transparently\n\n> ℹ️ PII protection is an **Enterprise** feature. You'll
-    learn the concepts and create the policy YAML.\n"
+    an EnterpriseAgentgatewayPolicy with prompt guards\n- Block requests containing
+    PII using built-in regex matchers\n- Mask credit card numbers in LLM responses\n-
+    See the gateway enforce protection in real time\n"
 tabs:
 - id: kffafiugzg3y
   title: Terminal
@@ -41,104 +40,114 @@ Every time an AI agent processes user data, there's a risk of PII leaking to thi
 
 Third-party LLM providers may log, train on, or store this data. Even if they promise not to — **the data still leaves your network**.
 
-The fix? **Redact PII at the gateway** — before it ever reaches the LLM.
-
-## 🏢 OSS vs Enterprise
-
-> **Important:** PII protection is an **Agentgateway Enterprise** feature. In this challenge, we'll create the policy YAML and understand how it works conceptually. The policy structure is real — it just requires an Enterprise license to enforce.
->
-> We'll use our mock LLM to simulate the behavior so you can see the concept in action.
+The fix? **Block PII at the gateway** — before it ever reaches the LLM.
 
 ## Step 1: Understand the Policy
 
-Agentgateway uses `AgentgatewayPolicy` resources to define security rules. Here's what a PII protection policy looks like:
+Enterprise Agentgateway uses `EnterpriseAgentgatewayPolicy` resources with **prompt guards** to detect and block PII. The policy uses built-in regex matchers for common PII types:
 
 ```yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: pii-protection
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    security:
-      pii:
-        action: REDACT          # REDACT, BLOCK, or LOG
-        detectors:
-          - type: SSN            # Social Security Numbers
-          - type: EMAIL          # Email addresses
-          - type: PHONE          # Phone numbers
-          - type: CREDIT_CARD    # Credit card numbers
-          - type: ADDRESS        # Physical addresses
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - response:
+            message: "🚫 Rejected - PII detected in request"
+          regex:
+            action: Reject
+            builtins:
+            - CreditCard
+            - Ssn
+        response:
+        - regex:
+            builtins:
+            - CreditCard
+            action: Mask
 ```
 
 Key concepts:
-- **`targetRefs`** — attaches the policy to a specific route (or gateway)
-- **`action: REDACT`** — replaces detected PII with placeholder tokens (e.g., `[SSN_REDACTED]`)
-- **`action: BLOCK`** — rejects the entire request if PII is detected
-- **`action: LOG`** — allows the request but logs the PII detection
-- **`detectors`** — which types of PII to look for
+- **`targetRefs`** — attaches the policy to a specific HTTPRoute
+- **`promptGuard.request`** — scans incoming requests for PII patterns
+- **`action: Reject`** — blocks the request entirely if PII is detected
+- **`action: Mask`** — replaces detected PII in responses with `X` characters
+- **`builtins`** — pre-built regex patterns: `CreditCard`, `Ssn`, `PhoneNumber`, `Email`, `CaSin`
 
 ## Step 2: Create the PII Protection Policy
 
-Create the policy file:
+Create and apply the policy:
 
 ```bash
 cat <<EOF > /root/policies/pii-protection.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: pii-protection
   namespace: default
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    security:
-      pii:
-        action: REDACT
-        detectors:
-          - type: SSN
-          - type: EMAIL
-          - type: PHONE
-          - type: CREDIT_CARD
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - response:
+            message: "🚫 Rejected - PII detected in request"
+          regex:
+            action: Reject
+            builtins:
+            - CreditCard
+            - Ssn
+        response:
+        - regex:
+            builtins:
+            - CreditCard
+            action: Mask
 EOF
+
+kubectl apply -f /root/policies/pii-protection.yaml
 ```
 
-Apply it (this will create the CRD but won't be enforced without Enterprise):
+Verify the policy is accepted:
 
 ```bash
-kubectl apply -f /root/policies/pii-protection.yaml 2>/dev/null || echo "Note: AgentgatewayPolicy CRD requires Enterprise. Policy file created for reference."
+kubectl get enterpriseagentgatewaypolicies -n default
 ```
 
-## Step 3: Simulate PII Redaction
+## Step 3: Test PII Blocking — Request Side
 
-To see what PII protection **would** do, let's simulate it. With Enterprise, the gateway would automatically transform this request:
-
-**Before (what the agent sends):**
-```json
-{
-  "content": "Summarize: John Smith, SSN 123-45-6789, email john@example.com"
-}
-```
-
-**After (what the LLM receives):**
-```json
-{
-  "content": "Summarize: [NAME_REDACTED], SSN [SSN_REDACTED], email [EMAIL_REDACTED]"
-}
-```
-
-Let's demonstrate this by sending a PII-laden request and examining what would happen:
+Now try sending the same PII-laden request from Challenge 1:
 
 ```bash
-# This is what currently goes through (no protection):
 source /root/.bashrc
+curl -v http://$GATEWAY_IP:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Process this customer: Jane Doe, SSN 987-65-4321, card 4532-1234-5678-9012"
+      }
+    ]
+  }'
+```
+
+💥 **The request is rejected!** You should see a `403` response with the message "🚫 Rejected - PII detected in request". The SSN and credit card patterns triggered the built-in matchers.
+
+Now try a clean request without PII:
+
+```bash
 curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -146,59 +155,46 @@ curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
     "messages": [
       {
         "role": "user",
-        "content": "Process this customer: Jane Doe, SSN 987-65-4321, email jane.doe@company.com, phone 415-555-0199, card 4532-1234-5678-9012"
+        "content": "What is the weather like today?"
       }
     ]
   }' | jq .
 ```
 
-Notice all the PII passes through. With Enterprise PII protection enabled, the LLM would instead receive:
+✅ This request passes through — no PII detected.
 
-```
-Process this customer: [NAME], SSN [SSN_REDACTED], email [EMAIL_REDACTED], phone [PHONE_REDACTED], card [CREDIT_CARD_REDACTED]
-```
+## Step 4: Test PII Masking — Response Side
 
-## Step 4: Simulate PII Detection
-
-Let's see what Enterprise PII protection would catch. Run this to simulate detection and redaction:
+The policy also masks credit card numbers in LLM responses. If the LLM returns a credit card number, the gateway replaces it before it reaches the user:
 
 ```bash
-INPUT="Process this customer: Jane Doe, SSN 987-65-4321, email jane.doe@company.com, phone 415-555-0199, card 4532-1234-5678-9012"
-
-echo "📥 Original input:"
-echo "   $INPUT"
-echo ""
-echo "🔍 PII Detected:"
-echo "$INPUT" | grep -oP '\d{3}-\d{2}-\d{4}' && echo "   ↳ SSN found — would be REDACTED"
-echo "$INPUT" | grep -oP '[\w.]+@[\w.]+\.\w+' && echo "   ↳ Email found — would be REDACTED"
-echo "$INPUT" | grep -oP '\d{3}-\d{3}-\d{4}' && echo "   ↳ Phone found — would be REDACTED"
-echo "$INPUT" | grep -oP '\d{4}-\d{4}-\d{4}-\d{4}' && echo "   ↳ Credit card found — would be REDACTED"
-echo ""
-
-REDACTED=$(echo "$INPUT" | \
-  sed 's/[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}/[SSN_REDACTED]/g' | \
-  sed 's/[a-zA-Z0-9.]*@[a-zA-Z0-9.]*\.[a-zA-Z]*/[EMAIL_REDACTED]/g' | \
-  sed 's/[0-9]\{3\}-[0-9]\{3\}-[0-9]\{4\}/[PHONE_REDACTED]/g' | \
-  sed 's/[0-9]\{4\}-[0-9]\{4\}-[0-9]\{4\}-[0-9]\{4\}/[CREDIT_CARD_REDACTED]/g')
-
-echo "📤 What the LLM would receive (with Enterprise PII protection):"
-echo "   $REDACTED"
+curl -s http://$GATEWAY_IP:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What type of number is 5105105105105100?"
+      }
+    ]
+  }' | jq .
 ```
 
-## Step 5: Verify Your Work
+If the LLM response contains a credit card number, the gateway masks it automatically.
 
-Confirm the policy file exists and is valid YAML:
+## Step 5: Verify the Policy
 
 ```bash
-cat /root/policies/pii-protection.yaml
+kubectl get enterpriseagentgatewaypolicies -n default -o yaml
 ```
 
 ## ✅ What You've Learned
 
 - PII routinely leaks through AI agent traffic to third-party LLMs
-- Agentgateway Enterprise's PII protection **redacts sensitive data at the gateway layer**
-- Policies use `AgentgatewayPolicy` CRDs attached to specific routes
-- You can choose to **REDACT**, **BLOCK**, or **LOG** PII detections
+- Enterprise Agentgateway's prompt guards **reject requests containing sensitive data**
+- Built-in regex matchers detect SSNs, credit cards, emails, and phone numbers
+- Response-side masking catches PII in LLM outputs
 - No application code changes needed — the gateway handles it transparently
 
 **Next up:** Prompt Injection Guard — blocking jailbreak attempts.

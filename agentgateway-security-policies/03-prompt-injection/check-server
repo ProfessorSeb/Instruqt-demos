@@ -6,13 +6,18 @@ if [ ! -f /root/policies/prompt-injection.yaml ]; then
   exit 1
 fi
 
-if ! grep -q "promptInjection" /root/policies/prompt-injection.yaml; then
-  fail-message "Policy file doesn't contain promptInjection configuration. Check the file content."
+if ! grep -q "promptGuard" /root/policies/prompt-injection.yaml; then
+  fail-message "Policy file doesn't contain promptGuard configuration. Check the file content."
   exit 1
 fi
 
-if ! grep -q "BLOCK" /root/policies/prompt-injection.yaml; then
-  fail-message "Policy should have action: BLOCK. Check the file content."
+if ! grep -q "Reject" /root/policies/prompt-injection.yaml; then
+  fail-message "Policy should use action: Reject to block injection attempts."
+  exit 1
+fi
+
+if ! kubectl get enterpriseagentgatewaypolicy prompt-injection-guard -n default &>/dev/null; then
+  fail-message "The prompt-injection-guard EnterpriseAgentgatewayPolicy is not applied to the cluster. Run: kubectl apply -f /root/policies/prompt-injection.yaml"
   exit 1
 fi
 

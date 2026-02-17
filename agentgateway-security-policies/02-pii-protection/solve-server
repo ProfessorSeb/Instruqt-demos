@@ -3,25 +3,32 @@ set -euxo pipefail
 mkdir -p /root/policies
 
 cat <<EOF > /root/policies/pii-protection.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: pii-protection
   namespace: default
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    security:
-      pii:
-        action: REDACT
-        detectors:
-          - type: SSN
-          - type: EMAIL
-          - type: PHONE
-          - type: CREDIT_CARD
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - response:
+            message: "🚫 Rejected - PII detected in request"
+          regex:
+            action: Reject
+            builtins:
+            - CreditCard
+            - Ssn
+        response:
+        - regex:
+            builtins:
+            - CreditCard
+            action: Mask
 EOF
 
-kubectl apply -f /root/policies/pii-protection.yaml 2>/dev/null || true
+kubectl apply -f /root/policies/pii-protection.yaml

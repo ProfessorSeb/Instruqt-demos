@@ -76,7 +76,7 @@ metadata:
   name: ai-gateway
   namespace: default
 spec:
-  gatewayClassName: agentgateway
+  gatewayClassName: enterprise-agentgateway
   listeners:
     - name: http
       port: 8080

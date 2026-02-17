@@ -2,54 +2,53 @@
 set -euxo pipefail
 mkdir -p /root/policies
 
+# Clean up individual policies
+kubectl delete enterpriseagentgatewaypolicies --all -n default 2>/dev/null || true
+
 cat <<EOF > /root/policies/comprehensive-security.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentGatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: comprehensive-security
   namespace: default
 spec:
   targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: llm-route
-  default:
-    rateLimit:
-      requests:
-        limit: 100
-        window: 60s
-      tokens:
-        limit: 50000
-        window: 3600s
-      keyType: HEADER
-      keyHeader: x-user-id
-    security:
-      pii:
-        action: REDACT
-        detectors:
-          - type: SSN
-          - type: EMAIL
-          - type: PHONE
-          - type: CREDIT_CARD
-          - type: ADDRESS
-      promptInjection:
-        action: BLOCK
-        sensitivity: MEDIUM
-        customPatterns:
-          - pattern: "ignore.*previous.*instructions"
-            description: "Classic jailbreak"
-          - pattern: "you are now"
-            description: "Role hijacking"
-          - pattern: "output.*system.*prompt"
-            description: "Prompt extraction"
-      credentialLeak:
-        action: REDACT
-        detectors:
-          - type: API_KEY
-          - type: AWS_KEY
-          - type: PRIVATE_KEY
-          - type: JWT
-          - type: PASSWORD_IN_URL
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: llm-route
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - response:
+            message: "🚫 Rejected - PII detected in request"
+          regex:
+            action: Reject
+            builtins:
+            - CreditCard
+            - Ssn
+            - PhoneNumber
+            - Email
+        - response:
+            message: "🚫 Prompt injection detected — request blocked"
+          regex:
+            action: Reject
+            matches:
+            - "(?i)ignore.*previous.*instructions"
+            - "(?i)you are now (DAN|evil|a system)"
+            - "(?i)output.*system.*prompt"
+            - "(?i)do anything now"
+            - "(?i)forget.*your.*rules"
+        response:
+        - regex:
+            action: Mask
+            builtins:
+            - CreditCard
+            matches:
+            - "sk-[a-zA-Z0-9]{20,}"
+            - "ghp_[a-zA-Z0-9]{36}"
+            - "AKIA[0-9A-Z]{16}"
+            - "xoxb-[a-zA-Z0-9-]+"
 EOF
 
-kubectl apply -f /root/policies/comprehensive-security.yaml 2>/dev/null || true
+kubectl apply -f /root/policies/comprehensive-security.yaml

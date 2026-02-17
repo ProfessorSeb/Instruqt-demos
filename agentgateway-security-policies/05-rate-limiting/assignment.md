@@ -76,8 +76,8 @@ Let's create a rate limit that restricts traffic to **5 requests per minute** â€
 
 ```bash
 cat <<EOF > /root/policies/rate-limit.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: rate-limit
   namespace: default
@@ -140,8 +140,8 @@ For cost control, token-based limits are even more powerful. Create an additiona
 
 ```bash
 cat <<EOF > /root/policies/token-rate-limit.yaml
-apiVersion: agentgateway.solo.io/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: token-rate-limit
   namespace: default
