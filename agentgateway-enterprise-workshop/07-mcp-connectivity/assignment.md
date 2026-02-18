@@ -28,11 +28,6 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: mcpinspector01
-  title: MCP Inspector
-  type: service
-  hostname: server
-  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
@@ -147,35 +142,35 @@ EOF
 
 At this point, the MCP server is deployed and reachable through the gateway at `/mcp`. Let's test it.
 
-## Step 4: Test MCP Connectivity with MCP Inspector
+## Step 4: Test MCP Connectivity
 
-Testing MCP servers with `curl` is tricky — the protocol requires session initialization and state management. Instead, we'll use the **[MCP Inspector](https://github.com/modelcontextprotocol/inspector)**, a visual testing tool that handles all of this automatically.
+Testing MCP servers with plain `curl` is tricky — the protocol requires session initialization and state management. We'll use the **[MCP Inspector CLI](https://github.com/modelcontextprotocol/inspector)** which handles all of this automatically.
 
-The setup script pre-created a config file at `/root/mcp-inspector-config.json` that points the Inspector at the gateway's MCP endpoint. Launch it:
+The setup script pre-created a config file at `/root/mcp-inspector-config.json` that points at the gateway's MCP endpoint. First, discover what tools the MCP server exposes:
 
 ```bash
 source /root/.bashrc
 
-HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+npx -y @modelcontextprotocol/inspector --cli \
   --config /root/mcp-inspector-config.json \
-  --server agentgateway &
+  --server agentgateway \
+  --method tools/list
 ```
 
-Now switch to the **MCP Inspector** tab in the Instruqt UI. You should see the Inspector interface.
+You should see the `fetch` tool listed — this is the tool exposed by the `mcp-website-fetcher` server, now discoverable through the gateway.
 
-> **Tip:** If the tab shows a blank page, wait 5-10 seconds and refresh — the Inspector takes a moment to start.
-
-Once the UI loads:
-
-1. Click **Connect** — the Inspector initializes an MCP session with the gateway and establishes the connection
-2. Click **List Tools** — you should see the `fetch` tool appear. This is the tool exposed by the `mcp-website-fetcher` server, now discoverable through the gateway
-3. Click the `fetch` tool, enter `https://httpbin.org/get` in the `url` field, and click **Run Tool** — you should see the HTTP response from httpbin, confirming end-to-end connectivity: **Inspector → Gateway → MCP Server → Internet → back**
-
-When you're done testing, stop the Inspector:
+Now call the tool to fetch a web page:
 
 ```bash
-kill %1 2>/dev/null || true
+npx -y @modelcontextprotocol/inspector --cli \
+  --config /root/mcp-inspector-config.json \
+  --server agentgateway \
+  --method tools/call \
+  --tool-name fetch \
+  --tool-arg url=https://httpbin.org/get
 ```
+
+You should see the HTTP response from httpbin, confirming end-to-end connectivity: **CLI → Gateway → MCP Server → Internet → back**.
 
 ## Step 5: View MCP Access Logs
 
@@ -238,45 +233,39 @@ EOF
 
 ## Step 7: Test Without a JWT (Should Fail)
 
-Launch the Inspector again **without** JWT credentials to confirm the gateway blocks unauthenticated access:
+Try listing tools again **without** JWT credentials:
 
 ```bash
-HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+npx -y @modelcontextprotocol/inspector --cli \
   --config /root/mcp-inspector-config.json \
-  --server agentgateway &
+  --server agentgateway \
+  --method tools/list
 ```
-
-Switch to the **MCP Inspector** tab and click **Connect**.
 
 You should see a connection error — the gateway is now rejecting all requests without a valid JWT. This confirms that authentication is enforced for MCP traffic, not just LLM traffic.
 
-Stop the Inspector:
-
-```bash
-kill %1 2>/dev/null || true
-```
-
 ## Step 8: Test With a JWT (Should Succeed)
 
-The setup script also created a second config file (`mcp-inspector-config-jwt.json`) that includes the `Authorization: Bearer` header. Launch the Inspector with this config:
+The setup script also created a second config file (`mcp-inspector-config-jwt.json`) that includes the `Authorization: Bearer` header. Try again with this config:
 
 ```bash
-export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
-
-HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+npx -y @modelcontextprotocol/inspector --cli \
   --config /root/mcp-inspector-config-jwt.json \
-  --server agentgateway &
+  --server agentgateway \
+  --method tools/list
 ```
 
-Switch to the **MCP Inspector** tab and click **Connect**. This time it should succeed — the JWT is validated by the gateway and the MCP session is established.
+You should see the `fetch` tool listed again — the JWT was validated by the gateway and the MCP request was authorized.
 
-1. Click **List Tools** — you should see the `fetch` tool
-2. Select `fetch`, enter `https://httpbin.org/get` as the URL, and click **Run Tool** — full end-to-end with authentication
-
-Stop the Inspector:
+Call the tool to confirm full end-to-end with authentication:
 
 ```bash
-kill %1 2>/dev/null || true
+npx -y @modelcontextprotocol/inspector --cli \
+  --config /root/mcp-inspector-config-jwt.json \
+  --server agentgateway \
+  --method tools/call \
+  --tool-name fetch \
+  --tool-arg url=https://httpbin.org/get
 ```
 
 ## Step 9: Add RBAC for Tool Access
@@ -303,27 +292,22 @@ spec:
 EOF
 ```
 
-Our JWT has `org=solo.io`, so it should still pass. Verify by launching the Inspector one more time:
+Our JWT has `org=solo.io`, so it should still pass. Verify:
 
 ```bash
-HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+npx -y @modelcontextprotocol/inspector --cli \
   --config /root/mcp-inspector-config-jwt.json \
-  --server agentgateway &
+  --server agentgateway \
+  --method tools/call \
+  --tool-name fetch \
+  --tool-arg url=https://httpbin.org/get
 ```
 
-Switch to the **MCP Inspector** tab, click **Connect**, then **List Tools** and call `fetch` with `https://httpbin.org/get`. Everything should work, confirming that our token passes both authentication (valid JWT) and authorization (`org=solo.io` matches the CEL rule).
-
-A token with a different `org` claim would be rejected at the authorization step — authenticated but not authorized.
-
-Stop the Inspector:
-
-```bash
-kill %1 2>/dev/null || true
-```
+This confirms that our token passes both authentication (valid JWT) and authorization (`org=solo.io` matches the CEL rule). A token with a different `org` claim would be rejected at the authorization step — authenticated but not authorized.
 
 ## Step 10: Compare LLM vs MCP Configuration
 
-Let's take a moment to see how the two types of backends compare:
+Let's see how the two types of backends compare:
 
 ```bash
 echo "=== LLM Backend ==="
@@ -340,9 +324,9 @@ The key difference: LLM backends use `spec.ai.provider` to define a cloud LLM pr
 
 - **MCP backends** use `AgentgatewayBackend` with `mcp.targets` instead of `ai.provider`
 - **`appProtocol: agentgateway.dev/mcp`** on the Kubernetes Service tells the gateway to speak MCP protocol to the backend
+- **MCP Inspector CLI** (`--cli` mode) handles MCP session management and lets you test tools from the terminal
 - **Same security model** — JWT auth and CEL-based RBAC apply to MCP traffic the same way as LLM traffic
 - **Same observability** — MCP requests appear in access logs with `mcp.method`, `mcp.resource`, and `mcp.target` fields
-- **MCP Inspector** is a visual tool for testing MCP servers that handles session management automatically
 - The gateway provides a **single control point** for both LLM and tool traffic
 
 **Next up:** LLM Failover — build resilient AI architectures with priority groups.

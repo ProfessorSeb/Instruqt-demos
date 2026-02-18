@@ -5,10 +5,7 @@ set -euxo pipefail
 kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
 kubectl delete ratelimitconfig -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
 
-# Kill any lingering MCP Inspector processes
-pkill -f '@modelcontextprotocol/inspector' 2>/dev/null || true
-
-# Ensure Node.js 22+ is installed (required for MCP Inspector)
+# Ensure Node.js 22+ is installed (required for MCP Inspector CLI)
 if ! command -v node &>/dev/null || [[ $(node -v | sed 's/v//;s/\..*//' ) -lt 22 ]]; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
