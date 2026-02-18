@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: solouifailover08
+- id: 8uhaikdn3kjh
   title: Solo UI
   type: service
   hostname: server

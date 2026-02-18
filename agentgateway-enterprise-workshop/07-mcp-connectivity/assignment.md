@@ -28,7 +28,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: solouimcp07
+- id: qxwvdkxpymap
   title: Solo UI
   type: service
   hostname: server

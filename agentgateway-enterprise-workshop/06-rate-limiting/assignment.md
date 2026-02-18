@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: solouirate06
+- id: jysftkbisgsy
   title: Solo UI
   type: service
   hostname: server

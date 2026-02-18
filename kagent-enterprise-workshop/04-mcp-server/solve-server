@@ -1,0 +1,93 @@
+#!/bin/bash
+set -euxo pipefail
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server-everything
+  namespace: agentgateway-system
+  labels:
+    app: mcp-server-everything
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-server-everything
+  template:
+    metadata:
+      labels:
+        app: mcp-server-everything
+    spec:
+      containers:
+      - name: mcp-server-everything
+        image: node:20-alpine
+        command: ["npx"]
+        args: ["-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
+        ports:
+        - containerPort: 3001
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server-everything
+  namespace: agentgateway-system
+  labels:
+    app: mcp-server-everything
+spec:
+  selector:
+    app: mcp-server-everything
+  ports:
+  - protocol: TCP
+    port: 3001
+    targetPort: 3001
+    appProtocol: agentgateway.dev/mcp
+  type: ClusterIP
+EOF
+
+kubectl rollout status deployment/mcp-server-everything -n agentgateway-system --timeout=120s
+
+kubectl apply -f - <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: mcp-backend
+  namespace: agentgateway-system
+spec:
+  mcp:
+    targets:
+    - name: mcp-server-everything
+      selector:
+        services:
+          matchLabels:
+            app: mcp-server-everything
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: agentgateway-system
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /mcp
+      backendRefs:
+      - name: mcp-backend
+        namespace: agentgateway-system
+        group: agentgateway.dev
+        kind: AgentgatewayBackend
+EOF
+
+echo "Challenge 4 solved!"

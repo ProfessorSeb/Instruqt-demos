@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get deployment mcp-server-everything -n agentgateway-system &>/dev/null; then
+  fail-message "MCP server deployment 'mcp-server-everything' not found. Please deploy it as shown in Step 1."
+  exit 1
+fi
+
+if ! kubectl get agentgatewaybackend mcp-backend -n agentgateway-system &>/dev/null; then
+  fail-message "AgentgatewayBackend 'mcp-backend' not found. Please create the MCP backend as shown in Step 2."
+  exit 1
+fi
+
+if ! kubectl get httproute mcp -n agentgateway-system &>/dev/null; then
+  fail-message "HTTPRoute 'mcp' not found. Please create the MCP route as shown in Step 2."
+  exit 1
+fi
+
+echo "Challenge 4 complete!"
