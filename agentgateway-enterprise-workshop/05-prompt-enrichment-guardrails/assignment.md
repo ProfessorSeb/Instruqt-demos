@@ -181,18 +181,20 @@ You should see a **403** response with the message "Rejected: request contains s
 
 ## Step 6: Test Response Masking
 
-Send a request that might trigger the LLM to output a credit card-like number:
+Now let's test the **response-side** masking. We need to ask a question that doesn't contain a credit card number in the request (otherwise the request guard blocks it), but that causes the LLM to include one in its response:
 
 ```bash
 curl -s "$GATEWAY_IP:8080/openai" \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-4o-mini",
-    "messages": [{"role": "user", "content": "What type of number is 5105105105105100?"}]
+    "messages": [{"role": "user", "content": "Generate an example JSON object for a customer profile that includes a name, a social security number, and a 16-digit payment card number. Use realistic-looking fake data."}]
   }' | jq .
 ```
 
-If the LLM response contains credit card or SSN patterns, they'll be masked with `X` characters.
+Look at the response — any credit card or SSN patterns in the LLM's output will be masked with `X` characters by the gateway. For example, a number like `4532-XXXX-XXXX-XXXX` or an SSN like `XXX-XX-XXXX`.
+
+> **Note:** The request guard checks the **input** for sensitive patterns and blocks it. The response guard checks the **output** and masks it. Step 5 tested the input guard; this step tests the output guard. The key is that your prompt must not contain the patterns you're guarding against, or the request guard will reject it before the LLM ever sees it.
 
 ## Step 7: Verify in Grafana
 
@@ -203,9 +205,10 @@ Switch to the **Grafana** tab. Navigate to **Home > Explore > Tempo** and look a
 ## ✅ What You've Learned
 
 - `prompt.prepend` injects system messages at the gateway level
-- `promptGuard.request` blocks requests matching regex patterns
-- `promptGuard.response` masks sensitive data in LLM responses
+- `promptGuard.request` blocks requests matching regex patterns (input guard)
+- `promptGuard.response` masks sensitive data in LLM responses (output guard)
 - Built-in patterns (`CreditCard`, `Ssn`) handle common PII types
+- Request guards and response guards work independently — input is blocked, output is masked
 - All enforcement happens at the gateway — zero application code changes
 
 **Next up:** Rate Limiting — control AI spend per user, team, or globally.
