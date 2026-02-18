@@ -1,4 +1,5 @@
 slug: agentgateway-enterprise-workshop
+id: 3ol1zi8o5uxw
 title: 'Enterprise AgentGateway: The Complete Workshop'
 teaser: Deploy, secure, and operate Enterprise AgentGateway — the AI-native gateway
   for LLM and MCP traffic on Kubernetes.
@@ -17,14 +18,14 @@ description: "AI agents are calling LLMs and MCP tools with no visibility, no se
 icon: ""
 tags:
 - ai
+- enterprise
 - llm
 - kubernetes
 - agentgateway
 - solo-io
-- enterprise
-- gateway-api
-- security
 - mcp
+- security
+- gateway-api
 owner: soloio
 developers:
 - sebastian.maniak@solo.io
@@ -36,4 +37,5 @@ lab_config:
   feedback_tab_enabled: false
   loadingMessages: true
   hideStopButton: false
+checksum: "3758179050809001732"
 enhanced_loading: false

@@ -1,24 +1,29 @@
 ---
 slug: jwt-auth-rbac
+id: 1xtozeho0e1r
 type: challenge
 title: JWT Authentication & RBAC
 teaser: Enforce identity-based access with JWT validation and CEL-based authorization.
 notes:
 - type: text
-  contents: "# 🛡️ JWT Authentication & RBAC\n\nAPI keys are great for simple use
-    cases. But enterprises need **identity-based access control**:\n\n- Validate JWT
-    tokens from your identity provider\n- Extract user/team/org claims\n- Enforce
-    RBAC rules using CEL expressions\n- Log identity with every request for audit trails\n\n
-    AgentGateway supports both inline JWKS and remote JWKS (like Okta, Auth0).\n"
+  contents: "# \U0001F6E1️ JWT Authentication & RBAC\n\nAPI keys are great for simple
+    use cases. But enterprises need **identity-based access control**:\n\n- Validate
+    JWT tokens from your identity provider\n- Extract user/team/org claims\n- Enforce
+    RBAC rules using CEL expressions\n- Log identity with every request for audit
+    trails\n\n AgentGateway supports both inline JWKS and remote JWKS (like Okta,
+    Auth0).\n"
 tabs:
-- title: Terminal
+- id: ywftt61szlme
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 7cgldtuzl8pg
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: xgstfhqxoqks
+  title: Grafana
   type: service
   hostname: server
   port: 3000

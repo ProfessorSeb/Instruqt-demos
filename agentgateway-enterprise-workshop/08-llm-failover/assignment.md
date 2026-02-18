@@ -1,25 +1,29 @@
 ---
 slug: llm-failover
+id: ovyqoul9hfvx
 type: challenge
 title: LLM Failover & Resilience
 teaser: Build resilient AI architectures with priority group failover across LLM providers.
 notes:
 - type: text
-  contents: "# 🔄 LLM Failover\n\nWhat happens when your primary LLM provider hits
-    rate limits or goes down? Without failover, your agents stop working.\n\nEnterprise
+  contents: "# \U0001F504 LLM Failover\n\nWhat happens when your primary LLM provider
+    hits rate limits or goes down? Without failover, your agents stop working.\n\nEnterprise
     AgentGateway supports **priority group failover**:\n\n- Group 1 (preferred): Primary
     provider\n- Group 2 (fallback): Secondary provider\n- When Group 1 returns 429/5xx,
     traffic fails over to Group 2\n- When Group 1 recovers, traffic returns automatically\n\n
     This is circuit-breaking for AI — without writing any application code.\n"
 tabs:
-- title: Terminal
+- id: fcpubxaywvly
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 6jt5daksmchf
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: nmvfrcedmkvk
+  title: Grafana
   type: service
   hostname: server
   port: 3000

@@ -1,25 +1,29 @@
 ---
 slug: llm-routing
+id: xnmpczhy75k7
 type: challenge
 title: LLM Routing & Observability
 teaser: Route your first LLM request through the gateway and explore metrics and traces.
 notes:
 - type: text
-  contents: "# 🌐 LLM Routing\n\nThe core value of an AI gateway: **one entry point
-    for all your LLM traffic**.\n\nInstead of every agent calling OpenAI directly with
-    its own API key, they all go through the gateway. You get:\n\n- Centralized credential
-    management\n- Per-model metrics and token tracking\n- Distributed traces showing
-    prompt → response\n- A single place to add policies later\n\nLet's route traffic
-    to OpenAI and see the observability.\n"
+  contents: "# \U0001F310 LLM Routing\n\nThe core value of an AI gateway: **one entry
+    point for all your LLM traffic**.\n\nInstead of every agent calling OpenAI directly
+    with its own API key, they all go through the gateway. You get:\n\n- Centralized
+    credential management\n- Per-model metrics and token tracking\n- Distributed traces
+    showing prompt → response\n- A single place to add policies later\n\nLet's route
+    traffic to OpenAI and see the observability.\n"
 tabs:
-- title: Terminal
+- id: rfoqyrehs9zo
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: qjxngsqzpfjd
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: ptw0xxk0ldit
+  title: Grafana
   type: service
   hostname: server
   port: 3000

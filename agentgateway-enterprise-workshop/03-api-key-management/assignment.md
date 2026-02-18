@@ -1,25 +1,29 @@
 ---
 slug: api-key-management
+id: el4rppkkfikd
 type: challenge
 title: API Key Management
 teaser: Replace raw LLM provider keys with org-specific vanity API keys.
 notes:
 - type: text
-  contents: "# 🔑 API Key Management\n\nYou don't want every developer using the
-    raw OpenAI API key. Instead, issue **vanity API keys** per team:\n\n- Teams use
-    their own key (e.g., `team1-key`)\n- The gateway validates it and swaps in the
-    real provider key\n- You can track usage per team and revoke access instantly\n-
+  contents: "# \U0001F511 API Key Management\n\nYou don't want every developer using
+    the raw OpenAI API key. Instead, issue **vanity API keys** per team:\n\n- Teams
+    use their own key (e.g., `team1-key`)\n- The gateway validates it and swaps in
+    the real provider key\n- You can track usage per team and revoke access instantly\n-
     Additional headers (like `x-org`) get injected for observability\n\nNo more shared
     API keys. No more credential sprawl.\n"
 tabs:
-- title: Terminal
+- id: mme0weln9q36
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: ab0ao9szdsq7
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: uae4gvqsyhoj
+  title: Grafana
   type: service
   hostname: server
   port: 3000

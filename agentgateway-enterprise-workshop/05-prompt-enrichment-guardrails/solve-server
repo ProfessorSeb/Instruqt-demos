@@ -37,16 +37,16 @@ spec:
               message: "Rejected: request contains sensitive financial data"
               statusCode: 403
             regex:
-              action: REJECT
+              action: Reject
               matches:
                 - "credit card"
                 - "\\\\b\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}\\\\b"
         response:
           - regex:
-              action: MASK
+              action: Mask
               builtins:
                 - CreditCard
-                - SSN
+                - Ssn
 EOF
 
 echo "Challenge 5 solved!"

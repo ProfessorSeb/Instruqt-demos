@@ -1,22 +1,25 @@
 ---
 slug: install-enterprise-agw
+id: vkoltz9xqdli
 type: challenge
 title: Install Enterprise AgentGateway
 teaser: Deploy the enterprise-grade AI gateway with full observability on Kubernetes.
 notes:
 - type: text
-  contents: "# 🚀 Enterprise AgentGateway\n\nEnterprise AgentGateway is a purpose-built
-    gateway for AI agent traffic — LLMs, MCP tools, and A2A protocols.\n\nUnlike generic
-    API gateways, it understands AI-native protocols and provides:\n\n- **Token-aware
+  contents: "# \U0001F680 Enterprise AgentGateway\n\nEnterprise AgentGateway is a
+    purpose-built gateway for AI agent traffic — LLMs, MCP tools, and A2A protocols.\n\nUnlike
+    generic API gateways, it understands AI-native protocols and provides:\n\n- **Token-aware
     metrics** — not just request counts\n- **Prompt-level tracing** — see what agents
     actually send\n- **Built-in guardrails** — PII protection, prompt injection blocking\n-
     **JWT + API key auth** — with CEL-based RBAC\n- **Rate limiting** — per-request
     and per-token\n\nLet's get it installed and verify everything is running.\n"
 tabs:
-- title: Terminal
+- id: zcxchzupgjej
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: vij0iztm8y9r
+  title: Code Editor
   type: code
   hostname: server
   path: /root

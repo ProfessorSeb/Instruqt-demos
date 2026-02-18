@@ -1,24 +1,29 @@
 ---
 slug: rate-limiting
+id: poickihqdxjf
 type: challenge
 title: Rate Limiting
 teaser: Control AI spend with request-based rate limiting at the gateway.
 notes:
 - type: text
-  contents: "# 💰 Rate Limiting\n\nWithout rate limiting, a single runaway agent can
-    burn through your entire AI budget overnight.\n\nEnterprise AgentGateway supports:\n\n-
-    **Request-based** — limit total requests per time window\n- **Token-based (local)**
-    — limit tokens per pod\n- **Token-based (global)** — limit tokens across all pods\n\n
-    In this challenge, you'll configure request-based rate limiting and see it in action.\n"
+  contents: "# \U0001F4B0 Rate Limiting\n\nWithout rate limiting, a single runaway
+    agent can burn through your entire AI budget overnight.\n\nEnterprise AgentGateway
+    supports:\n\n- **Request-based** — limit total requests per time window\n- **Token-based
+    (local)** — limit tokens per pod\n- **Token-based (global)** — limit tokens across
+    all pods\n\n In this challenge, you'll configure request-based rate limiting and
+    see it in action.\n"
 tabs:
-- title: Terminal
+- id: r3axhy5nfyyk
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 2kapzjkdvsnw
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: s4ihyyuyvext
+  title: Grafana
   type: service
   hostname: server
   port: 3000

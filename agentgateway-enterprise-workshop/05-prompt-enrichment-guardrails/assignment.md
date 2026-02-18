@@ -1,25 +1,29 @@
 ---
 slug: prompt-enrichment-guardrails
+id: ybuu2oqtq9zy
 type: challenge
 title: Prompt Enrichment & Guardrails
 teaser: Enrich prompts with system instructions and block PII leakage at the gateway.
 notes:
 - type: text
-  contents: "# 📝 Prompt Enrichment & Guardrails\n\nTwo powerful policies in one challenge:\n\n
-    **Prompt Enrichment** — Prepend or append system instructions to every request.
-    Enforce consistent behavior without changing application code.\n\n**Prompt Guards**
-    — Block or mask sensitive data:\n- Reject requests containing credit card numbers\n-
-    Mask PII in LLM responses (SSNs, credit cards)\n- Use regex or built-in patterns\n\n
-    All at the gateway layer. Zero application changes.\n"
+  contents: "# \U0001F4DD Prompt Enrichment & Guardrails\n\nTwo powerful policies
+    in one challenge:\n\n **Prompt Enrichment** — Prepend or append system instructions
+    to every request. Enforce consistent behavior without changing application code.\n\n**Prompt
+    Guards** — Block or mask sensitive data:\n- Reject requests containing credit
+    card numbers\n- Mask PII in LLM responses (SSNs, credit cards)\n- Use regex or
+    built-in patterns\n\n All at the gateway layer. Zero application changes.\n"
 tabs:
-- title: Terminal
+- id: pt6zmgvrkaqe
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: btja9nfqktpj
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: 6zqzdtt5icjq
+  title: Grafana
   type: service
   hostname: server
   port: 3000
@@ -147,16 +151,16 @@ spec:
               message: "Rejected: request contains sensitive financial data"
               statusCode: 403
             regex:
-              action: REJECT
+              action: Reject
               matches:
                 - "credit card"
                 - "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
         response:
           - regex:
-              action: MASK
+              action: Mask
               builtins:
                 - CreditCard
-                - SSN
+                - Ssn
 EOF
 ```
 

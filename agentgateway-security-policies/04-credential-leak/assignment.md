@@ -21,7 +21,8 @@ tabs:
   type: code
   hostname: server
   path: /root
-- title: Solo UI
+- id: guuydbt9cprh
+  title: Solo UI
   type: service
   hostname: server
   port: 4000

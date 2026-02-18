@@ -1,26 +1,30 @@
 ---
 slug: mcp-connectivity
+id: yzldrxdmsnom
 type: challenge
 title: MCP Server Connectivity
 teaser: Route AI agent tool calls to MCP servers through the gateway with JWT security.
 notes:
 - type: text
-  contents: "# 🔧 MCP Server Connectivity\n\nMCP (Model Context Protocol) is how
-    AI agents call tools — file access, web search, database queries, and more.\n\n
+  contents: "# \U0001F527 MCP Server Connectivity\n\nMCP (Model Context Protocol)
+    is how AI agents call tools — file access, web search, database queries, and more.\n\n
     Without a gateway, agents connect directly to MCP servers. With AgentGateway:\n\n-
     **Centralized routing** — one entry point for all tool calls\n- **JWT authentication**
     — control who can use which tools\n- **Access logging** — full audit trail of
     tool usage\n- **Metrics and traces** — MCP-specific observability\n\nLet's deploy
     an MCP server, route traffic through the gateway, and lock it down with JWT auth.\n"
 tabs:
-- title: Terminal
+- id: x2eyyhxrjjvm
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: kl1gn9squuli
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: Grafana
+- id: efrastrznxup
+  title: Grafana
   type: service
   hostname: server
   port: 3000
