@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get deployment -n agentgateway-system enterprise-agentgateway &>/dev/null; then
+  fail-message "Enterprise AgentGateway deployment not found in agentgateway-system namespace."
+  exit 1
+fi
+
+if ! kubectl get pods -n kagent -l app.kubernetes.io/name=kagent-enterprise &>/dev/null; then
+  fail-message "KAgent Enterprise pods not found in kagent namespace."
+  exit 1
+fi
+
+if ! grep -q "KAGENT_ENT_VERSION" /root/.bashrc; then
+  fail-message "KAGENT_ENT_VERSION not saved to ~/.bashrc. Run: echo \"export KAGENT_ENT_VERSION=0.3.4\" >> ~/.bashrc"
+  exit 1
+fi
+
+echo "Challenge 1 complete!"

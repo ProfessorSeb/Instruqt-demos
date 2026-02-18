@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# Wait for instruqt bootstrap
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  sleep 1
+done
+
+set -euxo pipefail
+
+set-workdir /root
+
+# Shell conveniences
+cat >> ~/.bashrc << 'EOF'
+alias k=kubectl
+complete -F __start_kubectl k
+source /etc/bash_completion
+export KAGENT_ENT_VERSION=0.3.4
+EOF
+
+export KAGENT_ENT_VERSION=0.3.4
+
+# Start k3d cluster (pre-installed in image)
+if command -v k3d >/dev/null 2>&1; then
+  k3d cluster start my-k8s-cluster 2>/dev/null || \
+  k3d cluster create my-k8s-cluster --wait
+fi
+
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
+
+echo "=== Installing Gateway API CRDs (v1.4.0 standard) ==="
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+
+echo "=== Installing Enterprise AgentGateway CRDs ==="
+helm upgrade -i enterprise-agentgateway-crds \
+  oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway-crds \
+  --create-namespace \
+  --namespace agentgateway-system \
+  --version 2.1.1
+
+echo "=== Installing Enterprise AgentGateway ==="
+helm upgrade -i enterprise-agentgateway \
+  oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway \
+  -n agentgateway-system \
+  --version 2.1.1 \
+  --set-string licensing.licenseKey=${AGENTGATEWAY_LICENSE_KEY} \
+  --wait --timeout 180s
+
+kubectl -n agentgateway-system rollout status deployment/enterprise-agentgateway --timeout=120s
+
+echo "=== Generating RSA Key for JWT Signing ==="
+openssl genrsa -out /tmp/key.pem 2048
+kubectl create namespace kagent || true
+kubectl create secret generic jwt -n kagent --from-file=jwt=/tmp/key.pem
+
+echo "=== Installing KAgent Management Components ==="
+helm upgrade -i kagent-mgmt \
+  oci://us-docker.pkg.dev/solo-public/solo-enterprise-helm/charts/management \
+  -n kagent --create-namespace \
+  --version $KAGENT_ENT_VERSION \
+  --wait --timeout 300s \
+  -f - <<EOF
+imagePullSecrets: []
+cluster: kind-kagent-ent-fake-idp
+global:
+  imagePullPolicy: IfNotPresent
+products:
+  kagent:
+    enabled: true
+  agentgateway:
+    enabled: true
+    namespace: agentgateway-system
+service:
+  type: LoadBalancer
+  clusterIP: ""
+clickhouse:
+  enabled: true
+tracing:
+  verbose: true
+EOF
+
+echo "=== Installing KAgent Enterprise CRDs ==="
+helm upgrade -i kagent-crds \
+  oci://us-docker.pkg.dev/solo-public/kagent-enterprise-helm/charts/kagent-enterprise-crds \
+  --version $KAGENT_ENT_VERSION \
+  -n kagent
+
+echo "=== Installing KAgent Enterprise ==="
+helm upgrade -i kagent \
+  oci://us-docker.pkg.dev/solo-public/kagent-enterprise-helm/charts/kagent-enterprise \
+  --version $KAGENT_ENT_VERSION \
+  -n kagent \
+  --wait --timeout 300s \
+  -f - <<EOF
+providers:
+  default: openAI
+  openAI:
+    apiKey: ${OPENAI_API_KEY}
+otel:
+  tracing:
+    enabled: true
+    exporter:
+      otlp:
+        endpoint: solo-enterprise-ui.kagent.svc.cluster.local:4317
+        insecure: true
+controller:
+  enabled: true
+kmcp:
+  enabled: true
+EOF
+
+echo "=== Setting up port-forward services ==="
+
+# KAgent UI
+cat <<SVCEOF > /etc/systemd/system/kagent-ui.service
+[Unit]
+Description=KAgent UI Port Forward
+After=cloud-final.service multi-user.target
+[Service]
+Restart=always
+RestartSec=5s
+Environment="KUBECONFIG=/root/.kube/config"
+ExecStart=/usr/local/bin/kubectl -n kagent port-forward svc/solo-enterprise-ui 12121:8080 --address 0.0.0.0
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+
+systemctl daemon-reload
+systemctl enable kagent-ui
+systemctl start kagent-ui
+
+# Store OpenAI key in bashrc
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  echo "export OPENAI_API_KEY=${OPENAI_API_KEY}" >> ~/.bashrc
+  echo "=== OpenAI API key stored ==="
+else
+  echo "=== WARNING: OPENAI_API_KEY not set ==="
+fi
+
+echo "=== Track setup complete ==="

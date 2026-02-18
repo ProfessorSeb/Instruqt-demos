@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Wait for all components to be ready
+kubectl -n agentgateway-system wait --for=condition=available deployment/enterprise-agentgateway --timeout=180s
+kubectl -n kagent wait --for=condition=available deployment --all --timeout=300s || true
+
+echo "Challenge 1 setup complete"

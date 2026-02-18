@@ -1,0 +1,32 @@
+slug: kagent-enterprise-workshop
+title: 'KAgent Enterprise: Getting Started'
+teaser: Deploy KAgent Enterprise with AgentGateway on Kubernetes — the AI agent orchestration
+  platform.
+description: "Deploy a complete KAgent Enterprise stack with AgentGateway on Kubernetes.\n\n
+  In this hands-on workshop, you'll:\n\n- \U0001F680 Deploy a Kubernetes cluster with
+  Gateway API CRDs\n- \U0001F6E1️ Install Enterprise AgentGateway as the AI-native
+  gateway\n- \U0001F916 Install KAgent Enterprise with management UI, tracing, and
+  OpenAI integration\n- \U0001F50D Verify the full stack is running and accessible\n\n
+  **Prerequisites:** Familiarity with Kubernetes basics (kubectl, Helm, pods, services).
+  No prior KAgent or AgentGateway experience required."
+icon: ""
+tags:
+- ai
+- enterprise
+- llm
+- kubernetes
+- kagent
+- agentgateway
+- solo-io
+- mcp
+owner: soloio
+developers:
+- sebastian.maniak@solo.io
+idle_timeout: 1800
+timelimit: 7200
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  hideStopButton: false
