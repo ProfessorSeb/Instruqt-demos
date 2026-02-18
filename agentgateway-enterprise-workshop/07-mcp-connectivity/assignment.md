@@ -28,7 +28,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: wnqqchte0tk5
+- id: solouimcp07
   title: Solo UI
   type: service
   hostname: server
@@ -39,24 +39,16 @@ enhanced_loading: null
 
 # MCP Server Connectivity
 
-So far we've been routing **LLM traffic** (OpenAI chat completions) through AgentGateway. But modern AI agents don't just talk to LLMs — they also call **tools**. That's where MCP comes in.
-
-**MCP (Model Context Protocol)** is an open standard that defines how AI agents discover and invoke tools — things like fetching web pages, querying databases, reading files, or calling APIs. Each tool runs as an MCP server that exposes its capabilities through a standard protocol.
-
-Without a gateway, agents connect directly to every MCP server, creating the same sprawl problem we solved for LLMs. In this challenge, you'll route MCP tool traffic through AgentGateway, getting centralized routing, observability, and security for free.
+Let's route MCP tool traffic through AgentGateway.
 
 ## Step 1: Clean Up Previous Policies
 
-Remove the rate limiting resources from the previous challenge:
-
 ```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
-kubectl delete ratelimitconfig -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system global-request-rate-limit 2>/dev/null || true
+kubectl delete ratelimitconfig -n agentgateway-system global-request-rate-limit 2>/dev/null || true
 ```
 
 ## Step 2: Deploy an MCP Server
-
-Deploy `mcp-website-fetcher` — an MCP server that exposes a single tool called `fetch`, which retrieves the content of a given URL.
 
 ```bash
 kubectl apply -f - <<EOF
@@ -64,7 +56,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mcp-website-fetcher
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   selector:
     matchLabels:
@@ -83,7 +75,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mcp-website-fetcher
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
   labels:
     app: mcp-website-fetcher
 spec:
@@ -96,10 +88,10 @@ spec:
 EOF
 ```
 
-Wait for it to be ready:
+Wait for it:
 
 ```bash
-kubectl rollout status deployment/mcp-website-fetcher -n enterprise-agentgateway --timeout=120s
+kubectl rollout status deployment/mcp-website-fetcher -n agentgateway-system --timeout=120s
 ```
 
 ## Step 3: Create the MCP Backend and Route
@@ -110,13 +102,13 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: mcp-backend
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   mcp:
     targets:
     - name: mcp-target
       static:
-        host: mcp-website-fetcher.enterprise-agentgateway.svc.cluster.local
+        host: mcp-website-fetcher.agentgateway-system.svc.cluster.local
         port: 80
         protocol: SSE
 ---
@@ -124,7 +116,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: mcp
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
   - name: agentgateway
@@ -147,7 +139,7 @@ npx -y @modelcontextprotocol/inspector --cli \
   --method tools/list
 ```
 
-Now call the tool to fetch a web page:
+Call the tool:
 
 ```bash
 npx -y @modelcontextprotocol/inspector --cli \
@@ -161,10 +153,8 @@ npx -y @modelcontextprotocol/inspector --cli \
 ## Step 5: View MCP Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 3 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 3 | jq .
 ```
-
-You can also view MCP traces in the **Solo UI** tab.
 
 ---
 
@@ -178,7 +168,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: mcp-jwt-auth
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
@@ -247,7 +237,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: mcp-rbac
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
@@ -277,20 +267,18 @@ npx -y @modelcontextprotocol/inspector --cli \
 
 ```bash
 echo "=== LLM Backend ==="
-kubectl get agentgatewaybackend openai-all-models -n enterprise-agentgateway -o jsonpath='{.spec}' 2>/dev/null | jq . || echo "(not deployed in this challenge)"
+kubectl get agentgatewaybackend openai-all-models -n agentgateway-system -o jsonpath='{.spec}' 2>/dev/null | jq . || echo "(not deployed)"
 
 echo ""
 echo "=== MCP Backend ==="
-kubectl get agentgatewaybackend mcp-backend -n enterprise-agentgateway -o jsonpath='{.spec}' | jq .
+kubectl get agentgatewaybackend mcp-backend -n agentgateway-system -o jsonpath='{.spec}' | jq .
 ```
 
 ## ✅ What You've Learned
 
-- **MCP backends** use `AgentgatewayBackend` with `mcp.targets` instead of `ai.provider`
-- **`appProtocol: agentgateway.dev/mcp`** on the Kubernetes Service tells the gateway to speak MCP protocol to the backend
-- **MCP Inspector CLI** (`--cli` mode) handles MCP session management and lets you test tools from the terminal. Use `--header` to pass authentication headers.
-- **Same security model** — JWT auth and CEL-based RBAC apply to MCP traffic the same way as LLM traffic
-- **Same observability** — MCP requests appear in access logs with `mcp.method`, `mcp.resource`, and `mcp.target` fields
+- **MCP backends** use `AgentgatewayBackend` with `mcp.targets`
+- **Same security model** — JWT auth and RBAC apply to MCP traffic the same way
+- **Same observability** — MCP requests appear in access logs
 - The gateway provides a **single control point** for both LLM and tool traffic
 
-**Next up:** LLM Failover — build resilient AI architectures with priority groups.
+**Next up:** LLM Failover.

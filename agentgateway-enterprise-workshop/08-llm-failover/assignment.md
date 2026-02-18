@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: ndiqo4mhjyzv
+- id: solouifailover08
   title: Solo UI
   type: service
   hostname: server
@@ -38,19 +38,19 @@ enhanced_loading: null
 
 # LLM Failover & Resilience
 
-Let's build a resilient LLM architecture with priority group failover. When the primary backend returns rate limit errors, traffic automatically fails over to the secondary.
+Let's build a resilient LLM architecture with priority group failover.
 
 ## Step 1: Clean Up Previous Resources
 
 ```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-jwt-auth 2>/dev/null || true
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-rbac 2>/dev/null || true
-kubectl delete deployment -n enterprise-agentgateway mcp-website-fetcher 2>/dev/null || true
-kubectl delete service -n enterprise-agentgateway mcp-website-fetcher 2>/dev/null || true
-kubectl delete agentgatewaybackend -n enterprise-agentgateway mcp-backend 2>/dev/null || true
-kubectl delete httproute -n enterprise-agentgateway mcp 2>/dev/null || true
-kubectl delete httproute -n enterprise-agentgateway openai 2>/dev/null || true
-kubectl delete agentgatewaybackend -n enterprise-agentgateway openai-all-models 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system mcp-jwt-auth 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system mcp-rbac 2>/dev/null || true
+kubectl delete deployment -n agentgateway-system mcp-website-fetcher 2>/dev/null || true
+kubectl delete service -n agentgateway-system mcp-website-fetcher 2>/dev/null || true
+kubectl delete agentgatewaybackend -n agentgateway-system mcp-backend 2>/dev/null || true
+kubectl delete httproute -n agentgateway-system mcp 2>/dev/null || true
+kubectl delete httproute -n agentgateway-system openai 2>/dev/null || true
+kubectl delete agentgatewaybackend -n agentgateway-system openai-all-models 2>/dev/null || true
 ```
 
 ## Step 2: Deploy a Mock Server That Always Rate Limits
@@ -61,7 +61,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mock-gpt-4o
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   replicas: 1
   selector:
@@ -93,7 +93,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mock-gpt-4o-svc
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   selector:
     app: mock-gpt-4o
@@ -107,14 +107,10 @@ EOF
 Wait for it:
 
 ```bash
-kubectl rollout status deployment/mock-gpt-4o -n enterprise-agentgateway --timeout=120s
+kubectl rollout status deployment/mock-gpt-4o -n agentgateway-system --timeout=120s
 ```
 
 ## Step 3: Create Priority Group Failover Configuration
-
-Configure an `AgentgatewayBackend` with two priority groups:
-- **Group 1**: Mock server (always returns 429)
-- **Group 2**: Real OpenAI (healthy fallback)
 
 ```bash
 kubectl apply -f - <<EOF
@@ -122,11 +118,11 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: failover-route
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
     - name: agentgateway
-      namespace: enterprise-agentgateway
+      namespace: agentgateway-system
   rules:
     - matches:
         - path:
@@ -149,7 +145,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: failover-backend
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   ai:
     groups:
@@ -158,7 +154,7 @@ spec:
           - name: mock-ratelimit-provider
             openai:
               model: "mock-gpt-4o"
-            host: mock-gpt-4o-svc.enterprise-agentgateway.svc.cluster.local
+            host: mock-gpt-4o-svc.agentgateway-system.svc.cluster.local
             port: 8000
             path: "/v1/chat/completions"
             policies:
@@ -182,8 +178,6 @@ EOF
 source /root/.bashrc
 ```
 
-**Request 1** — hits the mock server, gets 429:
-
 ```bash
 echo "=== Request 1 ==="
 curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
@@ -191,16 +185,12 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
   -d '{"model": "", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
 
-**Request 2** — gateway has marked mock as unhealthy, routes to OpenAI:
-
 ```bash
 echo "=== Request 2 ==="
 curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
   -H "Content-Type: application/json" \
   -d '{"model": "", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
-
-**Request 3** — continues using the healthy failover:
 
 ```bash
 echo "=== Request 3 ==="
@@ -212,38 +202,21 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
 ## Step 5: Verify in Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 5 | \
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 5 | \
   jq 'select(.scope == "request") | {status: ."http.status", endpoint: .endpoint}'
 ```
 
-## How Priority Group Failover Works
-
-1. **Priority ordering**: Group 1 is always preferred when healthy
-2. **Health-based failover**: When a provider returns 429, the `Retry-After` header tells the gateway how long to mark it unhealthy
-3. **Across-request mechanism**: The first request fails, then subsequent requests route to the fallback
-4. **Auto-recovery**: After `Retry-After` seconds, the gateway retries the primary to check if it recovered
-5. **Per-pod health state**: Each gateway pod maintains its own health state
-
 ## Step 6: View in Grafana and Solo UI
 
-Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see:
-- HTTP 429 responses from the mock server
-- HTTP 200 responses from OpenAI
-- The endpoint switching in real-time
-
-Switch to the **Solo UI** tab to see the failover traces in the management dashboard. The tracing view will show requests routing to different endpoints as the gateway detects unhealthy providers and fails over.
+Switch to the **Grafana** or **Solo UI** tab to see failover traces.
 
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend.spec.ai.groups` defines priority groups for failover
-- `ResponseHeaderModifier` with `Retry-After` controls unhealthy duration
 - Failover works across requests — first request fails, subsequent ones route to fallback
-- Health state is per-pod — use single replica for deterministic testing
-- This pattern enables: cost-tier failover, multi-provider resilience, circuit-breaking behavior
+- This pattern enables: cost-tier failover, multi-provider resilience, circuit-breaking
 
 ## 🏆 Workshop Complete!
-
-You've built a complete Enterprise AgentGateway deployment with:
 
 | Capability | What You Did |
 |-----------|-------------|
