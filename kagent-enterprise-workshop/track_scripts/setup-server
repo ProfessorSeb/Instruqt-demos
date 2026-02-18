@@ -110,7 +110,7 @@ EOF
 
 echo "=== Setting up port-forward services ==="
 
-# KAgent UI
+# KAgent UI (Solo Enterprise UI serves on port 8080)
 cat <<SVCEOF > /etc/systemd/system/kagent-ui.service
 [Unit]
 Description=KAgent UI Port Forward
@@ -119,7 +119,7 @@ After=cloud-final.service multi-user.target
 Restart=always
 RestartSec=5s
 Environment="KUBECONFIG=/root/.kube/config"
-ExecStart=/usr/local/bin/kubectl -n kagent port-forward svc/solo-enterprise-ui 12121:8080 --address 0.0.0.0
+ExecStart=/usr/local/bin/kubectl -n kagent port-forward svc/solo-enterprise-ui 8080:8080 --address 0.0.0.0
 [Install]
 WantedBy=multi-user.target
 SVCEOF

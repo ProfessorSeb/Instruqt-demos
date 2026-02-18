@@ -13,7 +13,7 @@ fi
 
 # User must verify pods and export the UI URL
 if ! grep -q "KAGENT_UI_URL" /root/.bashrc; then
-  fail-message "KAGENT_UI_URL not saved. Run: echo \"export KAGENT_UI_URL=http://localhost:12121\" >> ~/.bashrc"
+  fail-message "KAGENT_UI_URL not saved. Run: echo \"export KAGENT_UI_URL=http://localhost:8080\" >> ~/.bashrc"
   exit 1
 fi
 

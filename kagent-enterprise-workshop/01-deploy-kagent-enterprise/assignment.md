@@ -28,7 +28,7 @@ tabs:
   title: KAgent UI
   type: service
   hostname: server
-  port: 12121
+  port: 8080
 difficulty: ""
 enhanced_loading: null
 ---
@@ -92,7 +92,7 @@ This UI provides:
 
 ```bash
 export KAGENT_ENT_VERSION=0.3.4
-export KAGENT_UI_URL=http://localhost:12121
+export KAGENT_UI_URL=http://localhost:8080
 echo "export KAGENT_ENT_VERSION=$KAGENT_ENT_VERSION" >> ~/.bashrc
 echo "export KAGENT_UI_URL=$KAGENT_UI_URL" >> ~/.bashrc
 ```
