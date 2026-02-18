@@ -127,17 +127,41 @@ EOF
 
 ## Step 4: Test MCP Connectivity
 
-List the available tools through the gateway:
+The MCP protocol requires a session to be initialized before making tool calls. First, initialize a session and capture the session ID:
 
 ```bash
 source /root/.bashrc
 
-curl -s "$GATEWAY_IP:8080/mcp" \
+SESSION_ID=$(curl -s -D - "http://$GATEWAY_IP:8080/mcp" \
   -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {
+        "name": "curl-client",
+        "version": "1.0.0"
+      }
+    }
+  }' 2>&1 | grep -i "mcp-session-id" | awk '{print $2}' | tr -d '\r')
+
+echo "Session ID: $SESSION_ID"
+```
+
+Now list the available tools through the gateway using the session ID:
+
+```bash
+curl -s "http://$GATEWAY_IP:8080/mcp" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: $SESSION_ID" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
     "method": "tools/list"
   }' | jq .
 ```
@@ -145,12 +169,13 @@ curl -s "$GATEWAY_IP:8080/mcp" \
 You should see the `fetch` tool listed. Now call it:
 
 ```bash
-curl -s "$GATEWAY_IP:8080/mcp" \
+curl -s "http://$GATEWAY_IP:8080/mcp" \
   -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: $SESSION_ID" \
   -d '{
     "jsonrpc": "2.0",
-    "id": 2,
+    "id": 3,
     "method": "tools/call",
     "params": {
       "name": "fetch",
@@ -210,10 +235,22 @@ EOF
 ## Step 7: Test MCP Without JWT (Should Fail)
 
 ```bash
-curl -i "$GATEWAY_IP:8080/mcp" \
+curl -i "http://$GATEWAY_IP:8080/mcp" \
   -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}'
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {
+        "name": "curl-client",
+        "version": "1.0.0"
+      }
+    }
+  }'
 ```
 
 You should see `403` — `authentication failure: no bearer token found`.
@@ -223,11 +260,34 @@ You should see `403` — `authentication failure: no bearer token found`.
 ```bash
 export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
 
-curl -s "$GATEWAY_IP:8080/mcp" \
+# Initialize session with JWT
+SESSION_ID=$(curl -s -D - "http://$GATEWAY_IP:8080/mcp" \
   -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $DEV_TOKEN" \
-  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | jq .
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {
+        "name": "curl-client",
+        "version": "1.0.0"
+      }
+    }
+  }' 2>&1 | grep -i "mcp-session-id" | awk '{print $2}' | tr -d '\r')
+
+echo "Session ID: $SESSION_ID"
+
+# List tools with session ID and JWT
+curl -s "http://$GATEWAY_IP:8080/mcp" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $DEV_TOKEN" \
+  -H "Mcp-Session-Id: $SESSION_ID" \
+  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}' | jq .
 ```
 
 ## Step 9: Add RBAC for Tool Access
@@ -254,19 +314,22 @@ spec:
 EOF
 ```
 
-Test with the JWT (should succeed since org=solo.io):
+Test with the JWT (should succeed since org=solo.io). Note: reuse the session from Step 8, or initialize a new one:
 
 ```bash
-curl -s "$GATEWAY_IP:8080/mcp" \
+curl -s "http://$GATEWAY_IP:8080/mcp" \
   -H "Accept: application/json, text/event-stream" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $DEV_TOKEN" \
-  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "fetch", "arguments": {"url": "https://httpbin.org/get"}}}' | jq .
+  -H "Mcp-Session-Id: $SESSION_ID" \
+  -d '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "fetch", "arguments": {"url": "https://httpbin.org/get"}}}' | jq .
 ```
 
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend` with `mcp.targets` routes to MCP servers
+- MCP Streamable HTTP requires session initialization (`initialize` method) before making tool calls
+- The `Mcp-Session-Id` header must be included on all requests after initialization
 - MCP traffic gets full observability (logs, metrics, traces)
 - JWT auth secures MCP endpoints the same way as LLM routes
 - CEL-based RBAC controls who can access which tools
