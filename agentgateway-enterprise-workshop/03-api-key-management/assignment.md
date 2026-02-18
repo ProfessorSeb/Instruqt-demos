@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouiapikey03
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -179,7 +184,7 @@ The request succeeds. The gateway:
 kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 1 | jq .
 ```
 
-Notice the `x-org` header is captured in the logs — this gives you per-team attribution.
+Notice the `x-org` header is captured in the logs — this gives you per-team attribution. You can also check the **Solo UI** tab to view these requests with full tracing details.
 
 ## ✅ What You've Learned
 
