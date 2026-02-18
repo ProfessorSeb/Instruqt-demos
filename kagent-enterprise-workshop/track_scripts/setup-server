@@ -14,10 +14,10 @@ cat >> ~/.bashrc << 'EOF'
 alias k=kubectl
 complete -F __start_kubectl k
 source /etc/bash_completion
-export KAGENT_ENT_VERSION=0.3.5
+export KAGENT_ENT_VERSION=0.3.4
 EOF
 
-export KAGENT_ENT_VERSION=0.3.5
+export KAGENT_ENT_VERSION=0.3.4
 
 # Start k3d cluster (pre-installed in image)
 if command -v k3d >/dev/null 2>&1; then

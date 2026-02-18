@@ -91,7 +91,7 @@ This UI provides:
 ## Step 5: Save Environment Variables
 
 ```bash
-export KAGENT_ENT_VERSION=0.3.5
+export KAGENT_ENT_VERSION=0.3.4
 export KAGENT_UI_URL=http://localhost:8080
 echo "export KAGENT_ENT_VERSION=$KAGENT_ENT_VERSION" >> ~/.bashrc
 echo "export KAGENT_UI_URL=$KAGENT_UI_URL" >> ~/.bashrc
