@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
+# Kill any lingering MCP Inspector processes
+pkill -f '@modelcontextprotocol/inspector' 2>/dev/null || true
+
+# Step 2: Deploy the MCP server
 kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -39,6 +43,7 @@ EOF
 
 kubectl rollout status deployment/mcp-website-fetcher -n enterprise-agentgateway --timeout=60s
 
+# Step 3: Create MCP backend and route
 kubectl apply -f - <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -69,6 +74,7 @@ spec:
         kind: AgentgatewayBackend
 EOF
 
+# Step 6: JWT authentication
 kubectl apply -f - <<EOF
 apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
@@ -99,6 +105,25 @@ spec:
                     }
                   ]
                 }
+EOF
+
+# Step 9: RBAC
+kubectl apply -f- <<EOF
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: mcp-rbac
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway
+  traffic:
+    authorization:
+      policy:
+        matchExpressions:
+          - 'jwt.org == "solo.io"'
 EOF
 
 echo "Challenge 7 solved!"

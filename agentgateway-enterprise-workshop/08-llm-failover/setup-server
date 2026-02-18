@@ -1,5 +1,9 @@
 #!/bin/bash
 set -euxo pipefail
+
+# Kill any lingering MCP Inspector processes from previous challenge
+pkill -f '@modelcontextprotocol/inspector' 2>/dev/null || true
+
 # Clean up MCP resources from previous challenge
 kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-jwt-auth 2>/dev/null || true
 kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-rbac 2>/dev/null || true
@@ -7,4 +11,5 @@ kubectl delete deployment -n enterprise-agentgateway mcp-website-fetcher 2>/dev/
 kubectl delete service -n enterprise-agentgateway mcp-website-fetcher 2>/dev/null || true
 kubectl delete agentgatewaybackend -n enterprise-agentgateway mcp-backend 2>/dev/null || true
 kubectl delete httproute -n enterprise-agentgateway mcp 2>/dev/null || true
+
 echo "Challenge 8 setup complete"
