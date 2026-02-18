@@ -104,7 +104,7 @@ You should see:
 Check the tool server resources:
 
 ```bash
-kubectl get toolservers -n kagent
+kubectl get remotemcpservers -n kagent
 ```
 
 ## Step 5: Verify in the UI
