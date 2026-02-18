@@ -31,15 +31,15 @@ echo "=== Installing Gateway API CRDs (v1.4.0 experimental) ==="
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml
 
 echo "=== Installing Enterprise AgentGateway CRDs ==="
-kubectl create namespace enterprise-agentgateway || true
+kubectl create namespace agentgateway-system || true
 helm upgrade -i --create-namespace \
-  --namespace enterprise-agentgateway \
+  --namespace agentgateway-system \
   --version $ENTERPRISE_AGW_VERSION \
   enterprise-agentgateway-crds \
   oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway-crds
 
 echo "=== Installing Enterprise AgentGateway Controller ==="
-helm upgrade -i -n enterprise-agentgateway \
+helm upgrade -i -n agentgateway-system \
   enterprise-agentgateway \
   oci://us-docker.pkg.dev/solo-public/enterprise-agentgateway/charts/enterprise-agentgateway \
   --create-namespace \
@@ -52,10 +52,10 @@ gatewayClassParametersRefs:
     group: enterpriseagentgateway.solo.io
     kind: EnterpriseAgentgatewayParameters
     name: agentgateway-params
-    namespace: enterprise-agentgateway
+    namespace: agentgateway-system
 HELMEOF
 
-kubectl -n enterprise-agentgateway rollout status deployment/enterprise-agentgateway --timeout=120s
+kubectl -n agentgateway-system rollout status deployment/enterprise-agentgateway --timeout=120s
 
 echo "=== Installing Solo Enterprise Management UI ==="
 helm upgrade -i management \
@@ -144,11 +144,11 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: agentgateway-metrics
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   namespaceSelector:
     matchNames:
-      - enterprise-agentgateway
+      - agentgateway-system
   podMetricsEndpoints:
     - port: metrics
   selector:
@@ -174,7 +174,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayParameters
 metadata:
   name: agentgateway-params
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   sharedExtensions:
     extauth:
@@ -255,7 +255,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: agentgateway
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   gatewayClassName: enterprise-agentgateway
   infrastructure:
@@ -274,7 +274,7 @@ EOF
 
 # Wait for proxy
 sleep 10
-kubectl -n enterprise-agentgateway wait --for=condition=Available deployment -l app.kubernetes.io/name=agentgateway --timeout=180s || true
+kubectl -n agentgateway-system wait --for=condition=Available deployment -l app.kubernetes.io/name=agentgateway --timeout=180s || true
 
 echo "=== Setting up port-forward services ==="
 
@@ -286,7 +286,7 @@ After=cloud-final.service multi-user.target
 Restart=always
 RestartSec=5s
 Environment="KUBECONFIG=/root/.kube/config"
-ExecStart=/usr/local/bin/kubectl -n enterprise-agentgateway port-forward svc/agentgateway 8080:8080 --address 0.0.0.0
+ExecStart=/usr/local/bin/kubectl -n agentgateway-system port-forward svc/agentgateway 8080:8080 --address 0.0.0.0
 [Install]
 WantedBy=multi-user.target
 SVCEOF
@@ -324,7 +324,7 @@ systemctl start agentgateway-proxy grafana solo-ui
 # Store OpenAI key
 if [ -n "${OPENAI_API_KEY:-}" ]; then
   echo "export OPENAI_API_KEY=${OPENAI_API_KEY}" >> ~/.bashrc
-  kubectl create secret generic openai-secret -n enterprise-agentgateway \
+  kubectl create secret generic openai-secret -n agentgateway-system \
     --from-literal="Authorization=Bearer $OPENAI_API_KEY" \
     --dry-run=client -oyaml | kubectl apply -f -
   echo "=== OpenAI API key stored ==="
