@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-export GATEWAY_IP=$(kubectl get svc -n agentgateway-system --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
-echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
+# GATEWAY_IP is already set to localhost in .bashrc by track setup (port-forward handles routing)
+source /root/.bashrc
+echo "GATEWAY_IP=$GATEWAY_IP"
 
 echo "Challenge 1 solved!"

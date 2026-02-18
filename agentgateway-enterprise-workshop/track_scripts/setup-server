@@ -15,9 +15,11 @@ alias k=kubectl
 complete -F __start_kubectl k
 source /etc/bash_completion
 export ENTERPRISE_AGW_VERSION=2.2.0-beta.1
+export GATEWAY_IP=localhost
 EOF
 
 export ENTERPRISE_AGW_VERSION=2.2.0-beta.1
+export GATEWAY_IP=localhost
 
 # Start k3d cluster (pre-installed in image)
 if command -v k3d >/dev/null 2>&1; then

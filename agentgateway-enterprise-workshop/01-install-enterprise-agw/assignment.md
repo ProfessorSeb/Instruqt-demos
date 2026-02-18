@@ -75,13 +75,13 @@ Check that the Gateway resource is ready and has an address:
 kubectl get gateway -n agentgateway-system
 ```
 
-Save the gateway IP for later challenges:
+The gateway is accessible via port-forward on `localhost:8080`. Verify it's set up:
 
 ```bash
-export GATEWAY_IP=$(kubectl get svc -n agentgateway-system --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
 echo "Gateway IP: $GATEWAY_IP"
-echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
 ```
+
+This should show `localhost`. The port-forward service routes traffic from `localhost:8080` to the gateway pod inside the cluster.
 
 ## Step 4: Verify the Monitoring Stack
 

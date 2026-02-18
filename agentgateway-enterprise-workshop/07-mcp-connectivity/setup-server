@@ -16,17 +16,12 @@ echo "Node.js version: $(node -v)"
 # Pre-cache MCP Inspector so npx doesn't delay during the lab
 npx -y @modelcontextprotocol/inspector --help 2>/dev/null || true
 
-# Source environment for GATEWAY_IP
+# Source environment for GATEWAY_IP (set to localhost by track setup)
 source /root/.bashrc
-
-if [ -z "${GATEWAY_IP:-}" ]; then
-  export GATEWAY_IP=$(kubectl get svc -n agentgateway-system --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
-  echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
-fi
 
 echo "GATEWAY_IP: $GATEWAY_IP"
 
-# Create MCP Inspector config (used by all steps — auth is passed via --header flag)
+# Create MCP Inspector config
 cat > /root/mcp-inspector-config.json <<IEOF
 {
   "mcpServers": {
