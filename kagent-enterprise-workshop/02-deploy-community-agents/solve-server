@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat << 'EOF' > /root/community-agents.yaml
+kagent-tools:
+  enabled: true
+agents:
+  k8s-agent:
+    enabled: true
+  kgateway-agent:
+    enabled: true
+  helm-agent:
+    enabled: true
+tools:
+  grafana-mcp:
+    enabled: true
+  querydoc:
+    enabled: true
+EOF
+
+helm upgrade kagent \
+  oci://us-docker.pkg.dev/solo-public/kagent-enterprise-helm/charts/kagent-enterprise \
+  --version $KAGENT_ENT_VERSION \
+  -n kagent \
+  --reuse-values \
+  -f /root/community-agents.yaml \
+  --wait --timeout 300s
+
+echo "Challenge 2 solved!"

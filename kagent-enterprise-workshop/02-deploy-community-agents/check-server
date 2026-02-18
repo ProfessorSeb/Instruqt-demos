@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get agent k8s-agent -n kagent &>/dev/null; then
+  fail-message "Agent 'k8s-agent' not found. Please upgrade KAgent with community agents as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get agent helm-agent -n kagent &>/dev/null; then
+  fail-message "Agent 'helm-agent' not found. Please upgrade KAgent with community agents as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get agent kgateway-agent -n kagent &>/dev/null; then
+  fail-message "Agent 'kgateway-agent' not found. Please upgrade KAgent with community agents as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 2 complete!"

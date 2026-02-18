@@ -23,7 +23,7 @@ tabs:
   type: code
   hostname: server
   path: /root
-- id: solouiinstall01
+- id: 6pxjcx1rhoaj
   title: Solo UI
   type: service
   hostname: server
