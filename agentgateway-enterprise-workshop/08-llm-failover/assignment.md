@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouifailover08
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -49,8 +54,6 @@ kubectl delete agentgatewaybackend -n enterprise-agentgateway openai-all-models 
 ```
 
 ## Step 2: Deploy a Mock Server That Always Rate Limits
-
-Deploy a mock OpenAI server that returns 429 (rate limit) for every request:
 
 ```bash
 kubectl apply -f - <<EOF
@@ -112,8 +115,6 @@ kubectl rollout status deployment/mock-gpt-4o -n enterprise-agentgateway --timeo
 Configure an `AgentgatewayBackend` with two priority groups:
 - **Group 1**: Mock server (always returns 429)
 - **Group 2**: Real OpenAI (healthy fallback)
-
-The `ResponseHeaderModifier` adds `Retry-After: 60` so the gateway knows how long to mark the provider as unhealthy:
 
 ```bash
 kubectl apply -f - <<EOF
@@ -190,8 +191,6 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
   -d '{"model": "", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
 
-You should see a 429 rate limit error from the mock server.
-
 **Request 2** — gateway has marked mock as unhealthy, routes to OpenAI:
 
 ```bash
@@ -200,8 +199,6 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
   -H "Content-Type: application/json" \
   -d '{"model": "", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
-
-You should see a 200 response from OpenAI! The gateway failed over to Group 2.
 
 **Request 3** — continues using the healthy failover:
 
@@ -212,18 +209,12 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
   -d '{"model": "", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
 
-Still 200 from OpenAI — the mock provider stays unhealthy for 60 seconds.
-
 ## Step 5: Verify in Access Logs
 
 ```bash
 kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 5 | \
   jq 'select(.scope == "request") | {status: ."http.status", endpoint: .endpoint}'
 ```
-
-You should see:
-- First request: `endpoint: mock-gpt-4o-svc...`, `status: 429`
-- Subsequent requests: `endpoint: api.openai.com:443`, `status: 200`
 
 ## How Priority Group Failover Works
 
@@ -233,12 +224,14 @@ You should see:
 4. **Auto-recovery**: After `Retry-After` seconds, the gateway retries the primary to check if it recovered
 5. **Per-pod health state**: Each gateway pod maintains its own health state
 
-## Step 6: View in Grafana
+## Step 6: View in Grafana and Solo UI
 
 Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see:
 - HTTP 429 responses from the mock server
 - HTTP 200 responses from OpenAI
 - The endpoint switching in real-time
+
+Switch to the **Solo UI** tab to see the failover traces in the management dashboard. The tracing view will show requests routing to different endpoints as the gateway detects unhealthy providers and fails over.
 
 ## ✅ What You've Learned
 
@@ -254,7 +247,7 @@ You've built a complete Enterprise AgentGateway deployment with:
 
 | Capability | What You Did |
 |-----------|-------------|
-| 🚀 Installation | Enterprise AGW + monitoring + tracing |
+| 🚀 Installation | Enterprise AGW + Solo UI + monitoring + tracing |
 | 🌐 LLM Routing | OpenAI backend + HTTPRoute + observability |
 | 🔑 API Keys | Vanity key masking with AuthConfig |
 | 🛡️ JWT Auth | Token validation + CEL-based RBAC |
