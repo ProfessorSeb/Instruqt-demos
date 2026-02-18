@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouirouting02
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -131,7 +136,11 @@ Switch to the **Grafana** tab and log in:
 
 Navigate to **Home > Explore** and select **Tempo** to see distributed traces for your request. You'll see LLM-specific spans with prompt content, token counts, and response data.
 
-## Step 6: Send a Few More Requests
+## Step 6: Explore the Solo UI
+
+Switch to the **Solo UI** tab. The Solo Enterprise Management UI also collects traces from the gateway. Navigate to the **Tracing** section to see your LLM requests with full execution details. This gives you a second view of the same traffic — useful for teams that prefer a dedicated AI gateway dashboard over Grafana.
+
+## Step 7: Send a Few More Requests
 
 Generate some traffic for better metrics:
 
@@ -153,5 +162,6 @@ wait
 - `HTTPRoute` maps URL paths to backends (standard Gateway API)
 - Every request gets: structured logs, Prometheus metrics, OTLP traces
 - Token usage is tracked automatically per model
+- Traces are available in both Grafana (Tempo) and the Solo UI
 
 **Next up:** API Key Management — control who can access the gateway.
