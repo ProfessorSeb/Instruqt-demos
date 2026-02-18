@@ -50,7 +50,7 @@ spec:
   rawConfig:
     config:
       tracing:
-        otlpEndpoint: grpc://solo-enterprise-telemetry-collector.agentgateway-system.svc.cluster.local:4317
+        otlpEndpoint: grpc://solo-enterprise-telemetry-collector.kagent.svc.cluster.local:4317
         otlpProtocol: grpc
         randomSampling: true
 EOF
@@ -172,23 +172,19 @@ echo "=== Tracing Parameters ==="
 kubectl get enterpriseagentgatewayparameters -n agentgateway-system
 ```
 
-## Step 6: Test the Route
+## Step 6: Test the Route via the UI Playground
 
-Get the proxy service IP and send a test request:
+1. Click the **KAgent UI** tab
+2. Navigate to **AgentGateway → Playground**
+3. Select the **openai** route
+4. Click **Connect**
+5. Type a message and click **Send**
 
-```bash
-export GATEWAY_IP=$(kubectl get svc -n agentgateway-system -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy -o jsonpath='{.items[0].spec.clusterIP}')
-
-curl -s "http://$GATEWAY_IP:8080/openai" \
-  -H "content-type: application/json" \
-  -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Say hello in one word"}]}' | jq .choices[0].message.content
-```
-
-You should get a response from OpenAI routed through the AgentGateway proxy.
+You should see a response from OpenAI routed through the AgentGateway proxy.
 
 ## Step 7: Check Traces in the UI
 
-Click the **KAgent UI** tab and navigate to the tracing section. You should see the request trace showing the full path through AgentGateway to OpenAI, including token counts and latency.
+After sending a request via the playground, navigate to **AgentGateway → Traces** in the UI. You should see the request trace showing the full path through AgentGateway to OpenAI, including token counts and latency.
 
 ## ✅ What You've Learned
 
