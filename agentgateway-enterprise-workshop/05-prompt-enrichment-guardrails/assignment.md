@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: h0gkvutxcbhf
+- id: solouiguards05
   title: Solo UI
   type: service
   hostname: server
@@ -43,23 +43,23 @@ Let's add two critical gateway-level policies: automatic prompt enrichment and c
 ## Step 1: Clean Up Previous Policies
 
 ```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway agentgateway-jwt-auth 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system agentgateway-jwt-auth 2>/dev/null || true
 ```
 
 Ensure the OpenAI route exists:
 
 ```bash
-kubectl get httproute openai -n enterprise-agentgateway || \
+kubectl get httproute openai -n agentgateway-system || \
 kubectl apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: openai
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
     - name: agentgateway
-      namespace: enterprise-agentgateway
+      namespace: agentgateway-system
   rules:
     - matches:
         - path:
@@ -76,7 +76,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: openai-all-models
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   ai:
     provider:
@@ -92,15 +92,13 @@ EOF
 
 ## Step 2: Apply Prompt Enrichment Policy
 
-This policy prepends a system message to every request on the `openai` route:
-
 ```bash
 kubectl apply -f- <<EOF
 apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: openai-prompt-enrichment
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
@@ -128,13 +126,9 @@ curl -s "$GATEWAY_IP:8080/openai" \
   }' | jq .
 ```
 
-The response should come back in **JSON format** — the system message was injected by the gateway, even though the user didn't include one.
-
 ## Part 2: Prompt Guards
 
-## Step 4: Add Request Guardrails (Block Sensitive Input)
-
-Now let's add a prompt guard that rejects requests containing credit card patterns:
+## Step 4: Add Request Guardrails
 
 ```bash
 kubectl apply -f- <<'EOF'
@@ -142,7 +136,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: openai-prompt-guard
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
@@ -171,8 +165,6 @@ EOF
 
 ## Step 5: Test Request Blocking
 
-Try sending a request with credit card information:
-
 ```bash
 curl -i "$GATEWAY_IP:8080/openai" \
   -H "content-type: application/json" \
@@ -182,11 +174,9 @@ curl -i "$GATEWAY_IP:8080/openai" \
   }'
 ```
 
-You should see a **403** response with the message "Rejected: request contains sensitive financial data".
+You should see a **403** response.
 
 ## Step 6: Test Response Masking
-
-Now let's test the **response-side** masking. We need to ask a question that doesn't contain a credit card number in the request (otherwise the request guard blocks it), but that causes the LLM to include one in its response:
 
 ```bash
 curl -s "$GATEWAY_IP:8080/openai" \
@@ -197,25 +187,18 @@ curl -s "$GATEWAY_IP:8080/openai" \
   }' | jq .
 ```
 
-Look at the response — any credit card or SSN patterns in the LLM's output will be masked with `X` characters by the gateway. For example, a number like `4532-XXXX-XXXX-XXXX` or an SSN like `XXX-XX-XXXX`.
-
-> **Note:** The request guard checks the **input** for sensitive patterns and blocks it. The response guard checks the **output** and masks it. Step 5 tested the input guard; this step tests the output guard. The key is that your prompt must not contain the patterns you're guarding against, or the request guard will reject it before the LLM ever sees it.
+Any credit card or SSN patterns in the LLM's output will be masked with `X` characters.
 
 ## Step 7: Verify in Grafana and Solo UI
 
-Switch to the **Grafana** tab. Navigate to **Home > Explore > Tempo** and look at recent traces. You should see:
-- Traces where the prompt guard rejected the request (403 status)
-- Traces where the response was masked
-
-You can also check the **Solo UI** tab for the same traces in the management dashboard's tracing view.
+Switch to the **Grafana** tab. Navigate to **Home > Explore > Tempo** and look at recent traces. You can also check the **Solo UI** tab for the same traces.
 
 ## ✅ What You've Learned
 
 - `prompt.prepend` injects system messages at the gateway level
-- `promptGuard.request` blocks requests matching regex patterns (input guard)
-- `promptGuard.response` masks sensitive data in LLM responses (output guard)
+- `promptGuard.request` blocks requests matching regex patterns
+- `promptGuard.response` masks sensitive data in LLM responses
 - Built-in patterns (`CreditCard`, `Ssn`) handle common PII types
-- Request guards and response guards work independently — input is blocked, output is masked
 - All enforcement happens at the gateway — zero application code changes
 
 **Next up:** Rate Limiting — control AI spend per user, team, or globally.
