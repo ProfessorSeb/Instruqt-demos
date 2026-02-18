@@ -24,12 +24,12 @@ owner: soloio
 developers:
 - sebastian.maniak@solo.io
 idle_timeout: 1800
-timelimit: 7200
+timelimit: 3600
 lab_config:
   sidebar_enabled: true
   feedback_recap_enabled: true
   feedback_tab_enabled: false
   loadingMessages: true
   hideStopButton: false
-checksum: "1590250526683733783"
+checksum: "15137461720692175162"
 enhanced_loading: false
