@@ -163,22 +163,7 @@ kubectl get pods -n agentgateway-system -l app=mcp-server-everything
 4. Click **Connect**
 5. You should see the tools listed from the MCP server
 
-## Step 5: Call an MCP Tool
-
-In the playground, select one of the available tools (e.g. `echo`) and test calling it. You should see the tool response.
-
-Alternatively, test via the terminal:
-
-```bash
-export GATEWAY_IP=$(kubectl get svc -n agentgateway-system -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy -o jsonpath='{.items[0].spec.clusterIP}')
-
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | jq .
-```
-
-## Step 6: Verify Traces
+## Step 5: Verify Traces
 
 Navigate to **AgentGateway → Traces** in the UI. You should see the MCP tool discovery and call traces alongside any LLM traces from the previous challenge.
 
