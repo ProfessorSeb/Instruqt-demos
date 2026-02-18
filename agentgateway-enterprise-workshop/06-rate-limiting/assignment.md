@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouirate06
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -171,9 +176,11 @@ curl -i "$GATEWAY_IP:8080/openai" \
 
 You'll see rate limit headers like `x-ratelimit-limit` and `x-ratelimit-remaining`.
 
-## Step 7: View in Grafana
+## Step 7: View in Grafana and Solo UI
 
 Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see the 429 responses in the HTTP status code distribution.
+
+You can also switch to the **Solo UI** tab to explore the rate-limited requests in the tracing view — you'll see the 429 status codes alongside the successful 200 responses.
 
 ## ✅ What You've Learned
 
