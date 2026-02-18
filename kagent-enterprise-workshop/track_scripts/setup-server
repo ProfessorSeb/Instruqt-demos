@@ -73,7 +73,8 @@ service:
   type: LoadBalancer
   clusterIP: ""
 clickhouse:
-  enabled: true
+  standalone:
+    enabled: true
 tracing:
   verbose: true
 EOF
