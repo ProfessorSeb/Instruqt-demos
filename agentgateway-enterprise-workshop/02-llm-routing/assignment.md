@@ -50,11 +50,11 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: openai
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
     - name: agentgateway
-      namespace: enterprise-agentgateway
+      namespace: agentgateway-system
   rules:
     - matches:
         - path:
@@ -71,7 +71,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: openai-all-models
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   ai:
     provider:
@@ -108,7 +108,7 @@ You should get a response from OpenAI — but now it went through your gateway, 
 AgentGateway logs every request with LLM-specific metadata:
 
 ```bash
-kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 1 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 1 | jq .
 ```
 
 Notice the log includes:
@@ -122,7 +122,7 @@ Notice the log includes:
 AgentGateway exposes Prometheus-compatible metrics:
 
 ```bash
-kubectl port-forward -n enterprise-agentgateway deployment/agentgateway 15020:15020 &
+kubectl port-forward -n agentgateway-system deployment/agentgateway 15020:15020 &
 sleep 2
 curl -s http://localhost:15020/metrics | grep -E "agentgateway_(request|token)" | head -20
 kill %1 2>/dev/null
