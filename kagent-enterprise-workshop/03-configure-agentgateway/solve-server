@@ -1,0 +1,96 @@
+#!/bin/bash
+set -euxo pipefail
+
+export KAGENT_ENT_VERSION=0.3.4
+export OPENAI_API_KEY=$(grep OPENAI_API_KEY /root/.bashrc | tail -1 | cut -d= -f2-)
+
+kubectl apply -f- <<EOF
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayParameters
+metadata:
+  name: tracing
+  namespace: agentgateway-system
+spec:
+  rawConfig:
+    config:
+      tracing:
+        otlpEndpoint: grpc://solo-enterprise-telemetry-collector.agentgateway-system.svc.cluster.local:4317
+        otlpProtocol: grpc
+        randomSampling: true
+EOF
+
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-proxy
+  namespace: agentgateway-system
+spec:
+  gatewayClassName: enterprise-agentgateway
+  infrastructure:
+    parametersRef:
+      name: tracing
+      group: enterpriseagentgateway.solo.io
+      kind: EnterpriseAgentgatewayParameters
+  listeners:
+    - protocol: HTTP
+      port: 8080
+      name: http
+      allowedRoutes:
+        namespaces:
+          from: All
+EOF
+
+# Wait for proxy deployment to be created and ready
+sleep 15
+kubectl -n agentgateway-system wait --for=condition=Available deployment -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --timeout=120s || true
+
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openai-secret
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  Authorization: $OPENAI_API_KEY
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-4o-mini
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: agentgateway-system
+  labels:
+    route-type: llm-provider
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /openai
+      backendRefs:
+        - name: openai
+          namespace: agentgateway-system
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+EOF
+
+echo "Challenge 3 solved!"

@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get enterpriseagentgatewayparameters tracing -n agentgateway-system &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayParameters 'tracing' not found. Please create the tracing parameters as shown in Step 1."
+  exit 1
+fi
+
+if ! kubectl get gateway agentgateway-proxy -n agentgateway-system &>/dev/null; then
+  fail-message "Gateway 'agentgateway-proxy' not found. Please create the Gateway as shown in Step 2."
+  exit 1
+fi
+
+if ! kubectl get agentgatewaybackend openai -n agentgateway-system &>/dev/null; then
+  fail-message "AgentgatewayBackend 'openai' not found. Please create the OpenAI backend as shown in Step 4."
+  exit 1
+fi
+
+if ! kubectl get httproute openai -n agentgateway-system &>/dev/null; then
+  fail-message "HTTPRoute 'openai' not found. Please create the OpenAI route as shown in Step 4."
+  exit 1
+fi
+
+echo "Challenge 3 complete!"
