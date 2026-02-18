@@ -76,7 +76,7 @@ This adds the community agents and tools to your existing KAgent installation wi
 Check that the agent pods are deployed:
 
 ```bash
-kubectl get pods -n kagent -l app.kubernetes.io/component=agent
+kubectl get pods -n kagent -l app.kubernetes.io/part-of=kagent
 ```
 
 You should see pods for:
@@ -93,7 +93,8 @@ kubectl get agents -n kagent
 ## Step 4: Verify Tools Are Running
 
 ```bash
-kubectl get pods -n kagent -l app.kubernetes.io/component=tool
+kubectl get pods -n kagent -l app.kubernetes.io/name=grafana-mcp
+kubectl get pods -n kagent -l app.kubernetes.io/name=querydoc
 ```
 
 You should see:
