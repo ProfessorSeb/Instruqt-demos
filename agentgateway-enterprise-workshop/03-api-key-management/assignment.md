@@ -181,14 +181,6 @@ kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 1 | jq .
 
 Notice the `x-org` header is captured in the logs — this gives you per-team attribution.
 
-## Cleanup
-
-```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway api-key-auth
-kubectl delete authconfig -n enterprise-agentgateway apikey-auth
-kubectl delete secret -n enterprise-agentgateway team1-apikey
-```
-
 ## ✅ What You've Learned
 
 - `AuthConfig` (extauth.solo.io) defines API key validation rules

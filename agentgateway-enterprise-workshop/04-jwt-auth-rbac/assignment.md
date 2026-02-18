@@ -207,12 +207,6 @@ kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 2 | jq '.jwt 
 
 JWT claims are captured in access logs for audit trails.
 
-## Cleanup
-
-```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway agentgateway-jwt-auth
-```
-
 ## ✅ What You've Learned
 
 - `jwtAuthentication` validates tokens using JWKS (inline or remote)

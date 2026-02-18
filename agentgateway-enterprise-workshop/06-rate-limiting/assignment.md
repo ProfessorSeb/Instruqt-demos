@@ -175,13 +175,6 @@ You'll see rate limit headers like `x-ratelimit-limit` and `x-ratelimit-remainin
 
 Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see the 429 responses in the HTTP status code distribution.
 
-## Cleanup
-
-```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway global-request-rate-limit
-kubectl delete ratelimitconfig -n enterprise-agentgateway global-request-rate-limit
-```
-
 ## ✅ What You've Learned
 
 - `RateLimitConfig` defines rate limit rules (requests per unit)

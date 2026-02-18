@@ -240,15 +240,6 @@ Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see:
 - HTTP 200 responses from OpenAI
 - The endpoint switching in real-time
 
-## Cleanup
-
-```bash
-kubectl delete httproute -n enterprise-agentgateway failover-route
-kubectl delete agentgatewaybackend -n enterprise-agentgateway failover-backend
-kubectl delete deployment -n enterprise-agentgateway mock-gpt-4o
-kubectl delete service -n enterprise-agentgateway mock-gpt-4o-svc
-```
-
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend.spec.ai.groups` defines priority groups for failover

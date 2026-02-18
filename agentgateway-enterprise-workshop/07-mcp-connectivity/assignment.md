@@ -264,17 +264,6 @@ curl -s "$GATEWAY_IP:8080/mcp" \
   -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "fetch", "arguments": {"url": "https://httpbin.org/get"}}}' | jq .
 ```
 
-## Cleanup
-
-```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-jwt-auth
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway mcp-rbac
-kubectl delete deployment -n enterprise-agentgateway mcp-website-fetcher
-kubectl delete service -n enterprise-agentgateway mcp-website-fetcher
-kubectl delete agentgatewaybackend -n enterprise-agentgateway mcp-backend
-kubectl delete httproute -n enterprise-agentgateway mcp
-```
-
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend` with `mcp.targets` routes to MCP servers

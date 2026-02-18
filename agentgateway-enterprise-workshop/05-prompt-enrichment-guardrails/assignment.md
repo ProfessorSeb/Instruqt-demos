@@ -200,13 +200,6 @@ Switch to the **Grafana** tab. Navigate to **Home > Explore > Tempo** and look a
 - Traces where the prompt guard rejected the request (403 status)
 - Traces where the response was masked
 
-## Cleanup
-
-```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway openai-prompt-enrichment
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway openai-prompt-guard
-```
-
 ## ✅ What You've Learned
 
 - `prompt.prepend` injects system messages at the gateway level
