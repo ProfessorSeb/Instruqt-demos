@@ -1,0 +1,104 @@
+#!/bin/bash
+set -euxo pipefail
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-website-fetcher
+  namespace: enterprise-agentgateway
+spec:
+  selector:
+    matchLabels:
+      app: mcp-website-fetcher
+  template:
+    metadata:
+      labels:
+        app: mcp-website-fetcher
+    spec:
+      containers:
+      - name: mcp-website-fetcher
+        image: ghcr.io/peterj/mcp-website-fetcher:main
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-website-fetcher
+  namespace: enterprise-agentgateway
+  labels:
+    app: mcp-website-fetcher
+spec:
+  selector:
+    app: mcp-website-fetcher
+  ports:
+  - port: 80
+    targetPort: 8000
+    appProtocol: agentgateway.dev/mcp
+EOF
+
+kubectl rollout status deployment/mcp-website-fetcher -n enterprise-agentgateway --timeout=60s
+
+kubectl apply -f - <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: mcp-backend
+  namespace: enterprise-agentgateway
+spec:
+  mcp:
+    targets:
+    - name: mcp-target
+      static:
+        host: mcp-website-fetcher.enterprise-agentgateway.svc.cluster.local
+        port: 80
+        protocol: SSE
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp
+  namespace: enterprise-agentgateway
+spec:
+  parentRefs:
+  - name: agentgateway
+  rules:
+    - backendRefs:
+      - name: mcp-backend
+        group: agentgateway.dev
+        kind: AgentgatewayBackend
+EOF
+
+kubectl apply -f - <<EOF
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: mcp-jwt-auth
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway
+  traffic:
+    jwtAuthentication:
+      mode: Strict
+      providers:
+        - issuer: solo.io
+          jwks:
+            inline: |
+                {
+                  "keys": [
+                    {
+                      "kty": "RSA",
+                      "kid": "solo-public-key-001",
+                      "n": "vlmc5pb-jYaOq75Y4r91AC2iuS9B0sm6sxzRm3oOG7nIt2F1hHd4AKll2jd6BZg437qvsLdREnbnVrr8kU0drmJNPHL-xbsTz_cQa95GuKb6AI6osAaUAEL3dPjuoqkGNRe1sAJyOi48qtcbV0kPWcwFmCV0-OiqliCms12jrd1PSI_LYiNc3GcutpxY6BiHkbxxNeIuWDxE-i_Obq8EhhGkwha1KVUvLHV-EwD4M_AY8BegGsX-sjoChXOxyueu_ReqWV227I-FTKwMnjwWW0BQkeI6g1w1WqADmtKZ2sLamwGUJgWt4ZgIyhQ-iQfeN1WN2iupTWa5JAsw--CQJw",
+                      "e": "AQAB",
+                      "use": "sig",
+                      "alg": "RS256"
+                    }
+                  ]
+                }
+EOF
+
+echo "Challenge 7 solved!"

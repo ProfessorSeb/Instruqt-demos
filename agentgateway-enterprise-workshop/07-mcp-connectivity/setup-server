@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
+kubectl delete ratelimitconfig -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
+echo "Challenge 7 setup complete"

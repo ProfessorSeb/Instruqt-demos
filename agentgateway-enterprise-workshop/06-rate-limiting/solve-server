@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euxo pipefail
+
+kubectl apply -f- <<EOF
+apiVersion: ratelimit.solo.io/v1alpha1
+kind: RateLimitConfig
+metadata:
+  name: global-request-rate-limit
+  namespace: enterprise-agentgateway
+spec:
+  raw:
+    descriptors:
+    - key: generic_key
+      value: counter
+      rateLimit:
+        requestsPerUnit: 5
+        unit: HOUR
+    rateLimits:
+    - actions:
+      - genericKey:
+          descriptorValue: counter
+      type: REQUEST
+---
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: global-request-rate-limit
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - name: agentgateway
+      group: gateway.networking.k8s.io
+      kind: Gateway
+  traffic:
+    entRateLimit:
+      global:
+        rateLimitConfigRefs:
+        - name: global-request-rate-limit
+EOF
+
+echo "Challenge 6 solved!"

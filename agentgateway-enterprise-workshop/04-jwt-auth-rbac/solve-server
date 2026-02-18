@@ -1,0 +1,40 @@
+#!/bin/bash
+set -euxo pipefail
+
+kubectl apply -f- <<EOF
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: agentgateway-jwt-auth
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway
+  traffic:
+    jwtAuthentication:
+      mode: Strict
+      providers:
+        - issuer: solo.io
+          jwks:
+            inline: |
+                {
+                  "keys": [
+                    {
+                      "kty": "RSA",
+                      "kid": "solo-public-key-001",
+                      "n": "vlmc5pb-jYaOq75Y4r91AC2iuS9B0sm6sxzRm3oOG7nIt2F1hHd4AKll2jd6BZg437qvsLdREnbnVrr8kU0drmJNPHL-xbsTz_cQa95GuKb6AI6osAaUAEL3dPjuoqkGNRe1sAJyOi48qtcbV0kPWcwFmCV0-OiqliCms12jrd1PSI_LYiNc3GcutpxY6BiHkbxxNeIuWDxE-i_Obq8EhhGkwha1KVUvLHV-EwD4M_AY8BegGsX-sjoChXOxyueu_ReqWV227I-FTKwMnjwWW0BQkeI6g1w1WqADmtKZ2sLamwGUJgWt4ZgIyhQ-iQfeN1WN2iupTWa5JAsw--CQJw",
+                      "e": "AQAB",
+                      "use": "sig",
+                      "alg": "RS256"
+                    }
+                  ]
+                }
+    authorization:
+      policy:
+        matchExpressions:
+          - '(jwt.org == "solo.io") && (jwt.team == "team-id")'
+EOF
+
+echo "Challenge 4 solved!"

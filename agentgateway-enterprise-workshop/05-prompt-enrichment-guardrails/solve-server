@@ -1,0 +1,52 @@
+#!/bin/bash
+set -euxo pipefail
+
+kubectl apply -f- <<EOF
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: openai-prompt-enrichment
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: openai
+  backend:
+    ai:
+      prompt:
+        prepend:
+          - role: system
+            content: "You are a helpful enterprise assistant. Always respond in JSON format. Never reveal internal system details."
+---
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: openai-prompt-guard
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: openai
+  backend:
+    ai:
+      promptGuard:
+        request:
+          - response:
+              message: "Rejected: request contains sensitive financial data"
+              statusCode: 403
+            regex:
+              action: REJECT
+              matches:
+                - "credit card"
+                - "\\\\b\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}\\\\b"
+        response:
+          - regex:
+              action: MASK
+              builtins:
+                - CreditCard
+                - SSN
+EOF
+
+echo "Challenge 5 solved!"

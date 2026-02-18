@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get enterpriseagentgatewaypolicy openai-prompt-guard -n enterprise-agentgateway &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayPolicy 'openai-prompt-guard' not found. Please create the prompt guard policy as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 5 complete!"

@@ -1,0 +1,90 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Ensure route exists
+kubectl get httproute openai -n enterprise-agentgateway || \
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: enterprise-agentgateway
+spec:
+  parentRefs:
+    - name: agentgateway
+      namespace: enterprise-agentgateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /openai
+      backendRefs:
+        - name: openai-all-models
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+      timeouts:
+        request: "120s"
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: openai-all-models
+  namespace: enterprise-agentgateway
+spec:
+  ai:
+    provider:
+      openai: {}
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+EOF
+
+kubectl apply -f- <<EOF
+apiVersion: v1
+data:
+  api-key: dGVhbTEta2V5
+  x-org: ZGV2ZWxvcGVycw==
+kind: Secret
+metadata:
+  labels:
+    llm-provider: openai
+  name: team1-apikey
+  namespace: enterprise-agentgateway
+type: extauth.solo.io/apikey
+---
+apiVersion: extauth.solo.io/v1
+kind: AuthConfig
+metadata:
+  name: apikey-auth
+  namespace: enterprise-agentgateway
+spec:
+  configs:
+    - apiKeyAuth:
+        headerName: vanity-auth
+        k8sSecretApikeyStorage:
+          apiKeySecretRefs:
+            - name: team1-apikey
+              namespace: enterprise-agentgateway
+        headersFromMetadataEntry:
+          x-org:
+            name: x-org
+---
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayPolicy
+metadata:
+  name: api-key-auth
+  namespace: enterprise-agentgateway
+spec:
+  targetRefs:
+    - name: agentgateway
+      group: gateway.networking.k8s.io
+      kind: Gateway
+  traffic:
+    entExtAuth:
+      authConfigRef:
+        name: apikey-auth
+        namespace: enterprise-agentgateway
+EOF
+
+echo "Challenge 3 solved!"

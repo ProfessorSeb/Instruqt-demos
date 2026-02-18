@@ -1,0 +1,39 @@
+slug: agentgateway-enterprise-workshop
+title: 'Enterprise AgentGateway: The Complete Workshop'
+teaser: Deploy, secure, and operate Enterprise AgentGateway — the AI-native gateway
+  for LLM and MCP traffic on Kubernetes.
+description: "AI agents are calling LLMs and MCP tools with no visibility, no security,
+  and no cost control. Enterprise AgentGateway gives you a single control point for
+  all agent traffic — routing, authentication, guardrails, rate limiting, and observability.\n\n
+  In this hands-on workshop, you'll:\n\n- \U0001F680 Install Enterprise AgentGateway
+  with full observability (Grafana, Prometheus, Tempo)\n- \U0001F310 Route LLM traffic
+  to OpenAI with metrics and distributed tracing\n- \U0001F511 Manage API keys with
+  vanity key masking\n- \U0001F6E1️ Enforce JWT authentication with CEL-based RBAC\n-
+  \U0001F4DD Enrich prompts and guard against PII leakage and prompt injection\n-
+  \U0001F4B0 Rate limit requests to control AI spend\n- \U0001F527 Route to MCP servers
+  with JWT security and tool-level access control\n- \U0001F504 Configure LLM failover
+  with priority groups\n\n**Prerequisites:** Familiarity with Kubernetes basics (kubectl,
+  Helm, pods, services). No prior AgentGateway experience required."
+icon: ""
+tags:
+- ai
+- llm
+- kubernetes
+- agentgateway
+- solo-io
+- enterprise
+- gateway-api
+- security
+- mcp
+owner: soloio
+developers:
+- sebastian.maniak@solo.io
+idle_timeout: 1800
+timelimit: 7200
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  hideStopButton: false
+enhanced_loading: false

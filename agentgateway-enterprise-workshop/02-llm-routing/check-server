@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get httproute openai -n enterprise-agentgateway &>/dev/null; then
+  fail-message "HTTPRoute 'openai' not found. Please create the OpenAI route as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get agentgatewaybackend openai-all-models -n enterprise-agentgateway &>/dev/null; then
+  fail-message "AgentgatewayBackend 'openai-all-models' not found. Please create the backend as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 2 complete!"

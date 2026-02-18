@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get ratelimitconfig global-request-rate-limit -n enterprise-agentgateway &>/dev/null; then
+  fail-message "RateLimitConfig 'global-request-rate-limit' not found. Please create the rate limit config as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get enterpriseagentgatewaypolicy global-request-rate-limit -n enterprise-agentgateway &>/dev/null; then
+  fail-message "EnterpriseAgentgatewayPolicy 'global-request-rate-limit' not found. Please create the rate limit policy as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 6 complete!"

@@ -12,6 +12,12 @@ kubectl -n keycloak wait --for=condition=Ready pod -l app=keycloak --timeout=30s
   exit 1
 }
 
+# Check Keycloak AgentgatewayBackend exists
+if ! kubectl -n keycloak get agentgatewaybackend keycloak &>/dev/null; then
+  fail-message "The 'keycloak' AgentgatewayBackend was not found in the keycloak namespace. Please create it as described — the auth policy needs it to fetch JWKS keys."
+  exit 1
+fi
+
 # Check auth policy exists
 if ! kubectl -n agentgateway-system get agentgatewaypolicy mcp-oauth-auth &>/dev/null; then
   fail-message "The mcp-oauth-auth AgentgatewayPolicy was not found. Please create it as described."

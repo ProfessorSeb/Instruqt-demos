@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get deployment mcp-website-fetcher -n enterprise-agentgateway &>/dev/null; then
+  fail-message "MCP server deployment 'mcp-website-fetcher' not found. Please deploy the MCP server as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get agentgatewaybackend mcp-backend -n enterprise-agentgateway &>/dev/null; then
+  fail-message "AgentgatewayBackend 'mcp-backend' not found. Please create the MCP backend as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 7 complete!"

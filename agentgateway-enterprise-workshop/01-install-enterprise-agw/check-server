@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get gateway agentgateway -n enterprise-agentgateway &>/dev/null; then
+  fail-message "Gateway 'agentgateway' not found in enterprise-agentgateway namespace."
+  exit 1
+fi
+
+if ! grep -q "GATEWAY_IP" /root/.bashrc; then
+  fail-message "Gateway IP not saved to ~/.bashrc. Run: echo \"export GATEWAY_IP=\$GATEWAY_IP\" >> /root/.bashrc"
+  exit 1
+fi
+
+echo "Challenge 1 complete!"

@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get deployment mock-gpt-4o -n enterprise-agentgateway &>/dev/null; then
+  fail-message "Mock server deployment 'mock-gpt-4o' not found. Please deploy it as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get agentgatewaybackend failover-backend -n enterprise-agentgateway &>/dev/null; then
+  fail-message "AgentgatewayBackend 'failover-backend' not found. Please create the failover backend as shown in the instructions."
+  exit 1
+fi
+
+if ! kubectl get httproute failover-route -n enterprise-agentgateway &>/dev/null; then
+  fail-message "HTTPRoute 'failover-route' not found. Please create the failover route as shown in the instructions."
+  exit 1
+fi
+
+echo "Challenge 8 complete!"
