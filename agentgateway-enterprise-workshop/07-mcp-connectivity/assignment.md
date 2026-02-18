@@ -28,6 +28,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: mcpinspector01
+  title: MCP Inspector
+  type: service
+  hostname: server
+  port: 6274
 difficulty: ""
 enhanced_loading: null
 ---
@@ -125,65 +130,32 @@ spec:
 EOF
 ```
 
-## Step 4: Test MCP Connectivity
+## Step 4: Test MCP Connectivity with MCP Inspector
 
-The MCP protocol requires a session to be initialized before making tool calls. First, initialize a session and capture the session ID:
+We'll use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) — an interactive tool for testing MCP servers. It handles session initialization automatically and provides a visual UI.
+
+Launch the MCP Inspector, pointing it at the gateway's MCP endpoint:
 
 ```bash
 source /root/.bashrc
 
-SESSION_ID=$(curl -s -D - "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-03-26",
-      "capabilities": {},
-      "clientInfo": {
-        "name": "curl-client",
-        "version": "1.0.0"
-      }
-    }
-  }' 2>&1 | grep -i "mcp-session-id" | awk '{print $2}' | tr -d '\r')
-
-echo "Session ID: $SESSION_ID"
+HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+  --config /root/mcp-inspector-config.json \
+  --server agentgateway &
 ```
 
-Now list the available tools through the gateway using the session ID:
+Switch to the **MCP Inspector** tab. You should see the Inspector UI.
+
+1. Click **Connect** — the Inspector will initialize an MCP session with the gateway automatically
+2. Click **List Tools** — you should see the `fetch` tool listed
+3. Select the `fetch` tool, enter `https://httpbin.org/get` as the `url` argument, and click **Run Tool** to test it
+
+> **Note:** If the Inspector tab shows a blank page, wait a few seconds and refresh — it may take a moment to start.
+
+Stop the Inspector when done:
 
 ```bash
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 2,
-    "method": "tools/list"
-  }' | jq .
-```
-
-You should see the `fetch` tool listed. Now call it:
-
-```bash
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 3,
-    "method": "tools/call",
-    "params": {
-      "name": "fetch",
-      "arguments": {
-        "url": "https://httpbin.org/get"
-      }
-    }
-  }' | jq .
+kill %1 2>/dev/null || true
 ```
 
 ## Step 5: View MCP Access Logs
@@ -234,60 +206,43 @@ EOF
 
 ## Step 7: Test MCP Without JWT (Should Fail)
 
+Launch the Inspector again (without a JWT token):
+
 ```bash
-curl -i "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-03-26",
-      "capabilities": {},
-      "clientInfo": {
-        "name": "curl-client",
-        "version": "1.0.0"
-      }
-    }
-  }'
+HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+  --config /root/mcp-inspector-config.json \
+  --server agentgateway &
 ```
 
-You should see `403` — `authentication failure: no bearer token found`.
+Switch to the **MCP Inspector** tab and click **Connect**.
+
+You should see a connection error — the gateway now requires a valid JWT. Stop the Inspector:
+
+```bash
+kill %1 2>/dev/null || true
+```
 
 ## Step 8: Test MCP With JWT (Should Succeed)
+
+Launch the Inspector with the JWT token configured as a Bearer token header:
 
 ```bash
 export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
 
-# Initialize session with JWT
-SESSION_ID=$(curl -s -D - "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $DEV_TOKEN" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-03-26",
-      "capabilities": {},
-      "clientInfo": {
-        "name": "curl-client",
-        "version": "1.0.0"
-      }
-    }
-  }' 2>&1 | grep -i "mcp-session-id" | awk '{print $2}' | tr -d '\r')
+HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+  --config /root/mcp-inspector-config-jwt.json \
+  --server agentgateway &
+```
 
-echo "Session ID: $SESSION_ID"
+Switch to the **MCP Inspector** tab and click **Connect**. This time it should succeed.
 
-# List tools with session ID and JWT
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $DEV_TOKEN" \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}' | jq .
+1. Click **List Tools** — you should see the `fetch` tool
+2. Select `fetch`, enter `https://httpbin.org/get` as the URL, and click **Run Tool**
+
+Stop the Inspector:
+
+```bash
+kill %1 2>/dev/null || true
 ```
 
 ## Step 9: Add RBAC for Tool Access
@@ -314,22 +269,26 @@ spec:
 EOF
 ```
 
-Test with the JWT (should succeed since org=solo.io). Note: reuse the session from Step 8, or initialize a new one:
+Launch the Inspector with the JWT token again and verify it still works (since our token has `org=solo.io`):
 
 ```bash
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $DEV_TOKEN" \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -d '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "fetch", "arguments": {"url": "https://httpbin.org/get"}}}' | jq .
+HOST=0.0.0.0 npx -y @modelcontextprotocol/inspector \
+  --config /root/mcp-inspector-config-jwt.json \
+  --server agentgateway &
+```
+
+Switch to the **MCP Inspector** tab, click **Connect**, then use **List Tools** and call `fetch` with `https://httpbin.org/get`.
+
+Stop the Inspector:
+
+```bash
+kill %1 2>/dev/null || true
 ```
 
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend` with `mcp.targets` routes to MCP servers
-- MCP Streamable HTTP requires session initialization (`initialize` method) before making tool calls
-- The `Mcp-Session-Id` header must be included on all requests after initialization
+- The **MCP Inspector** provides a visual UI for testing MCP servers and handles session management automatically
 - MCP traffic gets full observability (logs, metrics, traces)
 - JWT auth secures MCP endpoints the same way as LLM routes
 - CEL-based RBAC controls who can access which tools
