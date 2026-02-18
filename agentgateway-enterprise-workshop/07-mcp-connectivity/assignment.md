@@ -242,27 +242,31 @@ npx -y @modelcontextprotocol/inspector --cli \
   --method tools/list
 ```
 
-You should see a connection error — the gateway is now rejecting all requests without a valid JWT. This confirms that authentication is enforced for MCP traffic, not just LLM traffic.
+You should see an error: `authentication failure: no bearer token found`. The gateway is now rejecting all unauthenticated MCP requests.
 
 ## Step 8: Test With a JWT (Should Succeed)
 
-The setup script also created a second config file (`mcp-inspector-config-jwt.json`) that includes the `Authorization: Bearer` header. Try again with this config:
+Now pass the JWT token using the `--header` flag:
 
 ```bash
+export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
+
 npx -y @modelcontextprotocol/inspector --cli \
-  --config /root/mcp-inspector-config-jwt.json \
+  --config /root/mcp-inspector-config.json \
   --server agentgateway \
+  --header "Authorization: Bearer $DEV_TOKEN" \
   --method tools/list
 ```
 
-You should see the `fetch` tool listed again — the JWT was validated by the gateway and the MCP request was authorized.
+You should see the `fetch` tool listed again — the JWT was validated and the request was authorized.
 
 Call the tool to confirm full end-to-end with authentication:
 
 ```bash
 npx -y @modelcontextprotocol/inspector --cli \
-  --config /root/mcp-inspector-config-jwt.json \
+  --config /root/mcp-inspector-config.json \
   --server agentgateway \
+  --header "Authorization: Bearer $DEV_TOKEN" \
   --method tools/call \
   --tool-name fetch \
   --tool-arg url=https://httpbin.org/get
@@ -296,8 +300,9 @@ Our JWT has `org=solo.io`, so it should still pass. Verify:
 
 ```bash
 npx -y @modelcontextprotocol/inspector --cli \
-  --config /root/mcp-inspector-config-jwt.json \
+  --config /root/mcp-inspector-config.json \
   --server agentgateway \
+  --header "Authorization: Bearer $DEV_TOKEN" \
   --method tools/call \
   --tool-name fetch \
   --tool-arg url=https://httpbin.org/get
@@ -324,7 +329,7 @@ The key difference: LLM backends use `spec.ai.provider` to define a cloud LLM pr
 
 - **MCP backends** use `AgentgatewayBackend` with `mcp.targets` instead of `ai.provider`
 - **`appProtocol: agentgateway.dev/mcp`** on the Kubernetes Service tells the gateway to speak MCP protocol to the backend
-- **MCP Inspector CLI** (`--cli` mode) handles MCP session management and lets you test tools from the terminal
+- **MCP Inspector CLI** (`--cli` mode) handles MCP session management and lets you test tools from the terminal. Use `--header` to pass authentication headers.
 - **Same security model** — JWT auth and CEL-based RBAC apply to MCP traffic the same way as LLM traffic
 - **Same observability** — MCP requests appear in access logs with `mcp.method`, `mcp.resource`, and `mcp.target` fields
 - The gateway provides a **single control point** for both LLM and tool traffic

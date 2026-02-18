@@ -26,7 +26,7 @@ fi
 
 echo "GATEWAY_IP: $GATEWAY_IP"
 
-# Create MCP Inspector config (no auth — for Steps 4 and 7)
+# Create MCP Inspector config (used by all steps — auth is passed via --header flag)
 cat > /root/mcp-inspector-config.json <<IEOF
 {
   "mcpServers": {
@@ -38,26 +38,5 @@ cat > /root/mcp-inspector-config.json <<IEOF
 }
 IEOF
 
-# Create MCP Inspector config (with JWT auth — for Steps 8 and 9)
-export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
-
-cat > /root/mcp-inspector-config-jwt.json <<IEOF
-{
-  "mcpServers": {
-    "agentgateway": {
-      "type": "streamable-http",
-      "url": "http://${GATEWAY_IP}:8080/mcp",
-      "requestInit": {
-        "headers": {
-          "Authorization": "Bearer ${DEV_TOKEN}"
-        }
-      }
-    }
-  }
-}
-IEOF
-
-echo "MCP Inspector configs created:"
-echo "  /root/mcp-inspector-config.json (no auth)"
-echo "  /root/mcp-inspector-config-jwt.json (with JWT)"
+echo "MCP Inspector config created: /root/mcp-inspector-config.json"
 echo "Challenge 7 setup complete"
