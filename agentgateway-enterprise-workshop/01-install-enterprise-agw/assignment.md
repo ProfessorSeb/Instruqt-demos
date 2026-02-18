@@ -23,13 +23,18 @@ tabs:
   type: code
   hostname: server
   path: /root
+- id: solouiinstall01
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
 
 # Install Enterprise AgentGateway
 
-The track setup has already installed Enterprise AgentGateway, the monitoring stack (Grafana, Prometheus, Tempo), and created the Gateway resource. Let's verify everything is running and understand what was deployed.
+The track setup has already installed Enterprise AgentGateway, the monitoring stack (Grafana, Prometheus, Tempo), the Solo Enterprise Management UI, and created the Gateway resource. Let's verify everything is running and understand what was deployed.
 
 ## Step 1: Verify Enterprise AgentGateway Components
 
@@ -91,7 +96,24 @@ You should see pods for:
 - **prometheus** — metrics collection
 - **tempo** — distributed tracing
 
-## Step 5: Review the Gateway Configuration
+## Step 5: Verify the Solo Enterprise Management UI
+
+The Solo Enterprise Management UI provides a visual dashboard for managing and observing your AgentGateway deployment, including tracing, gateway configuration, and policy management.
+
+Check that the Solo UI components are running:
+
+```bash
+kubectl get pods -n agentgateway-system
+```
+
+You should see pods for the management UI frontend, backend, and supporting services (telemetry collector, ClickHouse, etc.).
+
+Switch to the **Solo UI** tab to open the management dashboard. From here you can:
+- View gateway topology and configuration
+- Explore distributed traces for LLM and MCP traffic
+- Monitor agent activity across your deployment
+
+## Step 6: Review the Gateway Configuration
 
 The `EnterpriseAgentgatewayParameters` resource configures the gateway's behavior. Let's look at what was deployed:
 
@@ -105,11 +127,21 @@ Key configuration:
 - **Logging**: JSON-formatted access logs with request/response body capture
 - **JWT capture**: JWT claims are logged for audit trails
 
+The Gateway also references a tracing configuration that sends traces to the Solo telemetry collector for the management UI:
+
+```bash
+kubectl get enterpriseagentgatewayparameters tracing -n agentgateway-system -o yaml
+```
+
+This dual-export setup means traces are available in **both** Grafana (via Tempo) and the Solo UI (via the Solo telemetry collector).
+
 ## ✅ What You've Learned
 
 - Enterprise AgentGateway is installed with its control plane and shared extensions
 - The Gateway resource creates the data plane proxy
 - Full observability is configured: metrics (Prometheus), traces (Tempo), dashboards (Grafana)
+- Solo Enterprise Management UI provides visual gateway management and tracing
+- Dual trace export sends data to both Tempo and the Solo telemetry collector
 - Enterprise CRDs extend Kubernetes with AI-native policy resources
 
 **Next up:** Route your first LLM traffic through the gateway.
