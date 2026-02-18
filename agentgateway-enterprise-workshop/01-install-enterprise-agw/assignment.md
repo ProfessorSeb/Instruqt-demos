@@ -41,7 +41,7 @@ The track setup has already installed Enterprise AgentGateway, the monitoring st
 Check that the Enterprise AgentGateway controller and shared extensions are running:
 
 ```bash
-kubectl get pods -n enterprise-agentgateway
+kubectl get pods -n agentgateway-system
 ```
 
 You should see:
@@ -72,13 +72,13 @@ Key CRDs:
 Check that the Gateway resource is ready and has an address:
 
 ```bash
-kubectl get gateway -n enterprise-agentgateway
+kubectl get gateway -n agentgateway-system
 ```
 
 Save the gateway IP for later challenges:
 
 ```bash
-export GATEWAY_IP=$(kubectl get svc -n enterprise-agentgateway --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
+export GATEWAY_IP=$(kubectl get svc -n agentgateway-system --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
 echo "Gateway IP: $GATEWAY_IP"
 echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
 ```
@@ -103,7 +103,7 @@ The Solo Enterprise Management UI provides a visual dashboard for managing and o
 Check that the Solo UI components are running:
 
 ```bash
-kubectl get pods -n agentgateway-system
+kubectl get pods -n agentgateway-system -l app.kubernetes.io/instance=management
 ```
 
 You should see pods for the management UI frontend, backend, and supporting services (telemetry collector, ClickHouse, etc.).
@@ -118,7 +118,7 @@ Switch to the **Solo UI** tab to open the management dashboard. From here you ca
 The `EnterpriseAgentgatewayParameters` resource configures the gateway's behavior. Let's look at what was deployed:
 
 ```bash
-kubectl get enterpriseagentgatewayparameters agentgateway-params -n enterprise-agentgateway -o yaml
+kubectl get enterpriseagentgatewayparameters agentgateway-params -n agentgateway-system -o yaml
 ```
 
 Key configuration:

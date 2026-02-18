@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-if ! kubectl get gateway agentgateway -n enterprise-agentgateway &>/dev/null; then
-  fail-message "Gateway 'agentgateway' not found in enterprise-agentgateway namespace."
+if ! kubectl get gateway agentgateway -n agentgateway-system &>/dev/null; then
+  fail-message "Gateway 'agentgateway' not found in agentgateway-system namespace."
   exit 1
 fi
 
