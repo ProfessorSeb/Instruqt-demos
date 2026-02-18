@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouijwt04
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -233,7 +238,7 @@ kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 4 | jq '{stat
 kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 4
 ```
 
-You should see a mix of `403` (denied) and `200` (allowed) entries, with JWT claims captured for audit trails.
+You should see a mix of `403` (denied) and `200` (allowed) entries, with JWT claims captured for audit trails. You can also explore these traces in the **Solo UI** tab under the Tracing section.
 
 ## ✅ What You've Learned
 
