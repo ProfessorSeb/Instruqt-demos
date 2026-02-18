@@ -27,6 +27,11 @@ tabs:
   type: service
   hostname: server
   port: 3000
+- id: solouiguards05
+  title: Solo UI
+  type: service
+  hostname: server
+  port: 4000
 difficulty: ""
 enhanced_loading: null
 ---
@@ -196,11 +201,13 @@ Look at the response — any credit card or SSN patterns in the LLM's output wil
 
 > **Note:** The request guard checks the **input** for sensitive patterns and blocks it. The response guard checks the **output** and masks it. Step 5 tested the input guard; this step tests the output guard. The key is that your prompt must not contain the patterns you're guarding against, or the request guard will reject it before the LLM ever sees it.
 
-## Step 7: Verify in Grafana
+## Step 7: Verify in Grafana and Solo UI
 
 Switch to the **Grafana** tab. Navigate to **Home > Explore > Tempo** and look at recent traces. You should see:
 - Traces where the prompt guard rejected the request (403 status)
 - Traces where the response was masked
+
+You can also check the **Solo UI** tab for the same traces in the management dashboard's tracing view.
 
 ## ✅ What You've Learned
 
