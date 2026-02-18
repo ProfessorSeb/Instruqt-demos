@@ -1,32 +1,28 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Check MCP server deployment exists and is ready
-if ! kubectl get deployment mcp-website-fetcher -n enterprise-agentgateway &>/dev/null; then
+if ! kubectl get deployment mcp-website-fetcher -n agentgateway-system &>/dev/null; then
   fail-message "MCP server deployment 'mcp-website-fetcher' not found. Please deploy the MCP server as shown in Step 2."
   exit 1
 fi
 
-if ! kubectl rollout status deployment/mcp-website-fetcher -n enterprise-agentgateway --timeout=10s &>/dev/null; then
-  fail-message "MCP server deployment 'mcp-website-fetcher' is not ready. Wait for the rollout to complete."
+if ! kubectl rollout status deployment/mcp-website-fetcher -n agentgateway-system --timeout=10s &>/dev/null; then
+  fail-message "MCP server deployment 'mcp-website-fetcher' is not ready."
   exit 1
 fi
 
-# Check MCP backend exists
-if ! kubectl get agentgatewaybackend mcp-backend -n enterprise-agentgateway &>/dev/null; then
-  fail-message "AgentgatewayBackend 'mcp-backend' not found. Please create the MCP backend and route as shown in Step 3."
+if ! kubectl get agentgatewaybackend mcp-backend -n agentgateway-system &>/dev/null; then
+  fail-message "AgentgatewayBackend 'mcp-backend' not found."
   exit 1
 fi
 
-# Check HTTPRoute exists
-if ! kubectl get httproute mcp -n enterprise-agentgateway &>/dev/null; then
-  fail-message "HTTPRoute 'mcp' not found. Please create the MCP route as shown in Step 3."
+if ! kubectl get httproute mcp -n agentgateway-system &>/dev/null; then
+  fail-message "HTTPRoute 'mcp' not found."
   exit 1
 fi
 
-# Check JWT auth policy exists
-if ! kubectl get enterpriseagentgatewaypolicy mcp-jwt-auth -n enterprise-agentgateway &>/dev/null; then
-  fail-message "JWT auth policy 'mcp-jwt-auth' not found. Please apply the JWT authentication policy as shown in Step 6."
+if ! kubectl get enterpriseagentgatewaypolicy mcp-jwt-auth -n agentgateway-system &>/dev/null; then
+  fail-message "JWT auth policy 'mcp-jwt-auth' not found."
   exit 1
 fi
 

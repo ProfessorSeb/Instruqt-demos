@@ -10,7 +10,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mcp-website-fetcher
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   selector:
     matchLabels:
@@ -29,7 +29,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mcp-website-fetcher
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
   labels:
     app: mcp-website-fetcher
 spec:
@@ -41,7 +41,7 @@ spec:
     appProtocol: agentgateway.dev/mcp
 EOF
 
-kubectl rollout status deployment/mcp-website-fetcher -n enterprise-agentgateway --timeout=60s
+kubectl rollout status deployment/mcp-website-fetcher -n agentgateway-system --timeout=60s
 
 # Step 3: Create MCP backend and route
 kubectl apply -f - <<EOF
@@ -49,13 +49,13 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: mcp-backend
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   mcp:
     targets:
     - name: mcp-target
       static:
-        host: mcp-website-fetcher.enterprise-agentgateway.svc.cluster.local
+        host: mcp-website-fetcher.agentgateway-system.svc.cluster.local
         port: 80
         protocol: SSE
 ---
@@ -63,7 +63,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: mcp
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
   - name: agentgateway
@@ -80,7 +80,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: mcp-jwt-auth
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
@@ -113,7 +113,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: mcp-rbac
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io

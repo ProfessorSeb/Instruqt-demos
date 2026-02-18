@@ -2,8 +2,8 @@
 set -euxo pipefail
 
 # Clean up previous policies from rate limiting challenge
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
-kubectl delete ratelimitconfig -n enterprise-agentgateway global-request-rate-limit 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system global-request-rate-limit 2>/dev/null || true
+kubectl delete ratelimitconfig -n agentgateway-system global-request-rate-limit 2>/dev/null || true
 
 # Ensure Node.js 22+ is installed (required for MCP Inspector CLI)
 if ! command -v node &>/dev/null || [[ $(node -v | sed 's/v//;s/\..*//' ) -lt 22 ]]; then
@@ -20,7 +20,7 @@ npx -y @modelcontextprotocol/inspector --help 2>/dev/null || true
 source /root/.bashrc
 
 if [ -z "${GATEWAY_IP:-}" ]; then
-  export GATEWAY_IP=$(kubectl get svc -n enterprise-agentgateway --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
+  export GATEWAY_IP=$(kubectl get svc -n agentgateway-system --selector=gateway.networking.k8s.io/gateway-name=agentgateway -o jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}{.items[*].status.loadBalancer.ingress[0].hostname}')
   echo "export GATEWAY_IP=$GATEWAY_IP" >> /root/.bashrc
 fi
 
