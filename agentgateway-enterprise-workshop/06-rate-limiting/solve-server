@@ -6,7 +6,7 @@ apiVersion: ratelimit.solo.io/v1alpha1
 kind: RateLimitConfig
 metadata:
   name: global-request-rate-limit
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   raw:
     descriptors:
@@ -25,7 +25,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: global-request-rate-limit
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - name: agentgateway

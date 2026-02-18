@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: mzlbryftmxxq
+- id: solouirate06
   title: Solo UI
   type: service
   hostname: server
@@ -43,24 +43,24 @@ Let's add request-based rate limiting to prevent abuse and control costs.
 ## Step 1: Clean Up Previous Policies
 
 ```bash
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway openai-prompt-enrichment 2>/dev/null || true
-kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway openai-prompt-guard 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system openai-prompt-enrichment 2>/dev/null || true
+kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system openai-prompt-guard 2>/dev/null || true
 ```
 
 ## Step 2: Ensure the OpenAI Route Exists
 
 ```bash
-kubectl get httproute openai -n enterprise-agentgateway || \
+kubectl get httproute openai -n agentgateway-system || \
 kubectl apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: openai
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
     - name: agentgateway
-      namespace: enterprise-agentgateway
+      namespace: agentgateway-system
   rules:
     - matches:
         - path:
@@ -77,7 +77,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: openai-all-models
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   ai:
     provider:
@@ -91,15 +91,13 @@ EOF
 
 ## Step 3: Create the Rate Limit Config
 
-This creates a global rate limit of **5 requests per hour** using a `RateLimitConfig`:
-
 ```bash
 kubectl apply -f- <<EOF
 apiVersion: ratelimit.solo.io/v1alpha1
 kind: RateLimitConfig
 metadata:
   name: global-request-rate-limit
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   raw:
     descriptors:
@@ -124,7 +122,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: global-request-rate-limit
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - name: agentgateway
@@ -139,8 +137,6 @@ EOF
 ```
 
 ## Step 5: Test Rate Limiting
-
-Send requests and watch for the rate limit to kick in:
 
 ```bash
 source /root/.bashrc
@@ -157,13 +153,9 @@ for i in $(seq 1 7); do
 done
 ```
 
-You should see:
-- Requests 1-5: `HTTP 200` (allowed)
-- Requests 6-7: `HTTP 429` (rate limited)
+Requests 1-5: `HTTP 200`, Requests 6-7: `HTTP 429`.
 
 ## Step 6: Check Rate Limit Headers
-
-Send a request and look at the response headers:
 
 ```bash
 curl -i "$GATEWAY_IP:8080/openai" \
@@ -174,20 +166,14 @@ curl -i "$GATEWAY_IP:8080/openai" \
   }'
 ```
 
-You'll see rate limit headers like `x-ratelimit-limit` and `x-ratelimit-remaining`.
-
 ## Step 7: View in Grafana and Solo UI
 
-Switch to the **Grafana** tab. In the AgentGateway dashboard, you should see the 429 responses in the HTTP status code distribution.
-
-You can also switch to the **Solo UI** tab to explore the rate-limited requests in the tracing view — you'll see the 429 status codes alongside the successful 200 responses.
+Switch to the **Grafana** or **Solo UI** tab to see the 429 responses alongside the 200s.
 
 ## ✅ What You've Learned
 
-- `RateLimitConfig` defines rate limit rules (requests per unit)
-- `EnterpriseAgentgatewayPolicy` with `entRateLimit` enforces limits on the Gateway
-- Rate limiting uses the shared Redis cache + rate limiter service
+- `RateLimitConfig` defines rate limit rules
+- `EnterpriseAgentgatewayPolicy` with `entRateLimit` enforces limits
 - 429 responses are returned when limits are exceeded
-- Rate limit headers provide transparency to clients
 
-**Next up:** MCP Server Connectivity — route AI agent tool calls through the gateway.
+**Next up:** MCP Server Connectivity.
