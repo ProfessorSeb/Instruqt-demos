@@ -27,7 +27,7 @@ tabs:
   type: service
   hostname: server
   port: 3000
-- id: yvgy0rkcjxkg
+- id: solouiapikey03
   title: Solo UI
   type: service
   hostname: server
@@ -45,7 +45,7 @@ Right now, anyone who can reach the gateway can send requests. Let's fix that by
 The route from the previous challenge should still be active. Verify:
 
 ```bash
-kubectl get httproute openai -n enterprise-agentgateway
+kubectl get httproute openai -n agentgateway-system
 ```
 
 If it's not there, recreate it:
@@ -56,11 +56,11 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: openai
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   parentRefs:
     - name: agentgateway
-      namespace: enterprise-agentgateway
+      namespace: agentgateway-system
   rules:
     - matches:
         - path:
@@ -77,7 +77,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: openai-all-models
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   ai:
     provider:
@@ -107,14 +107,14 @@ metadata:
   labels:
     llm-provider: openai
   name: team1-apikey
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 type: extauth.solo.io/apikey
 ---
 apiVersion: extauth.solo.io/v1
 kind: AuthConfig
 metadata:
   name: apikey-auth
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   configs:
     - apiKeyAuth:
@@ -122,7 +122,7 @@ spec:
         k8sSecretApikeyStorage:
           apiKeySecretRefs:
             - name: team1-apikey
-              namespace: enterprise-agentgateway
+              namespace: agentgateway-system
         headersFromMetadataEntry:
           x-org:
             name: x-org
@@ -131,7 +131,7 @@ apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
   name: api-key-auth
-  namespace: enterprise-agentgateway
+  namespace: agentgateway-system
 spec:
   targetRefs:
     - name: agentgateway
@@ -141,7 +141,7 @@ spec:
     entExtAuth:
       authConfigRef:
         name: apikey-auth
-        namespace: enterprise-agentgateway
+        namespace: agentgateway-system
 EOF
 ```
 
@@ -181,7 +181,7 @@ The request succeeds. The gateway:
 ## Step 5: Check the Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n enterprise-agentgateway --tail 1 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 1 | jq .
 ```
 
 Notice the `x-org` header is captured in the logs — this gives you per-team attribution. You can also check the **Solo UI** tab to view these requests with full tracing details.

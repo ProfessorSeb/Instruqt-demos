@@ -1,12 +1,12 @@
 #!/bin/bash
 set -euxo pipefail
 
-if ! kubectl get authconfig apikey-auth -n enterprise-agentgateway &>/dev/null; then
+if ! kubectl get authconfig apikey-auth -n agentgateway-system &>/dev/null; then
   fail-message "AuthConfig 'apikey-auth' not found. Please create the API key auth config as shown in the instructions."
   exit 1
 fi
 
-if ! kubectl get enterpriseagentgatewaypolicy api-key-auth -n enterprise-agentgateway &>/dev/null; then
+if ! kubectl get enterpriseagentgatewaypolicy api-key-auth -n agentgateway-system &>/dev/null; then
   fail-message "EnterpriseAgentgatewayPolicy 'api-key-auth' not found. Please create the policy as shown in the instructions."
   exit 1
 fi
