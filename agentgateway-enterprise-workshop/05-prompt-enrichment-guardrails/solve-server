@@ -40,7 +40,7 @@ spec:
               action: Reject
               matches:
                 - "credit card"
-                - "\\\\b\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}[- ]?\\\\d{4}\\\\b"
+                - "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
         response:
           - regex:
               action: Mask

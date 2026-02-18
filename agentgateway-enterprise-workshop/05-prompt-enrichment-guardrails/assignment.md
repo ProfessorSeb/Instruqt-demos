@@ -212,7 +212,7 @@ kubectl delete enterpriseagentgatewaypolicy -n enterprise-agentgateway openai-pr
 - `prompt.prepend` injects system messages at the gateway level
 - `promptGuard.request` blocks requests matching regex patterns
 - `promptGuard.response` masks sensitive data in LLM responses
-- Built-in patterns (`CreditCard`, `SSN`) handle common PII types
+- Built-in patterns (`CreditCard`, `Ssn`) handle common PII types
 - All enforcement happens at the gateway — zero application code changes
 
 **Next up:** Rate Limiting — control AI spend per user, team, or globally.
