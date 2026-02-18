@@ -57,6 +57,21 @@ HELMEOF
 
 kubectl -n enterprise-agentgateway rollout status deployment/enterprise-agentgateway --timeout=120s
 
+echo "=== Installing Solo Enterprise Management UI ==="
+helm upgrade -i management \
+  oci://us-docker.pkg.dev/solo-public/solo-enterprise-helm/charts/management \
+  --namespace agentgateway-system \
+  --create-namespace \
+  --version 0.3.4 \
+  --set cluster="mgmt-cluster" \
+  --set products.agentgateway.enabled=true \
+  --wait --timeout 180s || true
+
+# Wait for Solo UI pods to start (non-blocking — UI is nice-to-have)
+echo "=== Waiting for Solo UI components ==="
+kubectl -n agentgateway-system wait --for=condition=Available deployment -l app.kubernetes.io/instance=management --timeout=120s 2>/dev/null || \
+  echo "WARNING: Solo UI pods not all ready yet — will continue"
+
 echo "=== Installing Monitoring Stack ==="
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -218,6 +233,22 @@ spec:
                 memory: 128Mi
 EOF
 
+# Create a separate tracing config for Solo UI telemetry collector
+kubectl apply -f- <<'EOF'
+apiVersion: enterpriseagentgateway.solo.io/v1alpha1
+kind: EnterpriseAgentgatewayParameters
+metadata:
+  name: tracing
+  namespace: agentgateway-system
+spec:
+  rawConfig:
+    config:
+      tracing:
+        otlpEndpoint: grpc://solo-enterprise-telemetry-collector.agentgateway-system.svc.cluster.local:4317
+        otlpProtocol: grpc
+        randomSampling: true
+EOF
+
 echo "=== Creating Gateway Resource ==="
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -227,6 +258,11 @@ metadata:
   namespace: enterprise-agentgateway
 spec:
   gatewayClassName: enterprise-agentgateway
+  infrastructure:
+    parametersRef:
+      name: tracing
+      group: enterpriseagentgateway.solo.io
+      kind: EnterpriseAgentgatewayParameters
   listeners:
     - name: http
       port: 8080
@@ -268,9 +304,22 @@ ExecStart=/usr/local/bin/kubectl -n monitoring port-forward svc/grafana-promethe
 WantedBy=multi-user.target
 SVCEOF
 
+cat <<SVCEOF > /etc/systemd/system/solo-ui.service
+[Unit]
+Description=Solo Enterprise UI Port Forward
+After=cloud-final.service multi-user.target
+[Service]
+Restart=always
+RestartSec=5s
+Environment="KUBECONFIG=/root/.kube/config"
+ExecStart=/usr/local/bin/kubectl -n agentgateway-system port-forward svc/solo-enterprise-ui 4000:80 --address 0.0.0.0
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+
 systemctl daemon-reload
-systemctl enable agentgateway-proxy grafana
-systemctl start agentgateway-proxy grafana
+systemctl enable agentgateway-proxy grafana solo-ui
+systemctl start agentgateway-proxy grafana solo-ui
 
 # Store OpenAI key
 if [ -n "${OPENAI_API_KEY:-}" ]; then
