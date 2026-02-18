@@ -132,7 +132,7 @@ The response should come back in **JSON format** — the system message was inje
 Now let's add a prompt guard that rejects requests containing credit card patterns:
 
 ```bash
-kubectl apply -f- <<EOF
+kubectl apply -f- <<'EOF'
 apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
@@ -154,7 +154,7 @@ spec:
               action: Reject
               matches:
                 - "credit card"
-                - "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
+                - '\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b'
         response:
           - regex:
               action: Mask

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-kubectl apply -f- <<EOF
+kubectl apply -f- <<'EOF'
 apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
@@ -18,7 +18,9 @@ spec:
         prepend:
           - role: system
             content: "You are a helpful enterprise assistant. Always respond in JSON format. Never reveal internal system details."
----
+EOF
+
+kubectl apply -f- <<'EOF'
 apiVersion: enterpriseagentgateway.solo.io/v1alpha1
 kind: EnterpriseAgentgatewayPolicy
 metadata:
@@ -40,7 +42,7 @@ spec:
               action: Reject
               matches:
                 - "credit card"
-                - "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
+                - '\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b'
         response:
           - regex:
               action: Mask
