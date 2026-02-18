@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 # Ensure openai secret exists
-kubectl get secret openai-secret -n enterprise-agentgateway || \
-  kubectl create secret generic openai-secret -n enterprise-agentgateway \
+kubectl get secret openai-secret -n agentgateway-system || \
+  kubectl create secret generic openai-secret -n agentgateway-system \
     --from-literal="Authorization=Bearer ${OPENAI_API_KEY:-placeholder}"
 echo "Challenge 2 setup complete"
