@@ -1,6 +1,6 @@
 ---
 slug: mcp-server
-id: koub9navde6j
+id: w9ki7r8vvn6x
 type: challenge
 title: MCP Server Connectivity
 teaser: Deploy an MCP server behind AgentGateway and test tool discovery through the
@@ -15,16 +15,16 @@ notes:
     deploy the `mcp-server-everything` (a reference MCP server) and route it through
     the AgentGateway proxy.\n"
 tabs:
-- id: clmdwkzq7kjk
+- id: gt5sqrkhvmxa
   title: Terminal
   type: terminal
   hostname: server
-- id: 4n9apsnfjjex
+- id: vnvu5pryyedt
   title: Code Editor
   type: code
   hostname: server
   path: /root
-- id: ugr56lxkgxpi
+- id: mglxc5xyhp5p
   title: KAgent UI
   type: service
   hostname: server
@@ -102,7 +102,7 @@ kubectl rollout status deployment/mcp-server-everything -n agentgateway-system -
 
 ## Step 2: Create the MCP Backend and Route
 
-Create an `AgentgatewayBackend` that discovers MCP servers by label, and an `HTTPRoute` that exposes them on the `/mcp` path through the existing `agentgateway-proxy`:
+Create an `AgentgatewayBackend` with a static target pointing to the MCP server, and an `HTTPRoute` that exposes it on the `/mcp` path through the existing `agentgateway-proxy`:
 
 ```bash
 kubectl apply -f - <<EOF
@@ -115,10 +115,10 @@ spec:
   mcp:
     targets:
     - name: mcp-server-everything
-      selector:
-        services:
-          matchLabels:
-            app: mcp-server-everything
+      static:
+        host: mcp-server-everything.agentgateway-system.svc.cluster.local
+        port: 3001
+        protocol: StreamableHTTP
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -155,9 +155,19 @@ echo "=== MCP Server Pods ==="
 kubectl get pods -n agentgateway-system -l app=mcp-server-everything
 ```
 
-## Step 4: Test MCP Tool Discovery
+## Step 4: Test MCP via the UI Playground
 
-Get the proxy service IP and test tool discovery via the MCP protocol:
+1. Click the **KAgent UI** tab
+2. Navigate to **AgentGateway → Playground**
+3. Select the **mcp** route
+4. Click **Connect**
+5. You should see the tools listed from the MCP server
+
+## Step 5: Call an MCP Tool
+
+In the playground, select one of the available tools (e.g. `echo`) and test calling it. You should see the tool response.
+
+Alternatively, test via the terminal:
 
 ```bash
 export GATEWAY_IP=$(kubectl get svc -n agentgateway-system -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy -o jsonpath='{.items[0].spec.clusterIP}')
@@ -168,27 +178,15 @@ curl -s "http://$GATEWAY_IP:8080/mcp" \
   -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | jq .
 ```
 
-You should see a list of tools exposed by the MCP server.
+## Step 6: Verify Traces
 
-## Step 5: Call an MCP Tool
-
-Test calling one of the tools through the gateway:
-
-```bash
-curl -s "http://$GATEWAY_IP:8080/mcp" \
-  -H "Accept: application/json, text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "echo", "arguments": {"message": "Hello from AgentGateway!"}}}' | jq .
-```
-
-## Step 6: Verify in the UI
-
-Click the **KAgent UI** tab and navigate to **AgentGateway → Routes**. You should see the `mcp` route listed alongside the `openai` route. Check the traces to see the MCP tool call.
+Navigate to **AgentGateway → Traces** in the UI. You should see the MCP tool discovery and call traces alongside any LLM traces from the previous challenge.
 
 ## ✅ What You've Learned
 
 - `AgentgatewayBackend` with `mcp.targets` routes to MCP servers
-- The `selector` field discovers MCP servers by Kubernetes service labels
+- The `static` target type uses explicit host, port, and protocol
 - `appProtocol: agentgateway.dev/mcp` on Services enables MCP protocol handling
 - MCP traffic gets full observability (logs, metrics, traces) through the gateway
-- Tool discovery (`tools/list`) and tool calls (`tools/call`) work through the gateway
+- Tool discovery (`tools/list`) and tool calls work through the gateway
+- The UI Playground provides a visual way to test MCP connectivity

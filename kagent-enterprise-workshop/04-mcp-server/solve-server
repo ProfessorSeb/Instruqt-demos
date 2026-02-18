@@ -64,10 +64,10 @@ spec:
   mcp:
     targets:
     - name: mcp-server-everything
-      selector:
-        services:
-          matchLabels:
-            app: mcp-server-everything
+      static:
+        host: mcp-server-everything.agentgateway-system.svc.cluster.local
+        port: 3001
+        protocol: StreamableHTTP
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
