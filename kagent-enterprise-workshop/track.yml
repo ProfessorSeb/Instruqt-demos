@@ -1,4 +1,5 @@
 slug: kagent-enterprise-workshop
+id: j4wwnf8cj6h5
 title: 'KAgent Enterprise: Getting Started'
 teaser: Deploy KAgent Enterprise with AgentGateway on Kubernetes — the AI agent orchestration
   platform.
@@ -15,9 +16,9 @@ tags:
 - enterprise
 - llm
 - kubernetes
-- kagent
 - agentgateway
 - solo-io
+- kagent
 - mcp
 owner: soloio
 developers:
@@ -30,3 +31,5 @@ lab_config:
   feedback_tab_enabled: false
   loadingMessages: true
   hideStopButton: false
+checksum: "9019169736141980367"
+enhanced_loading: false

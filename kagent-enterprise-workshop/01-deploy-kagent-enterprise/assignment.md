@@ -1,5 +1,6 @@
 ---
 slug: deploy-kagent-enterprise
+id: vxjkcawnavuq
 type: challenge
 title: Deploy KAgent Enterprise
 teaser: Verify the KAgent Enterprise stack with AgentGateway is running on Kubernetes.
@@ -14,14 +15,17 @@ notes:
     in `agentgateway-system`\n- KAgent Enterprise in `kagent`\n- ClickHouse for tracing
     data\n- Solo Enterprise UI\n\nLet's verify everything is running!\n"
 tabs:
-- title: Terminal
+- id: rpxpugije2xk
+  title: Terminal
   type: terminal
   hostname: server
-- title: Code Editor
+- id: 8nxd19fce181
+  title: Code Editor
   type: code
   hostname: server
   path: /root
-- title: KAgent UI
+- id: ht2mns0ba6cj
+  title: KAgent UI
   type: service
   hostname: server
   port: 12121
@@ -88,7 +92,9 @@ This UI provides:
 
 ```bash
 export KAGENT_ENT_VERSION=0.3.4
+export KAGENT_UI_URL=http://localhost:12121
 echo "export KAGENT_ENT_VERSION=$KAGENT_ENT_VERSION" >> ~/.bashrc
+echo "export KAGENT_UI_URL=$KAGENT_UI_URL" >> ~/.bashrc
 ```
 
 ## ✅ What You've Learned

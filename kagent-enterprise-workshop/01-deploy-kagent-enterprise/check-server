@@ -6,13 +6,14 @@ if ! kubectl get deployment -n agentgateway-system enterprise-agentgateway &>/de
   exit 1
 fi
 
-if ! kubectl get pods -n kagent -l app.kubernetes.io/name=kagent-enterprise &>/dev/null; then
-  fail-message "KAgent Enterprise pods not found in kagent namespace."
+if ! kubectl get deployment -n kagent kagent-controller &>/dev/null; then
+  fail-message "KAgent controller not found in kagent namespace."
   exit 1
 fi
 
-if ! grep -q "KAGENT_ENT_VERSION" /root/.bashrc; then
-  fail-message "KAGENT_ENT_VERSION not saved to ~/.bashrc. Run: echo \"export KAGENT_ENT_VERSION=0.3.4\" >> ~/.bashrc"
+# User must verify pods and export the UI URL
+if ! grep -q "KAGENT_UI_URL" /root/.bashrc; then
+  fail-message "KAGENT_UI_URL not saved. Run: echo \"export KAGENT_UI_URL=http://localhost:12121\" >> ~/.bashrc"
   exit 1
 fi
 
