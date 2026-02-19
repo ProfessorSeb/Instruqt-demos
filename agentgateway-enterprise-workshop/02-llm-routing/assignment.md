@@ -77,7 +77,7 @@ metadata:
 spec:
   ai:
     provider:
-      openai: {}
+      openai:
         model: gpt-4o
   policies:
     auth:
