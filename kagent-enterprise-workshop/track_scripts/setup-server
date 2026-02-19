@@ -76,7 +76,7 @@ clickhouse:
   standalone:
     enabled: true
 tracing:
-  verbose: true
+  enabled: true
 EOF
 
 echo "=== Installing KAgent Enterprise CRDs ==="
