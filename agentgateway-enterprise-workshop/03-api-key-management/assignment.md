@@ -181,7 +181,7 @@ The request succeeds. The gateway:
 ## Step 5: Check the Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n agentgateway-system --tail 1 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 5
 ```
 
 Notice the `x-org` header is captured in the logs — this gives you per-team attribution. You can also check the **Solo UI** tab to view these requests with full tracing details.
