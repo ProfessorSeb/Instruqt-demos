@@ -108,7 +108,7 @@ You should get a response from OpenAI — but now it went through your gateway, 
 AgentGateway logs every request with LLM-specific metadata:
 
 ```bash
-kubectl logs deploy/agentgateway -n agentgateway-system --tail 1 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 5
 ```
 
 Notice the log includes:
