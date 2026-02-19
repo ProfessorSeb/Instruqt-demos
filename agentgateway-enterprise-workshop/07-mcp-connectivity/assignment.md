@@ -43,12 +43,16 @@ Let's route MCP tool traffic through AgentGateway.
 
 ## Step 1: Clean Up Previous Policies
 
+> **What's happening:** Removing the rate limiting resources from the previous challenge to start fresh.
+
 ```bash
 kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system global-request-rate-limit 2>/dev/null || true
 kubectl delete ratelimitconfig -n agentgateway-system global-request-rate-limit 2>/dev/null || true
 ```
 
 ## Step 2: Deploy an MCP Server
+
+> **What's happening:** You're deploying a real MCP (Model Context Protocol) server into the cluster. The `mcp-website-fetcher` is an MCP server that exposes a `fetch` tool — AI agents can call it to retrieve the content of a web page. It runs as a standard Kubernetes Deployment and Service. The key detail is the `appProtocol: agentgateway.dev/mcp` annotation on the Service port — this tells AgentGateway that this service speaks the MCP protocol (specifically SSE-based MCP), not regular HTTP.
 
 ```bash
 kubectl apply -f - <<EOF
@@ -96,6 +100,8 @@ kubectl rollout status deployment/mcp-website-fetcher -n agentgateway-system --t
 
 ## Step 3: Create the MCP Backend and Route
 
+> **What's happening:** Just like LLM routing, MCP routing uses an `AgentgatewayBackend` and an `HTTPRoute`. The difference is the backend spec: instead of `ai.provider`, it uses `mcp.targets` to define where MCP servers live. The `static` target points directly to the Kubernetes service DNS name, specifies port 80, and declares the protocol as `SSE` (Server-Sent Events — the standard MCP transport). The `HTTPRoute` is simpler here — no path match, so it applies as the default route for MCP traffic. The gateway now acts as an MCP proxy: agents connect to the gateway, and the gateway forwards tool calls to the actual MCP server.
+
 ```bash
 kubectl apply -f - <<EOF
 apiVersion: agentgateway.dev/v1alpha1
@@ -130,6 +136,8 @@ EOF
 
 ## Step 4: Test MCP Connectivity
 
+> **What's happening:** The MCP Inspector is a command-line tool for testing MCP servers. Here you're using it to connect to the gateway (not the MCP server directly) and call `tools/list` — the standard MCP method that returns all available tools. The inspector connects to the gateway's MCP endpoint, the gateway proxies the request to the `mcp-website-fetcher` service, and returns the list of tools. The second command actually *calls* the `fetch` tool with a URL argument, which fetches the content of `httpbin.org/get` through the MCP server. All of this traffic flows through the gateway, getting logged, metriced, and traced.
+
 ```bash
 source /root/.bashrc
 
@@ -152,6 +160,8 @@ npx -y @modelcontextprotocol/inspector --cli \
 
 ## Step 5: View MCP Access Logs
 
+> **What's happening:** The access logs for MCP traffic look similar to LLM logs but with MCP-specific fields — the tool name being called, the arguments passed, and the response. This gives you a complete audit trail of every tool invocation by every agent, all in one place. Without a gateway, you'd need to instrument each MCP server individually.
+
 ```bash
 kubectl logs deploy/agentgateway -n agentgateway-system --tail 3
 ```
@@ -161,6 +171,8 @@ kubectl logs deploy/agentgateway -n agentgateway-system --tail 3
 ## Part 2: Securing MCP with JWT Auth and RBAC
 
 ## Step 6: Require JWT Authentication
+
+> **What's happening:** This is the same JWT authentication policy you used for LLM traffic — same JWKS, same RSA public key, same `Strict` mode. The key insight is that **the same security model applies to both LLM and MCP traffic**. Because the policy targets the Gateway (not a specific route), it protects *all* traffic — both the `/openai` LLM route and the MCP route. Agents now need a valid JWT to call any tool, just like they need one to call any LLM.
 
 ```bash
 kubectl apply -f - <<EOF
@@ -198,6 +210,8 @@ EOF
 
 ## Step 7: Test Without a JWT (Should Fail)
 
+> **What's happening:** Attempting to list tools without a JWT. The gateway intercepts the MCP connection attempt, finds no valid Bearer token, and rejects it. The MCP inspector will show an error. This proves MCP traffic is now protected by the same JWT validation as LLM traffic.
+
 ```bash
 npx -y @modelcontextprotocol/inspector --cli \
   --config /root/mcp-inspector-config.json \
@@ -206,6 +220,8 @@ npx -y @modelcontextprotocol/inspector --cli \
 ```
 
 ## Step 8: Test With a JWT (Should Succeed)
+
+> **What's happening:** Now the MCP inspector includes the JWT as an Authorization header. The gateway validates the token's signature and expiration, then allows the MCP connection through. The `tools/list` call succeeds, and the `tools/call` invocation fetches the webpage as before. The JWT claims are captured in the access logs, giving you identity-attributed MCP audit trails — you know exactly which user/team called which tool and when.
 
 ```bash
 export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLWtleS0wMDEifQ.eyJpc3MiOiJzb2xvLmlvIiwib3JnIjoic29sby5pbyIsInN1YiI6InVzZXItaWQiLCJ0ZWFtIjoidGVhbS1pZCIsImV4cCI6MjA3OTU1NjEwNCwibGxtcyI6eyJvcGVuYWkiOlsiZ3B0LTRvIl19fQ.e49g9XE6yrttR9gQAPpT_qcWVKe-bO6A7yJarMDCMCh8PhYs67br00wT6v0Wt8QXMMN09dd8UUEjTunhXqdkF5oeRMXiyVjpTPY4CJeoF1LfKhgebVkJeX8kLhqBYbMXp3cxr2GAmc3gkNfS2XnL2j-bowtVzwNqVI5D8L0heCpYO96xsci37pFP8jz6r5pRNZ597AT5bnYaeu7dHO0a5VGJqiClSyX9lwgVCXaK03zD1EthwPoq34a7MwtGy2mFS_pD1MTnPK86QfW10LCHxtahzGHSQ4jfiL-zp13s8MyDgTkbtanCk_dxURIyynwX54QJC_o5X7ooDc3dxbd8Cw"
@@ -230,6 +246,8 @@ npx -y @modelcontextprotocol/inspector --cli \
 ```
 
 ## Step 9: Add RBAC for Tool Access
+
+> **What's happening:** Adding a CEL-based RBAC policy on top of JWT authentication — just like you did for LLM traffic. This expression requires `jwt.org == "solo.io"`, so only users from the `solo.io` organization can access MCP tools. You could extend this with more specific rules like checking `jwt.team` to restrict certain teams to certain tools, or even checking custom claims. The pattern is the same as LLM RBAC — one unified authorization model for all AI traffic.
 
 ```bash
 kubectl apply -f- <<EOF
@@ -264,6 +282,8 @@ npx -y @modelcontextprotocol/inspector --cli \
 ```
 
 ## Step 10: Compare LLM vs MCP Configuration
+
+> **What's happening:** This side-by-side comparison highlights how the gateway uses the same `AgentgatewayBackend` CRD for both LLM and MCP traffic, but with different spec fields. The LLM backend uses `ai.provider` (pointing to a cloud LLM service), while the MCP backend uses `mcp.targets` (pointing to an in-cluster MCP server). Same resource type, same routing model (HTTPRoute), same security model (JWT + RBAC), same observability — but fundamentally different traffic types. This is the "single control point" value proposition of AgentGateway.
 
 ```bash
 echo "=== LLM Backend ==="
