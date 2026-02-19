@@ -42,6 +42,8 @@ Right now, anyone who can reach the gateway can send requests. Let's fix that by
 
 ## Step 1: Ensure the OpenAI Route Exists
 
+> **What's happening:** This is a safety check. Since Instruqt challenges build on each other, the OpenAI backend and route from the previous challenge should still be active. If they were cleaned up or something went wrong, this step recreates them so the rest of the challenge works. The route maps `/openai` to the OpenAI backend, which holds the real provider credentials.
+
 The route from the previous challenge should still be active. Verify:
 
 ```bash
@@ -90,6 +92,8 @@ EOF
 ```
 
 ## Step 2: Create the API Key, AuthConfig, and Policy
+
+> **What's happening:** Three resources work together here. First, a **Kubernetes Secret** of type `extauth.solo.io/apikey` stores the vanity key (`team1-key`, base64-encoded as `dGVhbTEta2V5`) and a metadata header (`x-org: developers`). Second, an **AuthConfig** tells the ext-auth-service to look for this key in a header called `vanity-auth`, validate it against the secret, and inject the `x-org` header into the upstream request. Third, an **EnterpriseAgentgatewayPolicy** attached to the Gateway tells the data plane to call ext-auth-service for every request. The net effect: clients must present a valid vanity key, and the gateway injects team attribution headers automatically.
 
 This creates:
 1. A Kubernetes secret holding the vanity API key (`team1-key`) and an `x-org` header to inject
@@ -147,6 +151,8 @@ EOF
 
 ## Step 3: Test Without an API Key (Should Fail)
 
+> **What's happening:** Now that the auth policy is attached to the Gateway, *every* request must pass authentication. When you send a request without the `vanity-auth` header, the data plane calls the ext-auth-service, which finds no valid key and returns a denial. The gateway translates this into a `401 Unauthorized` HTTP response. This is the "deny by default" security model — the gateway blocks unauthenticated access even though the OpenAI backend is perfectly configured.
+
 ```bash
 source /root/.bashrc
 
@@ -161,6 +167,8 @@ curl -i "$GATEWAY_IP:8080/openai" \
 You should get a **401 Unauthorized** response. The gateway now requires authentication.
 
 ## Step 4: Test With the Vanity API Key (Should Succeed)
+
+> **What's happening:** This time the request includes `vanity-auth: team1-key`. The ext-auth-service looks up this key in the `team1-apikey` secret, finds a match, and tells the gateway to proceed. It also instructs the gateway to inject the `x-org: developers` header into the request before forwarding it to OpenAI. The client never sees or needs the real OpenAI API key — the gateway handles credential injection transparently. If you need to rotate the OpenAI key, you update one secret; if you need to revoke a team's access, you delete their vanity key secret.
 
 ```bash
 curl -s "$GATEWAY_IP:8080/openai" \
@@ -179,6 +187,8 @@ The request succeeds. The gateway:
 4. Forwarded the request
 
 ## Step 5: Check the Access Logs
+
+> **What's happening:** The access logs now include the injected `x-org` header, giving you per-team attribution for every LLM request. In production, you'd use this to build dashboards showing token usage per team, cost allocation reports, and audit trails. Because the header is injected by the gateway (not the client), it's trustworthy — teams can't spoof another team's identity.
 
 ```bash
 kubectl logs deploy/agentgateway -n agentgateway-system --tail 5
