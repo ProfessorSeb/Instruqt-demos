@@ -153,7 +153,7 @@ npx -y @modelcontextprotocol/inspector --cli \
 ## Step 5: View MCP Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n agentgateway-system --tail 3 | jq .
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 3
 ```
 
 ---
