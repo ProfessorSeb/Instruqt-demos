@@ -78,6 +78,7 @@ spec:
   ai:
     provider:
       openai: {}
+        model: gpt-4o
   policies:
     auth:
       secretRef:
