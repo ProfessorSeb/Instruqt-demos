@@ -42,6 +42,8 @@ Let's enforce JWT-based authentication with role-based access control on the gat
 
 ## Step 1: Clean Up Previous Auth Policy
 
+> **What's happening:** Each challenge demonstrates a different security model, so we remove the API key auth resources from the previous challenge. This ensures a clean slate — the gateway temporarily goes back to allowing unauthenticated access until we apply the new JWT policy. In production, you'd typically transition between auth models more carefully, but for learning purposes this clean-swap approach makes each concept clear.
+
 Remove the API key auth from the previous challenge (if still active):
 
 ```bash
@@ -51,6 +53,8 @@ kubectl delete secret team1-apikey -n agentgateway-system 2>/dev/null || true
 ```
 
 ## Step 2: Ensure the OpenAI Route Exists
+
+> **What's happening:** Same safety check as before — making sure the LLM backend and route are in place so we have traffic to secure.
 
 ```bash
 kubectl get httproute openai -n agentgateway-system || \
@@ -94,6 +98,8 @@ EOF
 
 ## Step 3: Set the JWT Token
 
+> **What's happening:** This JWT was pre-generated with a known RSA private key. When decoded, its payload contains claims like `iss: solo.io`, `org: solo.io`, `team: team-id`, and `llms: { openai: ["gpt-4o"] }`. The `exp` claim is set far in the future so it won't expire during the workshop. In production, tokens would come from your identity provider (Okta, Auth0, Azure AD, etc.) and have short expiration times. The gateway will verify the token's signature against the public key in the JWKS.
+
 We'll use this JWT throughout the challenge. It contains claims: `iss=solo.io`, `org=solo.io`, `team=team-id`:
 
 ```bash
@@ -101,6 +107,8 @@ export DEV_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InNvbG8tcHVibGljLW
 ```
 
 ## Step 4: Create JWT Auth with RBAC Policy
+
+> **What's happening:** This single `EnterpriseAgentgatewayPolicy` does two things. First, `jwtAuthentication` in `Strict` mode means every request *must* have a valid JWT — the gateway verifies the signature using the inline JWKS (the RSA public key), checks the issuer matches `solo.io`, and rejects expired tokens. Second, `authorization.policy.matchExpressions` adds a CEL (Common Expression Language) rule that checks the JWT claims: the request is only allowed if `org == "solo.io"` AND `team == "team-id"`. This is fine-grained RBAC — you can write any boolean expression over JWT claims.
 
 ```bash
 kubectl apply -f- <<EOF
@@ -142,6 +150,8 @@ EOF
 
 ## Step 5: Test Without a JWT (Should Fail — 403)
 
+> **What's happening:** With `mode: Strict`, the gateway requires a valid JWT on every request. Without the `Authorization: Bearer` header, the gateway immediately rejects the request with a `403 Forbidden`. Note this is a 403 (forbidden/unauthorized) rather than a 401 — the gateway's JWT validation runs inline in the data plane, not via the ext-auth-service.
+
 ```bash
 source /root/.bashrc
 
@@ -155,6 +165,8 @@ curl -i "$GATEWAY_IP:8080/openai" \
 
 ## Step 6: Test With a Valid JWT (Should Succeed — 200)
 
+> **What's happening:** Now the request includes the JWT as a Bearer token. The gateway verifies the RSA signature using the inline JWKS public key, confirms the issuer is `solo.io`, checks that the token hasn't expired, and then evaluates the CEL expression against the decoded claims. Since `org == "solo.io"` and `team == "team-id"` both match, the request is allowed through to OpenAI. The JWT claims are also captured in access logs and traces for audit purposes.
+
 ```bash
 curl -s "$GATEWAY_IP:8080/openai" \
   -H "content-type: application/json" \
@@ -166,6 +178,8 @@ curl -s "$GATEWAY_IP:8080/openai" \
 ```
 
 ## Step 7: Experiment with RBAC Rules
+
+> **What's happening:** Here you're live-patching the CEL expression to require `org == "internal"` instead of `org == "solo.io"`. Since the JWT's `org` claim is `solo.io`, this expression evaluates to `false`, and the gateway returns `403 Forbidden` even though the JWT itself is valid and properly signed. This demonstrates the power of CEL-based RBAC: you can change access rules dynamically without reissuing tokens or restarting anything. The 3-second sleep gives the control plane time to propagate the change to the data plane.
 
 Patch the policy to require `org=internal` instead:
 
@@ -187,6 +201,8 @@ You should see `403 Forbidden`.
 
 ## Step 8: Restore the Original RBAC Rule
 
+> **What's happening:** Restoring the original CEL expression so the JWT's claims match again. This round-trip — working → denied → working — demonstrates that RBAC rules can be changed in real time via `kubectl patch` with no downtime or restarts. In production, you'd use GitOps to manage these policies, but the instant feedback loop is the same.
+
 ```bash
 cat <<'EOF' > /tmp/patch.json
 {"spec":{"traffic":{"authorization":{"policy":{"matchExpressions":["(jwt.org == \"solo.io\") && (jwt.team == \"team-id\")"]}}}}}
@@ -207,6 +223,8 @@ curl -s "$GATEWAY_IP:8080/openai" \
 ```
 
 ## Step 9: Check Access Logs
+
+> **What's happening:** The access logs now include a `jwt` field containing the decoded claims from each request's token. This means every LLM request is tagged with the identity of who made it — user, team, org — without any application code changes. In production, this is your audit trail: you can answer "who asked the LLM what, and when?" by querying your log aggregator.
 
 ```bash
 kubectl logs deploy/agentgateway -n agentgateway-system --tail 4 | jq '{status: ."http.status", jwt: .jwt}' 2>/dev/null || \
