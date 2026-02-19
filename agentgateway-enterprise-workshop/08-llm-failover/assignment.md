@@ -42,6 +42,8 @@ Let's build a resilient LLM architecture with priority group failover.
 
 ## Step 1: Clean Up Previous Resources
 
+> **What's happening:** This is a full cleanup — removing all resources from previous challenges (auth policies, MCP server, backends, routes). We're starting with a clean slate because the failover configuration uses a completely different backend structure (priority groups) that replaces the single-provider backend from earlier challenges.
+
 ```bash
 kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system mcp-jwt-auth 2>/dev/null || true
 kubectl delete enterpriseagentgatewaypolicy -n agentgateway-system mcp-rbac 2>/dev/null || true
@@ -54,6 +56,8 @@ kubectl delete agentgatewaybackend -n agentgateway-system openai-all-models 2>/d
 ```
 
 ## Step 2: Deploy a Mock Server That Always Rate Limits
+
+> **What's happening:** You're deploying a mock LLM server (`llm-d-inference-sim`) that simulates a broken or overloaded provider. The `--failure-injection-rate 100` flag means it returns a `429 Too Many Requests` error for *every single request* — 100% failure rate. This simulates what happens when your primary LLM provider hits rate limits or goes down. The mock server speaks the OpenAI API format, so the gateway treats it like a real provider. Having a deterministic failure source lets you reliably test failover behavior.
 
 ```bash
 kubectl apply -f - <<EOF
@@ -111,6 +115,8 @@ kubectl rollout status deployment/mock-gpt-4o -n agentgateway-system --timeout=1
 ```
 
 ## Step 3: Create Priority Group Failover Configuration
+
+> **What's happening:** This is the core of the failover architecture. The `AgentgatewayBackend` defines two **priority groups** as an ordered array under `spec.ai.groups`. **Group 1** (first in the array) is the "preferred" provider — the mock server that always returns 429. **Group 2** (second in the array) is the fallback — real OpenAI with `gpt-4o-mini`. The gateway tries Group 1 first. When it gets a 429 or 5xx, it marks that provider as unhealthy and routes subsequent requests to Group 2. When Group 1 recovers, traffic automatically returns to it. The `model: ""` in the route means the gateway uses whatever model is configured in the backend group. The `passthrough: {}` auth on the mock server means no API key is needed (it's just a local simulator).
 
 ```bash
 kubectl apply -f - <<EOF
@@ -174,6 +180,8 @@ EOF
 
 ## Step 4: Test Failover Behavior
 
+> **What's happening:** You're sending three requests one at a time to observe the failover progression. **Request 1** hits the mock server (Group 1), gets a 429, and the gateway marks Group 1 as unhealthy. Depending on timing, Request 1 may itself be retried to Group 2 and succeed, or it may return the 429. **Requests 2 and 3** are routed directly to Group 2 (real OpenAI) because Group 1 is still marked unhealthy. You'll see successful responses from `gpt-4o-mini`. This is circuit-breaking for AI: the gateway automatically detects provider failures and reroutes traffic, all without any changes to the client application.
+
 ```bash
 source /root/.bashrc
 ```
@@ -201,11 +209,15 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
 
 ## Step 5: Verify in Access Logs
 
+> **What's happening:** The access logs show the full failover story. You'll see log entries for the failed request to the mock server (429 status, `mock-gpt-4o` model) and successful requests to OpenAI (`gpt-4o-mini` model, 200 status). The `gen_ai.response.model` field in each log entry tells you which provider actually served each request. This is critical for production operations: you can build alerts for when failover activates and dashboards showing traffic distribution across providers.
+
 ```bash
 kubectl logs deploy/agentgateway -n agentgateway-system --tail 20
 ```
 
 ## Step 6: View in Grafana and Solo UI
+
+> **What's happening:** In Grafana/Tempo and the Solo UI, you'll see traces that show the failover path: initial attempt to Group 1, 429 response, retry to Group 2, successful response. The traces make the failover behavior visually clear — you can see exactly when the circuit opened, which provider served each request, and the end-to-end latency including the failed attempt.
 
 Switch to the **Grafana** or **Solo UI** tab to see failover traces.
 
