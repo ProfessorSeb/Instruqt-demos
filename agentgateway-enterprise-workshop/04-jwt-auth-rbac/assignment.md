@@ -188,8 +188,12 @@ You should see `403 Forbidden`.
 ## Step 8: Restore the Original RBAC Rule
 
 ```bash
+cat <<'EOF' > /tmp/patch.json
+{"spec":{"traffic":{"authorization":{"policy":{"matchExpressions":["(jwt.org == \"solo.io\") && (jwt.team == \"team-id\")"]}}}}}
+EOF
+
 kubectl patch enterpriseagentgatewaypolicy agentgateway-jwt-auth -n agentgateway-system \
-  --type=merge -p '{"spec":{"traffic":{"authorization":{"policy":{"matchExpressions":["(jwt.org == \\"solo.io\\") && (jwt.team == \\"team-id\\")"]}}}}}'
+  --type=merge --patch-file /tmp/patch.json
 ```
 
 Verify:
