@@ -38,6 +38,8 @@ The track setup has already installed Enterprise AgentGateway, the monitoring st
 
 ## Step 1: Verify Enterprise AgentGateway Components
 
+> **What's happening:** The Enterprise AgentGateway runs as a set of pods in Kubernetes. The *control plane* (`enterprise-agentgateway`) watches for configuration changes and programs the *data plane* (`agentgateway`) — the proxy that actually handles LLM and MCP traffic. Supporting services like `ext-auth-service` (authentication), `rate-limiter`, and `ext-cache` (Redis) are shared extensions that the data plane calls out to when policies are enforced. This step confirms all of these components started successfully.
+
 Check that the Enterprise AgentGateway controller and shared extensions are running:
 
 ```bash
@@ -52,6 +54,8 @@ You should see:
 - **ext-cache** — Redis cache for rate limit counters
 
 ## Step 2: Verify the CRDs
+
+> **What's happening:** Enterprise AgentGateway extends the Kubernetes API with Custom Resource Definitions (CRDs). These CRDs let you define AI gateway behavior — like which LLM providers to route to, what authentication to require, and what guardrails to enforce — as native Kubernetes YAML resources. This is the "infrastructure as code" model: your entire AI gateway policy lives in version-controlled Kubernetes manifests.
 
 Enterprise AgentGateway extends Kubernetes with custom resources for AI gateway configuration:
 
@@ -69,6 +73,8 @@ Key CRDs:
 
 ## Step 3: Verify the Gateway
 
+> **What's happening:** The `Gateway` resource is a standard Kubernetes Gateway API object. It tells the control plane to spin up a listener (the data plane proxy) on a specific port. All LLM and MCP traffic enters through this single Gateway, giving you one control point. A `kubectl port-forward` service is running in the background so you can reach the gateway on `localhost:8080` from the terminal.
+
 Check that the Gateway resource is ready and has an address:
 
 ```bash
@@ -85,6 +91,8 @@ This should show `localhost`. The port-forward service routes traffic from `loca
 
 ## Step 4: Verify the Monitoring Stack
 
+> **What's happening:** A full observability stack was deployed alongside the gateway. **Prometheus** scrapes metrics from the gateway (request counts, token usage, latencies). **Tempo** collects distributed traces — every LLM request gets a trace showing the full journey from client → gateway → provider → response. **Grafana** provides dashboards and an Explore UI to query both metrics and traces. This gives you production-grade visibility into all AI traffic from day one.
+
 Check that Grafana, Prometheus, and Tempo are running:
 
 ```bash
@@ -98,7 +106,7 @@ You should see pods for:
 
 ## Step 5: Verify the Solo Enterprise Management UI
 
-The Solo Enterprise Management UI provides a visual dashboard for managing and observing your AgentGateway deployment, including tracing, gateway configuration, and policy management.
+> **What's happening:** The Solo Enterprise Management UI is a dedicated dashboard purpose-built for managing AgentGateway. Unlike Grafana (which is a general-purpose tool), the Solo UI provides gateway-specific views: topology maps showing your backends and routes, AI-specific trace exploration, and policy management. It collects telemetry via its own collector (ClickHouse-backed), giving you a second, independent view of all gateway traffic.
 
 Check that the Solo UI components are running:
 
@@ -114,6 +122,8 @@ Switch to the **Solo UI** tab to open the management dashboard. From here you ca
 - Monitor agent activity across your deployment
 
 ## Step 6: Review the Gateway Configuration
+
+> **What's happening:** The `EnterpriseAgentgatewayParameters` resource is the master configuration for the gateway's behavior. It tells the data plane where to find the shared extensions (ext-auth, rate-limiter, Redis), how to export traces (OTLP to Tempo and to the Solo collector), and what to include in access logs (request/response bodies, JWT claims, JSON format). This dual-export tracing setup means the same traffic data is available in both Grafana and the Solo UI — useful for different teams or workflows.
 
 The `EnterpriseAgentgatewayParameters` resource configures the gateway's behavior. Let's look at what was deployed:
 
