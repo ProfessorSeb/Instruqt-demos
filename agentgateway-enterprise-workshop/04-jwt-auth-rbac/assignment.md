@@ -171,7 +171,7 @@ Patch the policy to require `org=internal` instead:
 
 ```bash
 kubectl patch enterpriseagentgatewaypolicy agentgateway-jwt-auth -n agentgateway-system \
-  --type=merge -p '{"spec":{"traffic":{"authorization":{"policy":{"matchExpressions":["(jwt.org == \\"internal\\")"]}}}}}'
+  --type=merge -p '{"spec":{"traffic":{"authorization":{"policy":{"matchExpressions":["(jwt.org == \"internal\")"]}}}}}'
 ```
 
 ```bash
