@@ -202,8 +202,7 @@ curl -s -w "\nHTTP Status: %{http_code}\n" "$GATEWAY_IP:8080/openai" \
 ## Step 5: Verify in Access Logs
 
 ```bash
-kubectl logs deploy/agentgateway -n agentgateway-system --tail 5 | \
-  jq 'select(.scope == "request") | {status: ."http.status", endpoint: .endpoint}'
+kubectl logs deploy/agentgateway -n agentgateway-system --tail 20
 ```
 
 ## Step 6: View in Grafana and Solo UI
