@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check openclaw is installed
+if ! command -v openclaw &>/dev/null; then
+  fail-message "OpenClaw is not installed. Run: npm install -g openclaw"
+fi
+
+# Check config exists
+if [ ! -f ~/.openclaw/openclaw.json ]; then
+  fail-message "OpenClaw config not found at ~/.openclaw/openclaw.json. Did you run 'openclaw onboard'?"
+fi
+
+# Check that a custom provider pointing to localhost:8080 is configured
+if ! grep -q "localhost:8080" ~/.openclaw/openclaw.json; then
+  fail-message "Custom provider not configured. OpenClaw should point to localhost:8080 (AgentGateway). Re-run 'openclaw onboard' and select a custom OpenAI-compatible endpoint."
+fi
+
+# Check gateway is running
+if ! openclaw gateway status 2>/dev/null | grep -qi "running\|active"; then
+  fail-message "OpenClaw gateway is not running. Start it with: openclaw gateway start"
+fi
+
+echo "Challenge 3 check passed"

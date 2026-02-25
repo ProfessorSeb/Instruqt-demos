@@ -1,0 +1,55 @@
+slug: openclaw-agentgateway-llm-gateway
+type: track
+title: 'AI Dev Assistant: OpenClaw + AgentGateway LLM Gateway'
+teaser: Deploy a personal AI assistant powered by OpenClaw and route all LLM traffic
+  through an AgentGateway on Kubernetes — with full visibility and control.
+description: |-
+  Your AI assistant is making direct API calls to OpenAI with zero visibility, no cost control, and no governance. Sound familiar?
+
+  **AgentGateway** is a purpose-built gateway for AI agent traffic. In this lab, you'll deploy AgentGateway as an LLM proxy on Kubernetes and wire it up to **OpenClaw** — a self-hosted AI assistant platform.
+
+  **What you'll build:**
+
+  ```
+  OpenClaw (your AI assistant)
+      ↓ HTTP (localhost:8080/v1)
+  AgentGateway (LLM Gateway on k8s)
+      ↓ HTTPS
+  OpenAI API
+  ```
+
+  **In this hands-on lab, you'll:**
+
+  - 🚀 Deploy AgentGateway OSS on Kubernetes using kind
+  - 🔑 Configure an OpenAI LLM provider with a gateway-managed API key
+  - 🤖 Install and configure OpenClaw as your personal AI assistant
+  - 🔀 Route all OpenClaw traffic through AgentGateway
+  - 💬 **BONUS:** Connect OpenClaw to WhatsApp for mobile access
+
+  **No prior AgentGateway or OpenClaw experience required.**
+icon: ""
+tags:
+- ai
+- llm
+- kubernetes
+- agentgateway
+- openclaw
+- solo-io
+- kind
+owner: soloio
+developers:
+- sebastian.maniak@solo.io
+idle_timeout: 1800
+timelimit: 5400
+show_timer: true
+skipping_enabled: false
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  hideStopButton: false
+  theme:
+    name: modern-dark
+  default_layout: AssignmentRight
+  default_layout_sidebar_size: 35

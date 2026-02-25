@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euxo pipefail
+# WhatsApp requires a real QR scan — this bonus challenge cannot be auto-solved.
+# The solve script only sets up the config; learners must scan the QR themselves.
+openclaw configure --set channels.whatsapp.dmPolicy=pairing 2>/dev/null || true
+echo "WhatsApp config added. Run 'openclaw channels login --channel whatsapp' to link your account."

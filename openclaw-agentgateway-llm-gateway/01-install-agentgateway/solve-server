@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euxo pipefail
+
+helm upgrade --install agentgateway \
+  oci://ghcr.io/agentgateway-dev/helm-charts/agentgateway \
+  --namespace agentgateway-system \
+  --create-namespace \
+  --wait --timeout 180s
+
+kubectl wait --for=condition=Ready pods --all -n agentgateway-system --timeout=120s
+
+echo "Challenge 1 solved"

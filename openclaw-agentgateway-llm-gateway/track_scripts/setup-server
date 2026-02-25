@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Wait for instruqt bootstrap
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  sleep 1
+done
+
+set -euxo pipefail
+
+set-workdir /root
+
+# Shell conveniences
+cat >> ~/.bashrc << 'EOF'
+alias k=kubectl
+complete -F __start_kubectl k
+source /etc/bash_completion
+EOF
+
+# Store OpenAI key
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  echo "export OPENAI_API_KEY=${OPENAI_API_KEY}" >> ~/.bashrc
+  echo "${OPENAI_API_KEY}" > /root/.openai-api-key
+  echo "=== OpenAI API key stored ==="
+else
+  echo "=== WARNING: OPENAI_API_KEY not set ==="
+fi
+
+# Install kind
+echo "=== Installing kind ==="
+KIND_VERSION="v0.27.0"
+curl -sLo /usr/local/bin/kind \
+  "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+chmod +x /usr/local/bin/kind
+kind version
+
+# Create kind cluster with port mapping for AgentGateway
+echo "=== Creating kind cluster ==="
+cat <<'EOF' | kind create cluster --name agentgateway --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 8080
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 8443
+    protocol: TCP
+EOF
+
+kubectl cluster-info --context kind-agentgateway
+kubectl wait --for=condition=Ready nodes --all --timeout=120s
+
+# Install Gateway API CRDs
+echo "=== Installing Gateway API CRDs ==="
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+
+echo "=== Track setup complete ==="

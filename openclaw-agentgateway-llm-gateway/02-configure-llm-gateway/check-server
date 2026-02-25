@@ -1,0 +1,32 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Check secret exists
+if ! kubectl get secret openai-api-key -n agentgateway-system &>/dev/null; then
+  fail-message "Secret 'openai-api-key' not found in agentgateway-system. Did you create it?"
+fi
+
+# Check AgentgatewayBackend exists
+if ! kubectl get agentgatewaybackend openai -n agentgateway-system &>/dev/null; then
+  fail-message "AgentgatewayBackend 'openai' not found. Did you apply the backend manifest?"
+fi
+
+# Check Gateway exists and is programmed
+GW_STATUS=$(kubectl get gateway llm-gateway -n agentgateway-system \
+  -o jsonpath='{.status.conditions[?(@.type=="Programmed")].status}' 2>/dev/null)
+if [ "$GW_STATUS" != "True" ]; then
+  fail-message "Gateway 'llm-gateway' is not Programmed yet. Try: kubectl describe gateway llm-gateway -n agentgateway-system"
+fi
+
+# Check the gateway actually responds
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
+  --max-time 15)
+
+if [ "$HTTP_CODE" != "200" ]; then
+  fail-message "Gateway at localhost:8080 returned HTTP $HTTP_CODE. Check that the Gateway and route are configured correctly."
+fi
+
+echo "Challenge 2 check passed"

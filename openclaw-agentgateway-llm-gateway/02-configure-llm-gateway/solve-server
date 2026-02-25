@@ -1,0 +1,63 @@
+#!/bin/bash
+set -euxo pipefail
+source ~/.bashrc || true
+
+kubectl create namespace llm-gateway --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic openai-api-key \
+  --namespace agentgateway-system \
+  --from-literal=apiKey="${OPENAI_API_KEY}" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -f - <<'EOF'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-4o-mini
+  policies:
+    auth:
+      secretRef:
+        name: openai-api-key
+        namespace: agentgateway-system
+EOF
+
+kubectl apply -f - <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: llm-gateway
+  namespace: agentgateway-system
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AIRoute
+metadata:
+  name: openai-route
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - name: llm-gateway
+    namespace: agentgateway-system
+  rules:
+  - backendRefs:
+    - name: openai
+      namespace: agentgateway-system
+EOF
+
+kubectl wait gateway llm-gateway \
+  -n agentgateway-system \
+  --for=condition=Programmed \
+  --timeout=60s
+
+echo "Challenge 2 solved"
