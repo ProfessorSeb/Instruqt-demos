@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Route should be restored by now
-if ! kubectl get httproute openai-route -n agentgateway-system &>/dev/null; then
+if ! kubectl get httproute openai -n agentgateway-system &>/dev/null; then
   fail-message "The AIRoute is still deleted. Restore it with: kubectl apply -f /root/openai-route.yaml"
 fi
 
