@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+mkdir -p /root/lab-files
+echo "This is a test file for MCP access." > /root/lab-files/hello.txt
+echo "Challenge 5 setup complete"

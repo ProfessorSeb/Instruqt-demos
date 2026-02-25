@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! command -v openclaw &>/dev/null; then
+  fail-message "OpenClaw is not installed. Run: npm install -g openclaw"
+fi
+
+if [ ! -f ~/.openclaw/openclaw.json ]; then
+  fail-message "OpenClaw config not found. Run: openclaw onboard"
+fi
+
+if ! grep -q "localhost:8080" ~/.openclaw/openclaw.json; then
+  fail-message "OpenClaw is not pointing to AgentGateway. Re-run 'openclaw onboard' and set the base URL to http://localhost:8080/v1"
+fi
+
+if ! openclaw gateway status 2>/dev/null | grep -qi "running\|active"; then
+  fail-message "OpenClaw gateway is not running. Start it with: openclaw gateway start"
+fi
+
+RESPONSE=$(openclaw chat --message "Reply with only: GATEWAY_OK" 2>/dev/null || echo "")
+if [ -z "$RESPONSE" ]; then
+  fail-message "Could not get a response through OpenClaw → AgentGateway. Check that both services are running."
+fi
+
+echo "Challenge 6 passed — full stack is live."

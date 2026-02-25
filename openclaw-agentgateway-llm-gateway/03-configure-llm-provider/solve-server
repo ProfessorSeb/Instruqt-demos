@@ -60,4 +60,4 @@ kubectl wait gateway llm-gateway \
   --for=condition=Programmed \
   --timeout=60s
 
-echo "Challenge 2 solved"
+kubectl get aiRoute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml

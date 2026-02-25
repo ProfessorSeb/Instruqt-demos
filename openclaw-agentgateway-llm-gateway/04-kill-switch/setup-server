@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euxo pipefail
+# Ensure route is active at challenge start
+[ -f /root/openai-route.yaml ] && kubectl apply -f /root/openai-route.yaml || true
+echo "Challenge 4 setup complete"

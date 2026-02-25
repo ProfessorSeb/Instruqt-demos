@@ -1,5 +1,0 @@
-#!/bin/bash
-set -euxo pipefail
-# Source OpenAI key into env for this challenge
-source ~/.bashrc || true
-echo "Challenge 2 setup complete"

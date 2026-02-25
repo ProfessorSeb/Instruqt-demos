@@ -1,22 +1,14 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Install OpenClaw if not already installed
-if ! command -v openclaw &>/dev/null; then
-  npm install -g openclaw
-fi
-
-# Create openclaw config directory
+npm install -g openclaw 2>/dev/null || true
 mkdir -p ~/.openclaw
 
-# Write a minimal config pointing to AgentGateway
 cat > ~/.openclaw/openclaw.json << 'EOF'
 {
   "agents": {
     "defaults": {
-      "model": {
-        "primary": "agentgateway/gpt-4o-mini"
-      },
+      "model": { "primary": "agentgateway/gpt-4o-mini" },
       "workspace": "/root/.openclaw/workspace"
     }
   },
@@ -33,18 +25,12 @@ cat > ~/.openclaw/openclaw.json << 'EOF'
     "port": 18789,
     "mode": "local",
     "bind": "loopback",
-    "auth": {
-      "mode": "token",
-      "token": "instruqt-lab-token"
-    }
+    "auth": { "mode": "token", "token": "instruqt-lab-token" }
   }
 }
 EOF
 
-# Start the gateway
 openclaw gateway start
-
 sleep 3
 openclaw gateway status
-
-echo "Challenge 3 solved"
+echo "Challenge 6 solved"

@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! kubectl get gatewayclass agentgateway &>/dev/null; then
+  fail-message "AgentGateway GatewayClass not found. Run the Helm install command from the assignment."
+fi
+
+STATUS=$(kubectl get gatewayclass agentgateway \
+  -o jsonpath='{.status.conditions[?(@.type=="Accepted")].status}' 2>/dev/null)
+if [ "$STATUS" != "True" ]; then
+  fail-message "GatewayClass 'agentgateway' is not Accepted yet. Give it a moment and click Check again."
+fi
+
+RUNNING=$(kubectl get pods -n agentgateway-system \
+  --field-selector=status.phase=Running --no-headers 2>/dev/null | wc -l)
+if [ "$RUNNING" -lt 1 ]; then
+  fail-message "No running pods in agentgateway-system. Check: kubectl get pods -n agentgateway-system"
+fi
+
+echo "Challenge 2 passed — AgentGateway is running."

@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euxo pipefail
-# Nothing extra needed — cluster + CRDs ready from track setup
+source ~/.bashrc || true
 echo "Challenge 1 setup complete"

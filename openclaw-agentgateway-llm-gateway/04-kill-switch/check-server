@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Route should be restored by now
+if ! kubectl get aiRoute openai-route -n agentgateway-system &>/dev/null; then
+  fail-message "The AIRoute is still deleted. Restore it with: kubectl apply -f /root/openai-route.yaml"
+fi
+
+# Traffic should flow again
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
+  --max-time 15)
+
+if [ "$HTTP_CODE" != "200" ]; then
+  fail-message "Traffic is not flowing through the gateway (HTTP $HTTP_CODE). Make sure you restored the route and the gateway is programmed."
+fi
+
+# Check aliases exist
+if ! grep -q "llm-kill" ~/.bashrc; then
+  fail-message "Kill switch aliases not found in ~/.bashrc. Add them using the commands in the assignment."
+fi
+
+echo "Challenge 4 passed — you've mastered the kill switch."

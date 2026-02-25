@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euxo pipefail
+
+if ! grep -q "whatsapp" ~/.openclaw/openclaw.json 2>/dev/null; then
+  fail-message "WhatsApp channel not configured. Run: openclaw configure --set channels.whatsapp.dmPolicy=pairing"
+fi
+
+if [ ! -f ~/.openclaw/credentials/whatsapp/default/creds.json ] && \
+   [ ! -f ~/.openclaw/credentials/whatsapp/creds.json ]; then
+  fail-message "WhatsApp not linked yet. Run: openclaw channels login --channel whatsapp"
+fi
+
+STATUS=$(openclaw channels status 2>/dev/null || echo "")
+if ! echo "$STATUS" | grep -qi "whatsapp.*linked\|whatsapp.*connected"; then
+  fail-message "WhatsApp is not linked. Run 'openclaw channels status' to debug, then re-run 'openclaw channels login --channel whatsapp'."
+fi
+
+echo "Bonus challenge passed!"

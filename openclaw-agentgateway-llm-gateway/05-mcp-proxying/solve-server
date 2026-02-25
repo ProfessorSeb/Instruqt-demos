@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euxo pipefail
+
+npm install -g @modelcontextprotocol/server-filesystem 2>/dev/null || true
+
+kubectl apply -f - <<'EOF'
+apiVersion: agentgateway.dev/v1alpha1
+kind: MCPBackend
+metadata:
+  name: filesystem
+  namespace: agentgateway-system
+spec:
+  mcp:
+    stdio:
+      cmd: npx
+      args:
+        - "@modelcontextprotocol/server-filesystem"
+        - "/root/lab-files"
+    policies: {}
+EOF
+
+kubectl get mcpbackend filesystem -n agentgateway-system \
+  -o yaml > /root/filesystem-mcp.yaml
+
+echo "Challenge 5 solved"

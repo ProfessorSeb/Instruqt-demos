@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euxo pipefail
+source ~/.bashrc || true
+
+# Verify learner made a direct API call by checking it actually works
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  https://api.openai.com/v1/chat/completions \
+  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
+  --max-time 15)
+
+if [ "$HTTP_CODE" != "200" ]; then
+  fail-message "Couldn't reach OpenAI directly (HTTP $HTTP_CODE). Make sure you ran the curl command from the assignment — the API key should be in your environment."
+fi
+
+echo "Challenge 1 check passed — you've seen the problem firsthand."

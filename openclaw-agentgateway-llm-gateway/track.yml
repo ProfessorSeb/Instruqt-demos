@@ -1,36 +1,35 @@
 slug: openclaw-agentgateway-llm-gateway
 type: track
-title: 'AI Dev Assistant: OpenClaw + AgentGateway LLM Gateway'
-teaser: Deploy a personal AI assistant powered by OpenClaw and route all LLM traffic
-  through an AgentGateway on Kubernetes — with full visibility and control.
+title: 'AI Agent Gateway: Control, Observe, and Govern Your LLM Traffic'
+teaser: Learn why proxying LLM and MCP tool traffic matters — then build it. Deploy
+  AgentGateway OSS and wire OpenClaw through it for full control over your AI stack.
 description: |-
-  Your AI assistant is making direct API calls to OpenAI with zero visibility, no cost control, and no governance. Sound familiar?
+  Your AI agent is calling OpenAI directly. Your API key is in an environment variable.
+  You have no idea how many tokens it's using, no way to stop it mid-flight, and no
+  visibility into what it's actually sending.
 
-  **AgentGateway** is a purpose-built gateway for AI agent traffic. In this lab, you'll deploy AgentGateway as an LLM proxy on Kubernetes and wire it up to **OpenClaw** — a self-hosted AI assistant platform.
+  Sound familiar? We saw this exact pattern with microservices in 2016 — before service
+  meshes and API gateways brought order to the chaos.
 
-  **What you'll build:**
+  **AgentGateway** is the API gateway for AI agent traffic. It gives you a single control
+  plane for every LLM call and MCP tool invocation your agents make.
 
-  ```
-  OpenClaw (your AI assistant)
-      ↓ HTTP (localhost:8080/v1)
-  AgentGateway (LLM Gateway on k8s)
-      ↓ HTTPS
-  OpenAI API
-  ```
+  **In this lab you'll learn:**
 
-  **In this hands-on lab, you'll:**
+  - ❌ Why direct LLM calls are a problem (visibility, security, cost, governance)
+  - 🚀 How to deploy AgentGateway OSS on Kubernetes
+  - 🔑 How to centralize API key management so apps never touch credentials
+  - ☠️ How to use AgentGateway as a kill switch to cut off LLM access instantly
+  - 🔧 How to proxy MCP tool traffic — not just LLMs
+  - 🤖 How to wire OpenClaw through the gateway for a complete AI assistant stack
 
-  - 🚀 Deploy AgentGateway OSS on Kubernetes using k3d
-  - 🔑 Configure an OpenAI LLM provider with a gateway-managed API key
-  - 🤖 Install and configure OpenClaw as your personal AI assistant
-  - 🔀 Route all OpenClaw traffic through AgentGateway
-  - 💬 **BONUS:** Connect OpenClaw to WhatsApp for mobile access
-
-  **No prior AgentGateway or OpenClaw experience required.**
+  **No prior AgentGateway experience required.**
+  Familiarity with Kubernetes basics (kubectl, pods) is helpful but not essential.
 icon: ""
 tags:
 - ai
 - llm
+- mcp
 - kubernetes
 - agentgateway
 - openclaw
@@ -40,7 +39,7 @@ owner: soloio
 developers:
 - sebastian.maniak@solo.io
 idle_timeout: 1800
-timelimit: 5400
+timelimit: 7200
 show_timer: true
 skipping_enabled: false
 lab_config:

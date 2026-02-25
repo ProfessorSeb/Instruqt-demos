@@ -8,5 +8,3 @@ helm upgrade --install agentgateway \
   --wait --timeout 180s
 
 kubectl wait --for=condition=Ready pods --all -n agentgateway-system --timeout=120s
-
-echo "Challenge 1 solved"
