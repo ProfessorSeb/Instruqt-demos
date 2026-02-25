@@ -1,36 +1,20 @@
 #!/bin/bash
 set -euxo pipefail
 
-npm install -g openclaw 2>/dev/null || true
-mkdir -p ~/.openclaw
+# Capture gateway logs
+kubectl logs -n agentgateway-system deployment/agentgateway-proxy \
+  --tail=100 > /tmp/gateway-logs.txt
 
-cat > ~/.openclaw/openclaw.json << 'EOF'
-{
-  "agents": {
-    "defaults": {
-      "model": { "primary": "agentgateway/gpt-4o-mini" },
-      "workspace": "/root/.openclaw/workspace"
-    }
-  },
-  "models": {
-    "providers": {
-      "agentgateway": {
-        "baseUrl": "http://localhost:8080/v1",
-        "apiKey": "agentgateway",
-        "api": "openai-completions"
-      }
-    }
-  },
-  "gateway": {
-    "port": 18789,
-    "mode": "local",
-    "bind": "loopback",
-    "auth": { "mode": "token", "token": "instruqt-lab-token" }
-  }
-}
-EOF
+echo "Log lines captured: $(wc -l < /tmp/gateway-logs.txt)"
 
-openclaw gateway start
-sleep 3
-openclaw gateway status
+# Make a test request through the gateway
+HTTP_CODE=$(curl -s -o /tmp/gateway-test-response.json -w "%{http_code}" \
+  -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Reply with: GATEWAY_HEALTHY"}]}' \
+  --max-time 15)
+
+echo "Gateway response: $HTTP_CODE"
+cat /tmp/gateway-test-response.json
+
 echo "Challenge 6 solved"

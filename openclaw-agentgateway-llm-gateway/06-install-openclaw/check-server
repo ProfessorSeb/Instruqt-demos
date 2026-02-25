@@ -1,25 +1,29 @@
 #!/bin/bash
 set -euxo pipefail
 
-if ! command -v openclaw &>/dev/null; then
-  fail-message "OpenClaw is not installed. Run: npm install -g openclaw"
+# Verify logs were captured
+if [ ! -f /tmp/gateway-logs.txt ]; then
+  fail-message "Gateway logs not found at /tmp/gateway-logs.txt. Run: kubectl logs -n agentgateway-system deployment/agentgateway-proxy --tail=100 > /tmp/gateway-logs.txt"
 fi
 
-if [ ! -f ~/.openclaw/openclaw.json ]; then
-  fail-message "OpenClaw config not found. Run: openclaw onboard"
+# Verify the gateway is still responding
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
+  --max-time 15)
+
+if [ "$HTTP_CODE" != "200" ]; then
+  fail-message "Gateway returned HTTP $HTTP_CODE. Expected 200. Is the port-forward still running?"
 fi
 
-if ! grep -q "localhost:8080" ~/.openclaw/openclaw.json; then
-  fail-message "OpenClaw is not pointing to AgentGateway. Re-run 'openclaw onboard' and set the base URL to http://localhost:8080/v1"
+# Verify pods are running
+READY=$(kubectl get pods -n agentgateway-system \
+  -l app.kubernetes.io/name=agentgateway \
+  -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
+
+if [ "$READY" != "True" ]; then
+  fail-message "AgentGateway pod is not Ready. Check: kubectl get pods -n agentgateway-system"
 fi
 
-if ! openclaw gateway status 2>/dev/null | grep -qi "running\|active"; then
-  fail-message "OpenClaw gateway is not running. Start it with: openclaw gateway start"
-fi
-
-RESPONSE=$(openclaw chat --message "Reply with only: GATEWAY_OK" 2>/dev/null || echo "")
-if [ -z "$RESPONSE" ]; then
-  fail-message "Could not get a response through OpenClaw → AgentGateway. Check that both services are running."
-fi
-
-echo "Challenge 6 passed — full stack is live."
+echo "Challenge 6 passed — gateway is observable, healthy, and processing traffic."

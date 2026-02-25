@@ -1,25 +1,25 @@
 #!/bin/bash
 set -euxo pipefail
 
-npm install -g @modelcontextprotocol/server-filesystem 2>/dev/null || true
-
-kubectl apply -f - <<'EOF'
+# Create gpt-4o backend
+cat > /root/openai-smart-backend.yaml << 'EOF'
 apiVersion: agentgateway.dev/v1alpha1
-kind: MCPBackend
+kind: AgentgatewayBackend
 metadata:
-  name: filesystem
+  name: openai-smart
   namespace: agentgateway-system
 spec:
-  mcp:
-    stdio:
-      cmd: npx
-      args:
-        - "@modelcontextprotocol/server-filesystem"
-        - "/root/lab-files"
-    policies: {}
+  ai:
+    openAI:
+      authHeaderRef:
+        name: openai-api-key
+        key: Authorization
+      model: gpt-4o
 EOF
 
-kubectl get mcpbackend filesystem -n agentgateway-system \
-  -o yaml > /root/filesystem-mcp.yaml
+kubectl apply -f /root/openai-smart-backend.yaml
+
+# Verify backend registered
+kubectl get agentgatewaybackend -n agentgateway-system
 
 echo "Challenge 5 solved"

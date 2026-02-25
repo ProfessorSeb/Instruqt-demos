@@ -2,20 +2,19 @@
 slug: install-openclaw
 id: y9rcfluxngzm
 type: challenge
-title: Wire OpenClaw Through AgentGateway
-teaser: Install OpenClaw and configure it to use AgentGateway as its LLM provider
-  — completing the full stack.
+title: Observe Your Gateway — Logs, Metrics, and Traffic Visibility
+teaser: A gateway is only as good as its visibility. Learn how to inspect what's
+  flowing through AgentGateway in real time.
 notes:
 - type: text
-  contents: "# \U0001F916 Completing the Stack\n\nYou've built the gateway. Now let's
-    put an AI assistant behind it.\n\n**OpenClaw** is a self-hosted AI assistant platform.
-    It runs as a background\nservice and lets you talk to your AI via Telegram, WhatsApp,
-    Signal, and more.\n\nBy default, OpenClaw would call OpenAI directly. You're going
-    to change that.\n\nInstead of:\n```\nOpenClaw  ──▶  OpenAI  (direct, uncontrolled)\n```\n\nYou'll
-    configure:\n```\nOpenClaw  ──▶  AgentGateway  ──▶  OpenAI\n```\n\nEvery message
-    you send to your AI assistant will flow through the gateway.\nYou'll have full
-    visibility. You'll have the kill switch. You'll have control.\n\n**This is what
-    governed AI looks like.**"
+  contents: "# \U0001F50D Visibility Is the Whole Point\n\nYou've built a gateway.
+    But a gateway without observability is just a\nrouting hop — it's not giving you
+    the governance you need.\n\nThe reason we proxy AI traffic is so we can **see**
+    it:\n\n- Which models are being called?\n- How often?\n- By what?\n- Did any calls
+    fail?\n- Is there unusual traffic?\n\nWithout a gateway, you're flying blind.
+    With AgentGateway, every\nrequest leaves a trace.\n\nIn this challenge, you'll
+    inspect what's flowing through your gateway\nusing Kubernetes-native tooling —
+    no external observability stack needed."
 tabs:
 - id: zsxwxh8nrfr1
   title: Terminal
@@ -31,82 +30,75 @@ timelimit: 900
 enhanced_loading: null
 ---
 
-# Wire OpenClaw Through AgentGateway
+# Observe Your Gateway
 
-## Install OpenClaw
+## View Live Gateway Logs
 
-```bash
-npm install -g openclaw
-openclaw --version
-```
-
-## Run the Onboarding Wizard
+The gateway logs every request. Watch them in real time:
 
 ```bash
-openclaw onboard
+kubectl logs -n agentgateway-system deployment/agentgateway-proxy --tail=50
 ```
 
-When prompted for a model provider, select **Custom / OpenAI-compatible endpoint**.
-
-| Setting | Value |
-|---|---|
-| Base URL | `http://localhost:8080/v1` |
-| API Key | `agentgateway` *(any value — the gateway handles auth)* |
-| Model | `gpt-4o-mini` |
-
-> Skip channel setup for now — you'll connect Telegram or WhatsApp in the next step.
-
-## Verify the Configuration
+Send a test request in another terminal tab, then check the logs again:
 
 ```bash
-cat ~/.openclaw/openclaw.json | jq '.models.providers'
+curl -s -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello from the gateway!"}]}' \
+  | jq '.choices[0].message.content'
 ```
 
-You should see your custom provider pointing to `localhost:8080`.
+## Inspect the Control Plane State
 
-## Test the Full Stack
-
-Send a message through OpenClaw CLI:
+Check the full state of your gateway configuration:
 
 ```bash
-openclaw chat --message "You are running through AgentGateway. Tell me what that means."
+# All registered AI backends
+kubectl get agentgatewaybackend -n agentgateway-system -o wide
+
+# Active routing rules
+kubectl get httproute -n agentgateway-system
+
+# The gateway resource itself
+kubectl describe gateway agentgateway-proxy -n agentgateway-system
 ```
 
-**Watch traffic in AgentGateway at the same time** (open a second terminal tab):
+## Check Pod Health
+
+Verify the gateway pod is healthy:
 
 ```bash
-kubectl logs -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway \
-  --follow
+kubectl get pods -n agentgateway-system
+
+# Detailed status
+kubectl describe pod -n agentgateway-system \
+  -l app.kubernetes.io/name=agentgateway | grep -A5 "Conditions:"
 ```
 
-Send another message and watch it appear in the gateway logs. 🎉
+## Save Logs to a File
 
-## Start the OpenClaw Gateway
+Capture recent traffic for analysis:
 
 ```bash
-openclaw gateway start
-openclaw gateway status
+kubectl logs -n agentgateway-system deployment/agentgateway-proxy \
+  --tail=100 > /tmp/gateway-logs.txt
+
+echo "Log lines captured: $(wc -l < /tmp/gateway-logs.txt)"
+cat /tmp/gateway-logs.txt | tail -20
 ```
 
-## Test the Kill Switch Against OpenClaw
+## Make One More Test Request
 
-Now use the aliases you created in Challenge 4:
+Confirm end-to-end health:
 
 ```bash
-# Cut off OpenClaw's LLM access
-llm-kill
-
-# Try to chat — it should fail
-openclaw chat --message "Hello?" || echo "Blocked by AgentGateway — as expected."
-
-# Restore access
-llm-restore
-
-# Chat again — works
-openclaw chat --message "Back online!"
+curl -s -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Summarise what AgentGateway does in one sentence."}]}' \
+  | jq '.choices[0].message.content'
 ```
 
-> 💡 **This is the full picture:** Your AI assistant has no credentials.
-> It has no direct path to any LLM. Everything goes through your gateway.
-> You control access. You can see everything. You can stop anything.
+> 💡 **What you're seeing:** This is the audit trail for your AI traffic.
+> Every call to every model, logged, inspectable, and governable — all from
+> standard Kubernetes tooling you already know.

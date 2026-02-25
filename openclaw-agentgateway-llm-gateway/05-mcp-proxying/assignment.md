@@ -2,22 +2,23 @@
 slug: mcp-proxying
 id: uoeonaturrmp
 type: challenge
-title: Proxy MCP Tools Through AgentGateway
-teaser: LLMs aren't the only problem. Learn why MCP tool traffic needs a gateway too
-  — and how AgentGateway handles both.
+title: Route Multiple Models Through AgentGateway
+teaser: One gateway, many models. Add a second AI backend and see how AgentGateway
+  centralises routing across your entire model fleet.
 notes:
 - type: text
-  contents: "# \U0001F527 The MCP Problem\n\nModern AI agents don't just call LLMs.
-    They call **MCP tools**:\n\n- Filesystem access\n- GitHub repositories\n- Databases
-    and APIs\n- Web search and browsing\n- Internal services\n\nEach MCP tool connection
-    is a **direct channel** from your agent to an\nexternal service. Same problem
-    as direct LLM calls — no visibility, no\ncontrol, no governance.\n\n```\nAgent
-    \ ──▶  OpenAI       (uncontrolled)\nAgent  ──▶  GitHub MCP   (uncontrolled)\nAgent
-    \ ──▶  Filesystem   (uncontrolled)\nAgent  ──▶  Database MCP (uncontrolled)\n```\n\nAgentGateway
-    handles **both** — it's a unified control plane for all\nyour agent's outbound
-    traffic, whether LLM or tool.\n\n```\nAgent  ──▶  AgentGateway  ──▶  OpenAI\n
-    \                          ──▶  GitHub MCP\n                           ──▶  Filesystem\n
-    \                          ──▶  Database MCP\n```"
+  contents: "# \U0001F9E0 One Gateway, Many Models\n\nYou've wired up `gpt-4o-mini`
+    through AgentGateway. But in production, you'll\nrarely stop at one model.\n\nDifferent
+    tasks call for different models:\n\n| Task | Model |\n|---|---|\n| Fast, cheap
+    Q&A | `gpt-4o-mini` |\n| Complex reasoning | `gpt-4o` |\n| Code generation |
+    `gpt-4o` |\n| Simple classification | `gpt-4o-mini` |\n\nWithout a gateway, each
+    model requires a separate integration — separate\nAPI keys, separate endpoints,
+    separate config in every app.\n\n**With AgentGateway**, you register all your
+    models once. Apps just call\nthe gateway and specify which model they want.\n\n```\nApp
+    \ ──▶  AgentGateway  ──▶  gpt-4o-mini  (fast, cheap)\n                       ──▶
+    \ gpt-4o       (smart, powerful)\n                       ──▶  claude-3   (future)\n
+    \                      ──▶  gemini     (future)\n```\n\nOne API key vault. One
+    audit log. One kill switch for everything."
 tabs:
 - id: if4tljwlsspx
   title: Terminal
@@ -33,101 +34,103 @@ timelimit: 900
 enhanced_loading: null
 ---
 
-# Proxy MCP Tools Through AgentGateway
+# Route Multiple Models Through AgentGateway
 
-## What is MCP?
+## Why Multiple Backends?
 
-**Model Context Protocol (MCP)** is an open standard (from Anthropic) for connecting
-AI agents to tools and data sources. Think of it as a USB-C port for AI tools —
-one standard protocol that any agent can use to call any tool.
+You already have `gpt-4o-mini` registered as a backend. Now let's add `gpt-4o` — the
+more capable (and more expensive) sibling.
 
-An MCP server exposes **tools** (functions an agent can call), **resources**
-(data an agent can read), and **prompts** (reusable templates).
+This is a common production pattern:
+- **Default traffic**: `gpt-4o-mini` (low cost, fast)
+- **Complex requests**: `gpt-4o` (higher quality, higher cost)
 
-## Start a Local MCP Server
+AgentGateway manages both from a single control plane. No app-level config changes needed.
 
-You'll run a simple filesystem MCP server — it lets an agent read and write files:
+## Add the gpt-4o Backend
 
-```bash
-# Install the filesystem MCP server
-npm install -g @modelcontextprotocol/server-filesystem
-
-# Start it in the background, allowing access to /root/lab-files only
-mkdir -p /root/lab-files
-echo "This is a test file for MCP access." > /root/lab-files/hello.txt
-
-npx @modelcontextprotocol/server-filesystem /root/lab-files &
-MCP_PID=$!
-echo "MCP server PID: $MCP_PID"
-echo $MCP_PID > /tmp/mcp-server.pid
-```
-
-## Configure AgentGateway to Proxy MCP Traffic
-
-Create an `MCPBackend` — the AgentGateway resource for MCP tool servers:
+Create a second `AgentgatewayBackend` pointing to `gpt-4o`:
 
 ```bash
-kubectl apply -f - <<'EOF'
+cat > /root/openai-smart-backend.yaml << 'EOF'
 apiVersion: agentgateway.dev/v1alpha1
-kind: MCPBackend
+kind: AgentgatewayBackend
 metadata:
-  name: filesystem
+  name: openai-smart
   namespace: agentgateway-system
 spec:
-  mcp:
-    stdio:
-      cmd: npx
-      args:
-        - "@modelcontextprotocol/server-filesystem"
-        - "/root/lab-files"
-    policies: {}
+  ai:
+    openAI:
+      authHeaderRef:
+        name: openai-api-key
+        key: Authorization
+      model: gpt-4o
 EOF
+
+kubectl apply -f /root/openai-smart-backend.yaml
 ```
 
-Verify it was accepted:
+## Verify Both Backends Are Registered
 
 ```bash
-kubectl get mcpbackend -n agentgateway-system
+kubectl get agentgatewaybackend -n agentgateway-system
 ```
 
-## Why Proxy MCP Tools?
+You should see both `openai` (gpt-4o-mini) and `openai-smart` (gpt-4o) listed.
 
-The same benefits apply as with LLM proxying:
+## Test the Smart Backend Directly
 
-| Without Gateway | With Gateway |
-|---|---|
-| Agent connects directly to tool | Gateway mediates the connection |
-| Tool credentials in the agent | Credentials in Kubernetes Secrets |
-| No visibility into tool calls | Full audit log of every tool invocation |
-| Agent can call any tool freely | Gateway enforces which tools are allowed |
-| Can't revoke tool access | Delete the MCPBackend — tool goes dark |
-
-## The Kill Switch Applies Here Too
-
-Just like with LLM routes, you can cut off MCP tool access instantly:
+Create a second route that points to `openai-smart`:
 
 ```bash
-# Revoke filesystem access
-kubectl delete mcpbackend filesystem -n agentgateway-system
+cat > /root/openai-smart-route.yaml << 'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai-smart
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+  rules:
+  - matches:
+    - headers:
+      - name: X-Model-Tier
+        value: smart
+    backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: openai-smart
+      namespace: agentgateway-system
+EOF
 
-# Restore it
-kubectl apply -f /root/filesystem-mcp.yaml
+kubectl apply -f /root/openai-smart-route.yaml
 ```
 
-## Inspect Your Full Gateway Config
-
-Now you have both LLM and MCP backends configured. See your full control plane:
+Test it by sending a request:
 
 ```bash
-# All backends (LLM + MCP)
-kubectl get agentgatewaybackend,mcpbackend -n agentgateway-system
-
-# The gateway routing
-kubectl get gateway,aiRoute -n agentgateway-system
+curl -s -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Model-Tier: smart" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"In one word: name the most powerful OpenAI model."}]}' \
+  | jq '.choices[0].message.content'
 ```
 
-You now have **one control plane** for all your agent's outbound traffic.
+## Your Multi-Model Registry
 
-> 💡 **The big picture:** AgentGateway is not an LLM proxy. It's a
-> **unified gateway for AI agent traffic** — whatever protocol your agent
-> uses to talk to the outside world, AgentGateway can mediate it.
+List everything AgentGateway is managing:
+
+```bash
+# All AI backends
+kubectl get agentgatewaybackend -n agentgateway-system
+
+# All active routes
+kubectl get httproute -n agentgateway-system
+
+# The gateway itself
+kubectl get gateway -n agentgateway-system
+```
+
+> 💡 **One API key vault.** Both backends share the same `openai-api-key` Secret.
+> Add 10 more models — they all use the same Secret, the same audit log, the same kill switch.
