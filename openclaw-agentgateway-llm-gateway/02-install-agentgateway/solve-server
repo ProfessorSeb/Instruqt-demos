@@ -1,10 +1,17 @@
 #!/bin/bash
 set -euxo pipefail
 
-helm upgrade --install agentgateway \
-  oci://ghcr.io/agentgateway-dev/helm-charts/agentgateway \
+helm install agentgateway-crds \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+  --version v2.2.0 \
   --namespace agentgateway-system \
   --create-namespace \
-  --wait --timeout 180s
+  --wait
+
+helm install agentgateway \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway \
+  --version v2.2.0 \
+  --namespace agentgateway-system \
+  --wait --timeout 120s
 
 kubectl wait --for=condition=Ready pods --all -n agentgateway-system --timeout=120s

@@ -1,9 +1,10 @@
 ---
 slug: the-problem
-id: ""
+id: kcx1ptiuxszq
 type: challenge
-title: "The Problem: Direct LLM Calls"
-teaser: Understand why calling LLMs directly from your agent is a serious problem in production.
+title: 'The Problem: Direct LLM Calls'
+teaser: Understand why calling LLMs directly from your agent is a serious problem
+  in production.
 notes:
 - type: text
   contents: |-
@@ -22,15 +23,18 @@ notes:
 
     **In this challenge, you'll see exactly what goes wrong — and why it matters.**
 tabs:
-- title: Terminal
+- id: 3ij92wohaw6q
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: tpefhunisexy
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: basic
 timelimit: 600
+enhanced_loading: null
 ---
 
 # The Problem: Direct LLM Calls

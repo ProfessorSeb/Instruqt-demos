@@ -19,13 +19,14 @@ notes:
     (no key)       (holds the key)    (gets the key)
     ```
 
-    You'll create three Kubernetes resources:
+    You'll create four Kubernetes resources:
 
     | Resource | Purpose |
     |---|---|
     | `Secret` | Stores the API key — only the gateway reads it |
     | `AgentgatewayBackend` | Defines OpenAI as an LLM provider |
-    | `Gateway` + `AIRoute` | Exposes the proxy and routes traffic |
+    | `Gateway` | Exposes the proxy on port 8080 |
+    | `HTTPRoute` | Routes `/openai` traffic to the backend |
 
     After this challenge, your app never needs to know the API key.
 tabs:
@@ -44,34 +45,26 @@ timelimit: 900
 
 ## Step 1 — Store the API Key as a Kubernetes Secret
 
-This is the key shift: the API key lives in Kubernetes, not in your app.
-Only AgentGateway reads it. Your app doesn't need it.
+The API key lives in Kubernetes. Your app never sees it.
 
 ```bash
 kubectl create namespace llm-gateway
 
-kubectl create secret generic openai-api-key \
+kubectl create secret generic openai-secret \
   --namespace agentgateway-system \
-  --from-literal=apiKey="${OPENAI_API_KEY}"
-```
-
-Verify it's stored (the value is never shown):
-
-```bash
-kubectl get secret openai-api-key -n agentgateway-system
+  --from-literal="Authorization=Bearer ${OPENAI_API_KEY}"
 ```
 
 ## Step 2 — Create the AgentgatewayBackend
 
-The `AgentgatewayBackend` tells AgentGateway *what* to proxy to — in this case, OpenAI.
-Notice there's no API key here. It references the secret by name:
+Defines OpenAI as an LLM provider. References the secret — no key in the config:
 
 ```bash
 kubectl apply -f - <<'EOF'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: openai
+  name: openai-backend
   namespace: agentgateway-system
 spec:
   ai:
@@ -81,68 +74,75 @@ spec:
   policies:
     auth:
       secretRef:
-        name: openai-api-key
-        namespace: agentgateway-system
+        name: openai-secret
 EOF
 ```
 
-## Step 3 — Create the Gateway and Route
+## Step 3 — Create the Gateway and HTTPRoute
 
-The `Gateway` listens on port 80 (mapped to `localhost:8080`).
-The `AIRoute` connects the Gateway to the OpenAI backend:
+The `Gateway` listens on port 8080. The `HTTPRoute` maps `/openai` traffic to your backend:
 
 ```bash
 kubectl apply -f - <<'EOF'
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: llm-gateway
+  name: ai-gateway
   namespace: agentgateway-system
 spec:
   gatewayClassName: agentgateway
   listeners:
   - name: http
-    port: 80
     protocol: HTTP
+    port: 8080
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AIRoute
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: openai-route
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: llm-gateway
+  - name: ai-gateway
     namespace: agentgateway-system
   rules:
-  - backendRefs:
-    - name: openai
-      namespace: agentgateway-system
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /openai
+    backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: openai-backend
 EOF
 ```
 
-Save the route manifest for later — you'll need it for the kill switch:
+Wait for the Gateway to be ready:
 
 ```bash
-kubectl get aiRoute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
+kubectl wait --for=condition=Programmed gateway/ai-gateway \
+  -n agentgateway-system --timeout=60s
 ```
 
-Wait for the Gateway to be programmed:
+Save the route for the kill switch challenge:
 
 ```bash
-kubectl wait gateway llm-gateway \
-  -n agentgateway-system \
-  --for=condition=Programmed \
-  --timeout=60s
+kubectl get httproute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
 ```
 
-## Step 4 — Test It (No API Key Required)
+## Step 4 — Expose the Gateway and Test
 
-Make a request through the gateway. **Notice: no `Authorization` header** — the
-gateway handles auth internally:
+Port-forward to reach the gateway from this host:
 
 ```bash
-curl -s http://localhost:8080/v1/chat/completions \
+kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+sleep 2
+```
+
+Now test — **no API key in the request**:
+
+```bash
+curl -s http://localhost:8080/openai/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4o-mini",
@@ -150,19 +150,8 @@ curl -s http://localhost:8080/v1/chat/completions \
   }' | jq '.choices[0].message.content'
 ```
 
-You should get a real OpenAI response. Your app sent no credentials. 🎉
+You should get a real OpenAI response — routed through AgentGateway. 🎉
 
-## What Changed?
-
-Compare the two approaches:
-
-| | Direct Call | Via AgentGateway |
-|---|---|---|
-| API key location | Environment variable | Kubernetes Secret |
-| Who holds the key | Your app | The gateway |
-| Visibility | None | Full (logs, metrics) |
-| Control | None | Routes, policies |
-| Revocation | Rotate key everywhere | Update one secret |
-
-> 💡 If you need to rotate your OpenAI key, you update **one Kubernetes secret**.
-> Every app behind the gateway picks it up automatically. No redeployments.
+> 💡 **What changed?** Your app sent no credentials. The gateway authenticated
+> the request using the Kubernetes secret you created. One secret, one place,
+> managed by the platform — not scattered across every app.

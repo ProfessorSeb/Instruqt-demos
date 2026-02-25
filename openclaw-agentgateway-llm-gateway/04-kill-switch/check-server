@@ -2,13 +2,13 @@
 set -euxo pipefail
 
 # Route should be restored by now
-if ! kubectl get aiRoute openai-route -n agentgateway-system &>/dev/null; then
+if ! kubectl get httproute openai-route -n agentgateway-system &>/dev/null; then
   fail-message "The AIRoute is still deleted. Restore it with: kubectl apply -f /root/openai-route.yaml"
 fi
 
 # Traffic should flow again
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST http://localhost:8080/v1/chat/completions \
+  -X POST http://localhost:8080/openai/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
   --max-time 15)

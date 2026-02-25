@@ -1,52 +1,36 @@
 ---
 slug: mcp-proxying
-id: ""
+id: uoeonaturrmp
 type: challenge
-title: "Proxy MCP Tools Through AgentGateway"
-teaser: LLMs aren't the only problem. Learn why MCP tool traffic needs a gateway too — and how AgentGateway handles both.
+title: Proxy MCP Tools Through AgentGateway
+teaser: LLMs aren't the only problem. Learn why MCP tool traffic needs a gateway too
+  — and how AgentGateway handles both.
 notes:
 - type: text
-  contents: |-
-    # 🔧 The MCP Problem
-
-    Modern AI agents don't just call LLMs. They call **MCP tools**:
-
-    - Filesystem access
-    - GitHub repositories
-    - Databases and APIs
-    - Web search and browsing
-    - Internal services
-
-    Each MCP tool connection is a **direct channel** from your agent to an
-    external service. Same problem as direct LLM calls — no visibility, no
-    control, no governance.
-
-    ```
-    Agent  ──▶  OpenAI       (uncontrolled)
-    Agent  ──▶  GitHub MCP   (uncontrolled)
-    Agent  ──▶  Filesystem   (uncontrolled)
-    Agent  ──▶  Database MCP (uncontrolled)
-    ```
-
-    AgentGateway handles **both** — it's a unified control plane for all
-    your agent's outbound traffic, whether LLM or tool.
-
-    ```
-    Agent  ──▶  AgentGateway  ──▶  OpenAI
-                               ──▶  GitHub MCP
-                               ──▶  Filesystem
-                               ──▶  Database MCP
-    ```
+  contents: "# \U0001F527 The MCP Problem\n\nModern AI agents don't just call LLMs.
+    They call **MCP tools**:\n\n- Filesystem access\n- GitHub repositories\n- Databases
+    and APIs\n- Web search and browsing\n- Internal services\n\nEach MCP tool connection
+    is a **direct channel** from your agent to an\nexternal service. Same problem
+    as direct LLM calls — no visibility, no\ncontrol, no governance.\n\n```\nAgent
+    \ ──▶  OpenAI       (uncontrolled)\nAgent  ──▶  GitHub MCP   (uncontrolled)\nAgent
+    \ ──▶  Filesystem   (uncontrolled)\nAgent  ──▶  Database MCP (uncontrolled)\n```\n\nAgentGateway
+    handles **both** — it's a unified control plane for all\nyour agent's outbound
+    traffic, whether LLM or tool.\n\n```\nAgent  ──▶  AgentGateway  ──▶  OpenAI\n
+    \                          ──▶  GitHub MCP\n                           ──▶  Filesystem\n
+    \                          ──▶  Database MCP\n```"
 tabs:
-- title: Terminal
+- id: if4tljwlsspx
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: 2kjc4xxnsdkm
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: intermediate
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Proxy MCP Tools Through AgentGateway

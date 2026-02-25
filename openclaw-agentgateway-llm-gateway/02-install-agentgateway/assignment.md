@@ -1,47 +1,38 @@
 ---
 slug: install-agentgateway
-id: ""
+id: lhqkmnrhx0yg
 type: challenge
 title: Install AgentGateway on Kubernetes
-teaser: Deploy AgentGateway OSS — a Kubernetes-native gateway built specifically for AI agent traffic.
+teaser: Deploy AgentGateway OSS — a Kubernetes-native gateway built specifically for
+  AI agent traffic.
 notes:
 - type: text
-  contents: |-
-    # 🚀 AgentGateway: Built for AI Agent Traffic
-
-    Traditional API gateways were built for HTTP microservices. They handle request routing, auth, and rate limiting — but they know nothing about:
-
-    - **Token counting** — LLM responses are billed by tokens, not requests
-    - **Prompt inspection** — you need to see what's going into the model
-    - **MCP tool routing** — a completely different protocol from HTTP REST
-    - **Model failover** — if GPT-4 is down, fall back to GPT-3.5 automatically
-    - **Streaming** — LLM responses stream back as chunks, not single responses
-
-    AgentGateway is built for exactly this. It extends the **Kubernetes Gateway API** —
-    the same standard used by Istio, Envoy, and NGINX — with AI-specific capabilities.
-
-    **Architecture:**
-
-    ```
-    ┌─────────────────────────────────────┐
-    │         AgentGateway OSS            │
-    │                                     │
-    │  GatewayClass  →  Gateway           │
-    │       ↓               ↓             │
-    │  AgentgatewayBackend  AIRoute       │
-    │  (your LLM provider)  (routing)     │
-    └─────────────────────────────────────┘
-    ```
+  contents: "# \U0001F680 AgentGateway: Built for AI Agent Traffic\n\nTraditional
+    API gateways were built for HTTP microservices. They handle request routing, auth,
+    and rate limiting — but they know nothing about:\n\n- **Token counting** — LLM
+    responses are billed by tokens, not requests\n- **Prompt inspection** — you need
+    to see what's going into the model\n- **MCP tool routing** — a completely different
+    protocol from HTTP REST\n- **Model failover** — if GPT-4 is down, fall back to
+    GPT-3.5 automatically\n- **Streaming** — LLM responses stream back as chunks,
+    not single responses\n\nAgentGateway is built for exactly this. It extends the
+    **Kubernetes Gateway API** —\nthe same standard used by Istio, Envoy, and NGINX
+    — with AI-specific capabilities.\n\n**Architecture:**\n\n```\n┌─────────────────────────────────────┐\n│
+    \        AgentGateway OSS            │\n│                                     │\n│
+    \ GatewayClass  →  Gateway           │\n│       ↓               ↓             │\n│
+    \ AgentgatewayBackend  AIRoute       │\n│  (your LLM provider)  (routing)     │\n└─────────────────────────────────────┘\n```"
 tabs:
-- title: Terminal
+- id: 0cuxkbepgsum
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: dsjamxnm8z67
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Install AgentGateway on Kubernetes
@@ -75,12 +66,23 @@ This means:
 
 ## Install AgentGateway via Helm
 
+AgentGateway uses two Helm charts — install CRDs first, then the control plane:
+
 ```bash
-helm upgrade --install agentgateway \
-  oci://ghcr.io/agentgateway-dev/helm-charts/agentgateway \
+# Step 1: Install CRDs
+helm install agentgateway-crds \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+  --version v2.2.0 \
   --namespace agentgateway-system \
   --create-namespace \
-  --wait --timeout 180s
+  --wait
+
+# Step 2: Install the control plane
+helm install agentgateway \
+  oci://ghcr.io/kgateway-dev/charts/agentgateway \
+  --version v2.2.0 \
+  --namespace agentgateway-system \
+  --wait --timeout 120s
 ```
 
 ## Verify the Installation

@@ -10,7 +10,7 @@ if [ ! -f ~/.openclaw/openclaw.json ]; then
 fi
 
 if ! grep -q "localhost:8080" ~/.openclaw/openclaw.json; then
-  fail-message "OpenClaw is not pointing to AgentGateway. Re-run 'openclaw onboard' and set the base URL to http://localhost:8080/v1"
+  fail-message "OpenClaw is not pointing to AgentGateway. Re-run 'openclaw onboard' and set the base URL to http://localhost:8080/openai/v1"
 fi
 
 if ! openclaw gateway status 2>/dev/null | grep -qi "running\|active"; then

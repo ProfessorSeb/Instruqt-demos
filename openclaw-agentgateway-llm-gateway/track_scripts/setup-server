@@ -25,19 +25,16 @@ else
   echo "=== WARNING: OPENAI_API_KEY not set ==="
 fi
 
-# Start k3d cluster (pre-installed in image) with port mapping
-# localhost:8080 → port 80 on the loadbalancer (AgentGateway listener)
-echo "=== Creating k3d cluster ==="
-k3d cluster create agentgateway \
-  --port "8080:80@loadbalancer" \
-  --port "8443:443@loadbalancer" \
-  --wait
+# Start the pre-baked k3d cluster
+echo "=== Starting k3d cluster ==="
+k3d cluster start my-k8s-cluster 2>/dev/null || \
+  k3d cluster create my-k8s-cluster --wait
 
-kubectl cluster-info
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
 # Install Gateway API CRDs
 echo "=== Installing Gateway API CRDs ==="
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+kubectl apply --server-side -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
 
 echo "=== Track setup complete ==="

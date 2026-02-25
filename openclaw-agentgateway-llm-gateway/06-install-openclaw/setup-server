@@ -1,3 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
-echo "Challenge 6 setup complete"
+
+# Ensure port-forward to AgentGateway is running
+if ! pgrep -f "port-forward.*ai-gateway" > /dev/null 2>&1; then
+  kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+  sleep 3
+fi
+
+echo "Challenge setup complete"

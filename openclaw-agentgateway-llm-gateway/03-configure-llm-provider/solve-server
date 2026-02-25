@@ -4,16 +4,16 @@ source ~/.bashrc || true
 
 kubectl create namespace llm-gateway --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl create secret generic openai-api-key \
+kubectl create secret generic openai-secret \
   --namespace agentgateway-system \
-  --from-literal=apiKey="${OPENAI_API_KEY}" \
+  --from-literal="Authorization=Bearer ${OPENAI_API_KEY}" \
   --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply -f - <<'EOF'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: openai
+  name: openai-backend
   namespace: agentgateway-system
 spec:
   ai:
@@ -23,41 +23,46 @@ spec:
   policies:
     auth:
       secretRef:
-        name: openai-api-key
-        namespace: agentgateway-system
+        name: openai-secret
 EOF
 
 kubectl apply -f - <<'EOF'
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: llm-gateway
+  name: ai-gateway
   namespace: agentgateway-system
 spec:
   gatewayClassName: agentgateway
   listeners:
   - name: http
-    port: 80
     protocol: HTTP
+    port: 8080
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AIRoute
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: openai-route
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: llm-gateway
+  - name: ai-gateway
     namespace: agentgateway-system
   rules:
-  - backendRefs:
-    - name: openai
-      namespace: agentgateway-system
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /openai
+    backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: openai-backend
 EOF
 
-kubectl wait gateway llm-gateway \
-  -n agentgateway-system \
-  --for=condition=Programmed \
-  --timeout=60s
+kubectl wait --for=condition=Programmed gateway/ai-gateway \
+  -n agentgateway-system --timeout=60s
 
-kubectl get aiRoute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
+kubectl get httproute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
+
+kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+sleep 3

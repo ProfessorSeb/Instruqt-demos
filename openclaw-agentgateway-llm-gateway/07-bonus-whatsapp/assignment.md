@@ -1,41 +1,31 @@
 ---
 slug: bonus-whatsapp
-id: ""
+id: fxcbdwixlnh2
 type: challenge
-title: "BONUS: Connect OpenClaw to WhatsApp"
-teaser: Link WhatsApp so you can chat with your gateway-controlled AI assistant from your phone.
+title: 'BONUS: Connect OpenClaw to WhatsApp'
+teaser: Link WhatsApp so you can chat with your gateway-controlled AI assistant from
+  your phone.
 notes:
 - type: text
-  contents: |-
-    # 📱 BONUS: Chat from Your Phone
-
-    You've built a fully governed AI assistant stack:
-
-    ```
-    OpenClaw  ──▶  AgentGateway  ──▶  OpenAI
-    ```
-
-    Now let's add WhatsApp as a front-end.
-
-    ```
-    WhatsApp (your phone)
-         ↓
-    OpenClaw  ──▶  AgentGateway  ──▶  OpenAI
-    ```
-
-    Every message you send from WhatsApp flows through your gateway.
-    The kill switch still works. Credentials never leave Kubernetes.
-    You'll need your phone to scan a QR code.
+  contents: "# \U0001F4F1 BONUS: Chat from Your Phone\n\nYou've built a fully governed
+    AI assistant stack:\n\n```\nOpenClaw  ──▶  AgentGateway  ──▶  OpenAI\n```\n\nNow
+    let's add WhatsApp as a front-end.\n\n```\nWhatsApp (your phone)\n     ↓\nOpenClaw
+    \ ──▶  AgentGateway  ──▶  OpenAI\n```\n\nEvery message you send from WhatsApp
+    flows through your gateway.\nThe kill switch still works. Credentials never leave
+    Kubernetes.\nYou'll need your phone to scan a QR code."
 tabs:
-- title: Terminal
+- id: 5vsd20rfeljx
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: ww01fihauzzq
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: intermediate
 timelimit: 900
+enhanced_loading: null
 ---
 
 # BONUS: Connect OpenClaw to WhatsApp

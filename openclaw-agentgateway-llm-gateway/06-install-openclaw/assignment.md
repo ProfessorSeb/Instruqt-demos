@@ -1,45 +1,34 @@
 ---
 slug: install-openclaw
-id: ""
+id: y9rcfluxngzm
 type: challenge
 title: Wire OpenClaw Through AgentGateway
-teaser: Install OpenClaw and configure it to use AgentGateway as its LLM provider — completing the full stack.
+teaser: Install OpenClaw and configure it to use AgentGateway as its LLM provider
+  — completing the full stack.
 notes:
 - type: text
-  contents: |-
-    # 🤖 Completing the Stack
-
-    You've built the gateway. Now let's put an AI assistant behind it.
-
-    **OpenClaw** is a self-hosted AI assistant platform. It runs as a background
-    service and lets you talk to your AI via Telegram, WhatsApp, Signal, and more.
-
-    By default, OpenClaw would call OpenAI directly. You're going to change that.
-
-    Instead of:
-    ```
-    OpenClaw  ──▶  OpenAI  (direct, uncontrolled)
-    ```
-
-    You'll configure:
-    ```
-    OpenClaw  ──▶  AgentGateway  ──▶  OpenAI
-    ```
-
-    Every message you send to your AI assistant will flow through the gateway.
-    You'll have full visibility. You'll have the kill switch. You'll have control.
-
-    **This is what governed AI looks like.**
+  contents: "# \U0001F916 Completing the Stack\n\nYou've built the gateway. Now let's
+    put an AI assistant behind it.\n\n**OpenClaw** is a self-hosted AI assistant platform.
+    It runs as a background\nservice and lets you talk to your AI via Telegram, WhatsApp,
+    Signal, and more.\n\nBy default, OpenClaw would call OpenAI directly. You're going
+    to change that.\n\nInstead of:\n```\nOpenClaw  ──▶  OpenAI  (direct, uncontrolled)\n```\n\nYou'll
+    configure:\n```\nOpenClaw  ──▶  AgentGateway  ──▶  OpenAI\n```\n\nEvery message
+    you send to your AI assistant will flow through the gateway.\nYou'll have full
+    visibility. You'll have the kill switch. You'll have control.\n\n**This is what
+    governed AI looks like.**"
 tabs:
-- title: Terminal
+- id: zsxwxh8nrfr1
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: addbb2eg4snn
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Wire OpenClaw Through AgentGateway
@@ -61,7 +50,7 @@ When prompted for a model provider, select **Custom / OpenAI-compatible endpoint
 
 | Setting | Value |
 |---|---|
-| Base URL | `http://localhost:8080/v1` |
+| Base URL | `http://localhost:8080/openai/v1` |
 | API Key | `agentgateway` *(any value — the gateway handles auth)* |
 | Model | `gpt-4o-mini` |
 
