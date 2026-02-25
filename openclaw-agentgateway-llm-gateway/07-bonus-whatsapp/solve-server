@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euxo pipefail
-# WhatsApp requires a real QR scan — cannot be auto-solved.
-openclaw configure --set channels.whatsapp.dmPolicy=pairing 2>/dev/null || true
-echo "WhatsApp config set. Run 'openclaw channels login --channel whatsapp' to link."
+
+# Bonus challenge — mark as reviewed
+touch /tmp/bonus-whatsapp-reviewed
+echo "Bonus challenge instructions reviewed. Connect WhatsApp on your own OpenClaw instance to complete the full stack."
