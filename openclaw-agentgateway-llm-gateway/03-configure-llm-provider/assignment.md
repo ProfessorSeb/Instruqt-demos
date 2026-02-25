@@ -1,41 +1,33 @@
 ---
 slug: configure-llm-provider
-id: ""
+id: xkavxawgrix2
 type: challenge
 title: Configure the OpenAI LLM Provider
-teaser: Route LLM traffic through AgentGateway — no API key in your app, full visibility into every call.
+teaser: Route LLM traffic through AgentGateway — no API key in your app, full visibility
+  into every call.
 notes:
 - type: text
-  contents: |-
-    # 🔑 Centralized Credential Management
-
-    AgentGateway solves the API key problem with a **backend + secret** model:
-
-    ```
-    Your App  ──▶  AgentGateway  ──▶  OpenAI
-    (no key)       (holds the key)
-    ```
-
-    You'll create four Kubernetes resources:
-
-    | Resource | Purpose |
-    |---|---|
-    | `Secret` | Stores the API key — only the gateway reads it |
-    | `AgentgatewayBackend` | Defines OpenAI as an LLM provider |
-    | `Gateway` | Exposes the proxy on port 80 |
-    | `HTTPRoute` | Routes traffic to the backend |
-
-    After this challenge, your app never needs to know the API key.
+  contents: "# \U0001F511 Centralized Credential Management\n\nAgentGateway solves
+    the API key problem with a **backend + secret** model:\n\n```\nYour App  ──▶  AgentGateway
+    \ ──▶  OpenAI\n(no key)       (holds the key)\n```\n\nYou'll create four Kubernetes
+    resources:\n\n| Resource | Purpose |\n|---|---|\n| `Secret` | Stores the API key
+    — only the gateway reads it |\n| `AgentgatewayBackend` | Defines OpenAI as an
+    LLM provider |\n| `Gateway` | Exposes the proxy on port 80 |\n| `HTTPRoute` |
+    Routes traffic to the backend |\n\nAfter this challenge, your app never needs
+    to know the API key."
 tabs:
-- title: Terminal
+- id: k6jy6ou9frm6
+  title: Terminal
   type: terminal
   hostname: server
-- title: Editor
+- id: jgk1eccktm41
+  title: Editor
   type: code
   hostname: server
   path: /root
 difficulty: basic
 timelimit: 900
+enhanced_loading: null
 ---
 
 # Configure the OpenAI LLM Provider

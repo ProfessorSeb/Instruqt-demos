@@ -1,10 +1,12 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Ensure port-forward to AgentGateway proxy is running
-if ! pgrep -f "port-forward.*agentgateway-proxy" > /dev/null 2>&1; then
-  kubectl port-forward deployment/agentgateway-proxy \
-    -n agentgateway-system 8080:80 &
+# Restart port-forward if it died between challenges
+if ! kill -0 "$(cat /tmp/port-forward.pid 2>/dev/null)" 2>/dev/null; then
+  nohup kubectl port-forward deployment/agentgateway-proxy \
+    -n agentgateway-system 8080:80 \
+    > /tmp/port-forward.log 2>&1 &
+  echo $! > /tmp/port-forward.pid
   sleep 3
 fi
 

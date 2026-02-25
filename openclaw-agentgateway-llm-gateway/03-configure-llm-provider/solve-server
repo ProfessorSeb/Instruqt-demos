@@ -2,8 +2,8 @@
 set -euxo pipefail
 source ~/.bashrc || true
 
-# Create OpenAI secret (raw key — no Bearer prefix)
-kubectl apply -f- <<EOF
+# Create OpenAI secret
+kubectl apply -f- <<YAML
 apiVersion: v1
 kind: Secret
 metadata:
@@ -12,10 +12,10 @@ metadata:
 type: Opaque
 stringData:
   Authorization: ${OPENAI_API_KEY}
-EOF
+YAML
 
 # Create AgentgatewayBackend
-kubectl apply -f- <<'EOF'
+kubectl apply -f- <<'YAML'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
@@ -30,10 +30,10 @@ spec:
     auth:
       secretRef:
         name: openai-secret
-EOF
+YAML
 
-# Create Gateway (port 80) and HTTPRoute (no path prefix)
-kubectl apply -f- <<'EOF'
+# Create Gateway + HTTPRoute
+kubectl apply -f- <<'YAML'
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -64,15 +64,27 @@ spec:
       namespace: agentgateway-system
       group: agentgateway.dev
       kind: AgentgatewayBackend
-EOF
+YAML
 
 kubectl wait --for=condition=Programmed gateway/agentgateway-proxy \
   -n agentgateway-system --timeout=60s
 
-# Save route for kill switch
-kubectl get httproute openai -n agentgateway-system -o yaml > /root/openai-route.yaml
+# Wait for the proxy pod to be running before port-forwarding
+kubectl wait --for=condition=Ready pod \
+  -l app.kubernetes.io/name=agentgateway-proxy \
+  -n agentgateway-system --timeout=60s 2>/dev/null || \
+kubectl wait --for=condition=Ready pod \
+  -l app=agentgateway-proxy \
+  -n agentgateway-system --timeout=60s 2>/dev/null || \
+kubectl wait --for=condition=Ready pods --all \
+  -n agentgateway-system --timeout=60s
 
-# Port-forward
-kubectl port-forward deployment/agentgateway-proxy \
-  -n agentgateway-system 8080:80 &
+# Detach port-forward properly with nohup
+nohup kubectl port-forward deployment/agentgateway-proxy \
+  -n agentgateway-system 8080:80 \
+  > /tmp/port-forward.log 2>&1 &
+echo $! > /tmp/port-forward.pid
 sleep 3
+
+# Save route manifest for kill switch
+kubectl get httproute openai -n agentgateway-system -o yaml > /root/openai-route.yaml
