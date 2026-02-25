@@ -9,12 +9,12 @@ description: "Your AI agent is calling OpenAI directly. Your API key is in an en
   exact pattern with microservices in 2016 — before service\nmeshes and API gateways
   brought order to the chaos.\n\n**AgentGateway** is the API gateway for AI agent
   traffic. It gives you a single control\nplane for every LLM call your agents make.\n\n**In
-  this lab you'll learn:**\n\n- \u274C Why direct LLM calls are a problem (visibility,
+  this lab you'll learn:**\n\n- ❌ Why direct LLM calls are a problem (visibility,
   security, cost, governance)\n- \U0001F680 How to deploy AgentGateway OSS on Kubernetes\n-
   \U0001F511 How to centralize API key management so apps never touch credentials\n-
-  \u2620\uFE0F How to use AgentGateway as a kill switch to cut off LLM access instantly\n-
-  \U0001F9E0 How to register multiple model backends under one control plane\n- \U0001F50D
-  How to observe and audit all AI traffic through your gateway\n\n**No prior AgentGateway
+  ☠️ How to use AgentGateway as a kill switch to cut off LLM access instantly\n- \U0001F9E0
+  How to register multiple model backends under one control plane\n- \U0001F50D How
+  to observe and audit all AI traffic through your gateway\n\n**No prior AgentGateway
   experience required.**\nFamiliarity with Kubernetes basics (kubectl, pods) is helpful
   but not essential."
 icon: ""
@@ -43,5 +43,5 @@ lab_config:
   hideStopButton: false
   default_layout: AssignmentRight
   default_layout_sidebar_size: 35
-checksum: "13184403794168136146"
+checksum: "2531045899571954908"
 enhanced_loading: false

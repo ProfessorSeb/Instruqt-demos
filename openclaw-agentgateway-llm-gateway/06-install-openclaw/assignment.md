@@ -3,8 +3,8 @@ slug: install-openclaw
 id: y9rcfluxngzm
 type: challenge
 title: Observe Your Gateway — Logs, Metrics, and Traffic Visibility
-teaser: A gateway is only as good as its visibility. Learn how to inspect what's
-  flowing through AgentGateway in real time.
+teaser: A gateway is only as good as its visibility. Learn how to inspect what's flowing
+  through AgentGateway in real time.
 notes:
 - type: text
   contents: "# \U0001F50D Visibility Is the Whole Point\n\nYou've built a gateway.

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Create gpt-4o backend
+# Create gpt-4o backend using the correct schema
 cat > /root/openai-smart-backend.yaml << 'EOF'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -10,16 +10,18 @@ metadata:
   namespace: agentgateway-system
 spec:
   ai:
-    openAI:
-      authHeaderRef:
-        name: openai-api-key
-        key: Authorization
-      model: gpt-4o
+    provider:
+      openai:
+        model: gpt-4o
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
 EOF
 
 kubectl apply -f /root/openai-smart-backend.yaml
 
-# Verify backend registered
+# Verify both backends are registered
 kubectl get agentgatewaybackend -n agentgateway-system
 
 echo "Challenge 5 solved"

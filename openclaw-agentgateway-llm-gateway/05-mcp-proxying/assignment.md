@@ -10,15 +10,15 @@ notes:
   contents: "# \U0001F9E0 One Gateway, Many Models\n\nYou've wired up `gpt-4o-mini`
     through AgentGateway. But in production, you'll\nrarely stop at one model.\n\nDifferent
     tasks call for different models:\n\n| Task | Model |\n|---|---|\n| Fast, cheap
-    Q&A | `gpt-4o-mini` |\n| Complex reasoning | `gpt-4o` |\n| Code generation |
-    `gpt-4o` |\n| Simple classification | `gpt-4o-mini` |\n\nWithout a gateway, each
-    model requires a separate integration — separate\nAPI keys, separate endpoints,
-    separate config in every app.\n\n**With AgentGateway**, you register all your
-    models once. Apps just call\nthe gateway and specify which model they want.\n\n```\nApp
-    \ ──▶  AgentGateway  ──▶  gpt-4o-mini  (fast, cheap)\n                       ──▶
-    \ gpt-4o       (smart, powerful)\n                       ──▶  claude-3   (future)\n
-    \                      ──▶  gemini     (future)\n```\n\nOne API key vault. One
-    audit log. One kill switch for everything."
+    Q&A | `gpt-4o-mini` |\n| Complex reasoning | `gpt-4o` |\n| Code generation | `gpt-4o`
+    |\n| Simple classification | `gpt-4o-mini` |\n\nWithout a gateway, each model
+    requires a separate integration — separate\nAPI keys, separate endpoints, separate
+    config in every app.\n\n**With AgentGateway**, you register all your models once.
+    Apps just call\nthe gateway and specify which model they want.\n\n```\nApp  ──▶
+    \ AgentGateway  ──▶  gpt-4o-mini  (fast, cheap)\n                       ──▶  gpt-4o
+    \      (smart, powerful)\n                       ──▶  claude-3   (future)\n                       ──▶
+    \ gemini     (future)\n```\n\nOne API key vault. One audit log. One kill switch
+    for everything."
 tabs:
 - id: if4tljwlsspx
   title: Terminal
