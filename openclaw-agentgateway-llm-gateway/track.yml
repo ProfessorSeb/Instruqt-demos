@@ -20,7 +20,7 @@ description: |-
 
   **In this hands-on lab, you'll:**
 
-  - 🚀 Deploy AgentGateway OSS on Kubernetes using kind
+  - 🚀 Deploy AgentGateway OSS on Kubernetes using k3d
   - 🔑 Configure an OpenAI LLM provider with a gateway-managed API key
   - 🤖 Install and configure OpenClaw as your personal AI assistant
   - 🔀 Route all OpenClaw traffic through AgentGateway
@@ -35,7 +35,7 @@ tags:
 - agentgateway
 - openclaw
 - solo-io
-- kind
+- k3d
 owner: soloio
 developers:
 - sebastian.maniak@solo.io

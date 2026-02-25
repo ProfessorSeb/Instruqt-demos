@@ -17,7 +17,7 @@ notes:
     - 📊 **Observability** — see every LLM call, token count, and latency
     - 🔀 **Routing** — load balance across models, fail over, rate limit
 
-    In this challenge you'll install it on a local kind cluster.
+    In this challenge you'll install it on a local k3d cluster.
 tabs:
 - title: Terminal
   type: terminal
@@ -32,7 +32,7 @@ timelimit: 900
 
 # Install AgentGateway on Kubernetes
 
-A **kind** cluster is already running with port 80 mapped to `localhost:8080` on
+A **k3d** cluster is already running with port 80 mapped to `localhost:8080` on
 the host — that's the port AgentGateway will listen on.
 
 ## Verify the Cluster

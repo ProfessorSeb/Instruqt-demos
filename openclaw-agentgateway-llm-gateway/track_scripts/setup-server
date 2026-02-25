@@ -25,31 +25,15 @@ else
   echo "=== WARNING: OPENAI_API_KEY not set ==="
 fi
 
-# Install kind
-echo "=== Installing kind ==="
-KIND_VERSION="v0.27.0"
-curl -sLo /usr/local/bin/kind \
-  "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
-chmod +x /usr/local/bin/kind
-kind version
+# Start k3d cluster (pre-installed in image) with port mapping
+# localhost:8080 → port 80 on the loadbalancer (AgentGateway listener)
+echo "=== Creating k3d cluster ==="
+k3d cluster create agentgateway \
+  --port "8080:80@loadbalancer" \
+  --port "8443:443@loadbalancer" \
+  --wait
 
-# Create kind cluster with port mapping for AgentGateway
-echo "=== Creating kind cluster ==="
-cat <<'EOF' | kind create cluster --name agentgateway --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: 80
-    hostPort: 8080
-    protocol: TCP
-  - containerPort: 443
-    hostPort: 8443
-    protocol: TCP
-EOF
-
-kubectl cluster-info --context kind-agentgateway
+kubectl cluster-info
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
 # Install Gateway API CRDs
