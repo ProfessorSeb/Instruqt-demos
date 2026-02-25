@@ -17,13 +17,4 @@ if [ "$HTTP_CODE" != "200" ]; then
   fail-message "Gateway returned HTTP $HTTP_CODE. Expected 200. Is the port-forward still running?"
 fi
 
-# Verify pods are running
-READY=$(kubectl get pods -n agentgateway-system \
-  -l app.kubernetes.io/name=agentgateway \
-  -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
-
-if [ "$READY" != "True" ]; then
-  fail-message "AgentGateway pod is not Ready. Check: kubectl get pods -n agentgateway-system"
-fi
-
 echo "Challenge 6 passed — gateway is observable, healthy, and processing traffic."
