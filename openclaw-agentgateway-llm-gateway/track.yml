@@ -1,8 +1,9 @@
 slug: openclaw-agentgateway-llm-gateway
 id: hphdenrjsa4l
-title: 'AI Agent Gateway: Control, Observe, and Govern Your LLM Traffic'
-teaser: Learn why proxying LLM and MCP tool traffic matters — then build it. Deploy
-  AgentGateway OSS and wire OpenClaw through it for full control over your AI stack.
+title: 'Secure OpenClaw with AgentGateway: Control and Govern Your LLM Traffic'
+teaser: Deploy AgentGateway OSS on Kubernetes and wire it as a secure LLM proxy for
+  OpenClaw — centralize API keys, add a kill switch, and gain full observability over
+  your AI agent traffic.
 description: "Your AI agent is calling OpenAI directly. Your API key is in an environment
   variable.\nYou have no idea how many tokens it's using, no way to stop it mid-flight,
   and no\nvisibility into what it's actually sending.\n\nSound familiar? We saw this
@@ -43,5 +44,5 @@ lab_config:
   hideStopButton: false
   default_layout: AssignmentRight
   default_layout_sidebar_size: 35
-checksum: "2531045899571954908"
+checksum: "15051471140618590621"
 enhanced_loading: false

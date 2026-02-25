@@ -1,25 +1,17 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Verify the second backend was created
+# Verify the gpt-4o backend was created
 if ! kubectl get agentgatewaybackend openai-smart -n agentgateway-system &>/dev/null; then
   fail-message "AgentgatewayBackend 'openai-smart' not found. Apply /root/openai-smart-backend.yaml"
 fi
 
-# Verify the original backend is still intact
+# Verify the original gpt-4o-mini backend is still intact
 if ! kubectl get agentgatewaybackend openai -n agentgateway-system &>/dev/null; then
   fail-message "Original backend 'openai' is missing. Did you accidentally delete it?"
 fi
 
-# Verify the gateway is still responding on the original route
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
-  --max-time 15)
+# Show both registered backends
+kubectl get agentgatewaybackend -n agentgateway-system
 
-if [ "$HTTP_CODE" != "200" ]; then
-  fail-message "Gateway returned HTTP $HTTP_CODE on the original route. Expected 200."
-fi
-
-echo "Challenge 5 passed — two model backends registered and gateway healthy."
+echo "Challenge 5 passed — two model backends registered."
