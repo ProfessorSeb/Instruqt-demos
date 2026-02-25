@@ -50,7 +50,7 @@ When prompted for a model provider, select **Custom / OpenAI-compatible endpoint
 
 | Setting | Value |
 |---|---|
-| Base URL | `http://localhost:8080/openai/v1` |
+| Base URL | `http://localhost:8080/v1` |
 | API Key | `agentgateway` *(any value — the gateway handles auth)* |
 | Model | `gpt-4o-mini` |
 

@@ -8,7 +8,7 @@ fi
 
 # Traffic should flow again
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST http://localhost:8080/openai/v1/chat/completions \
+  -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
   --max-time 15)

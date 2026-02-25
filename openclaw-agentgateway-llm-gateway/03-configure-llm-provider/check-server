@@ -2,36 +2,37 @@
 set -euxo pipefail
 
 if ! kubectl get secret openai-secret -n agentgateway-system &>/dev/null; then
-  fail-message "Secret 'openai-secret' not found. Create it with: kubectl create secret generic openai-secret --namespace agentgateway-system --from-literal=\"Authorization=Bearer \$OPENAI_API_KEY\""
+  fail-message "Secret 'openai-secret' not found. Create it with: kubectl apply -f- with the secret manifest from the assignment."
 fi
 
-if ! kubectl get agentgatewaybackend openai-backend -n agentgateway-system &>/dev/null; then
-  fail-message "AgentgatewayBackend 'openai-backend' not found. Apply the backend manifest from the assignment."
+if ! kubectl get agentgatewaybackend openai -n agentgateway-system &>/dev/null; then
+  fail-message "AgentgatewayBackend 'openai' not found. Apply the backend manifest from the assignment."
 fi
 
-GW_STATUS=$(kubectl get gateway ai-gateway -n agentgateway-system \
+GW_STATUS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system \
   -o jsonpath='{.status.conditions[?(@.type=="Programmed")].status}' 2>/dev/null)
 if [ "$GW_STATUS" != "True" ]; then
-  fail-message "Gateway 'ai-gateway' is not Programmed. Check: kubectl describe gateway ai-gateway -n agentgateway-system"
+  fail-message "Gateway 'agentgateway-proxy' is not Programmed. Check: kubectl describe gateway agentgateway-proxy -n agentgateway-system"
 fi
 
 # Ensure port-forward is running
-if ! pgrep -f "port-forward.*ai-gateway" > /dev/null 2>&1; then
-  kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+if ! pgrep -f "port-forward.*agentgateway-proxy" > /dev/null 2>&1; then
+  kubectl port-forward deployment/agentgateway-proxy \
+    -n agentgateway-system 8080:80 &
   sleep 3
 fi
 
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST http://localhost:8080/openai/v1/chat/completions \
+  -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' \
   --max-time 15)
 
 if [ "$HTTP_CODE" != "200" ]; then
-  fail-message "Gateway returned HTTP $HTTP_CODE. Check port-forward is running and the HTTPRoute is configured correctly."
+  fail-message "Gateway returned HTTP $HTTP_CODE. Make sure port-forward is running and the HTTPRoute is configured."
 fi
 
 [ -f /root/openai-route.yaml ] || \
-  kubectl get httproute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
+  kubectl get httproute openai -n agentgateway-system -o yaml > /root/openai-route.yaml
 
-echo "Challenge 3 passed — LLM traffic is flowing through AgentGateway."
+echo "Challenge 3 passed — LLM traffic flowing through AgentGateway."

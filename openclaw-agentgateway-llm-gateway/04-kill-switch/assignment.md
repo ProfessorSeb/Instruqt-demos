@@ -45,7 +45,7 @@ enhanced_loading: null
 First, confirm your LLM proxy is working:
 
 ```bash
-curl -s http://localhost:8080/openai/v1/chat/completions \
+curl -s http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Am I connected?"}]}' \
   | jq '.choices[0].message.content'
@@ -58,14 +58,14 @@ You should get a response. Good — now watch what happens next.
 Delete the `AIRoute`. This removes the path from the gateway to OpenAI:
 
 ```bash
-kubectl delete httproute openai-route -n agentgateway-system
+kubectl delete httproute openai -n agentgateway-system
 ```
 
 ## Try Again — Immediately
 
 ```bash
 curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" \
-  -X POST http://localhost:8080/openai/v1/chat/completions \
+  -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Are you there?"}]}' \
   --max-time 5
@@ -96,7 +96,7 @@ kubectl apply -f /root/openai-route.yaml
 Wait a moment, then test again:
 
 ```bash
-curl -s http://localhost:8080/openai/v1/chat/completions \
+curl -s http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Back online?"}]}' \
   | jq '.choices[0].message.content'
@@ -112,7 +112,7 @@ Add these to your toolkit for fast kill/restore from anywhere:
 cat >> ~/.bashrc << 'EOF'
 
 # AgentGateway Kill Switch
-alias llm-kill="kubectl delete httproute openai-route -n agentgateway-system --ignore-not-found"
+alias llm-kill="kubectl delete httproute openai -n agentgateway-system --ignore-not-found"
 alias llm-restore="kubectl apply -f /root/openai-route.yaml"
 alias llm-status="kubectl get httproute,gateway -n agentgateway-system"
 EOF

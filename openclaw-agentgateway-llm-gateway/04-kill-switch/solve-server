@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Kill then restore to demonstrate the full cycle
-kubectl delete httproute openai-route -n agentgateway-system --ignore-not-found
+kubectl delete httproute openai -n agentgateway-system --ignore-not-found
 sleep 2
 kubectl apply -f /root/openai-route.yaml
 
@@ -10,7 +10,7 @@ kubectl apply -f /root/openai-route.yaml
 grep -q "llm-kill" ~/.bashrc || cat >> ~/.bashrc << 'EOF'
 
 # AgentGateway Kill Switch
-alias llm-kill="kubectl delete httproute openai-route -n agentgateway-system --ignore-not-found"
+alias llm-kill="kubectl delete httproute openai -n agentgateway-system --ignore-not-found"
 alias llm-restore="kubectl apply -f /root/openai-route.yaml"
 alias llm-status="kubectl get httproute,gateway -n agentgateway-system"
 EOF

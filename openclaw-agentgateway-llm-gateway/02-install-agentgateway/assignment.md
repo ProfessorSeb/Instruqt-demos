@@ -72,7 +72,7 @@ AgentGateway uses two Helm charts — install CRDs first, then the control plane
 # Step 1: Install CRDs
 helm install agentgateway-crds \
   oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
-  --version v2.2.0 \
+  --version v2.2.1 \
   --namespace agentgateway-system \
   --create-namespace \
   --wait
@@ -80,7 +80,7 @@ helm install agentgateway-crds \
 # Step 2: Install the control plane
 helm install agentgateway \
   oci://ghcr.io/kgateway-dev/charts/agentgateway \
-  --version v2.2.0 \
+  --version v2.2.1 \
   --namespace agentgateway-system \
   --wait --timeout 120s
 ```

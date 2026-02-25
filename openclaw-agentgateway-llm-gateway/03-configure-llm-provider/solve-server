@@ -2,18 +2,24 @@
 set -euxo pipefail
 source ~/.bashrc || true
 
-kubectl create namespace llm-gateway --dry-run=client -o yaml | kubectl apply -f -
+# Create OpenAI secret (raw key — no Bearer prefix)
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openai-secret
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  Authorization: ${OPENAI_API_KEY}
+EOF
 
-kubectl create secret generic openai-secret \
-  --namespace agentgateway-system \
-  --from-literal="Authorization=Bearer ${OPENAI_API_KEY}" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-kubectl apply -f - <<'EOF'
+# Create AgentgatewayBackend
+kubectl apply -f- <<'EOF'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: openai-backend
+  name: openai
   namespace: agentgateway-system
 spec:
   ai:
@@ -26,43 +32,47 @@ spec:
         name: openai-secret
 EOF
 
-kubectl apply -f - <<'EOF'
+# Create Gateway (port 80) and HTTPRoute (no path prefix)
+kubectl apply -f- <<'EOF'
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: ai-gateway
+  name: agentgateway-proxy
   namespace: agentgateway-system
 spec:
   gatewayClassName: agentgateway
   listeners:
-  - name: http
-    protocol: HTTP
-    port: 8080
+  - protocol: HTTP
+    port: 80
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: openai-route
+  name: openai
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: ai-gateway
+  - name: agentgateway-proxy
     namespace: agentgateway-system
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /openai
-    backendRefs:
-    - group: agentgateway.dev
+  - backendRefs:
+    - name: openai
+      namespace: agentgateway-system
+      group: agentgateway.dev
       kind: AgentgatewayBackend
-      name: openai-backend
 EOF
 
-kubectl wait --for=condition=Programmed gateway/ai-gateway \
+kubectl wait --for=condition=Programmed gateway/agentgateway-proxy \
   -n agentgateway-system --timeout=60s
 
-kubectl get httproute openai-route -n agentgateway-system -o yaml > /root/openai-route.yaml
+# Save route for kill switch
+kubectl get httproute openai -n agentgateway-system -o yaml > /root/openai-route.yaml
 
-kubectl port-forward -n agentgateway-system svc/ai-gateway 8080:8080 &
+# Port-forward
+kubectl port-forward deployment/agentgateway-proxy \
+  -n agentgateway-system 8080:80 &
 sleep 3
