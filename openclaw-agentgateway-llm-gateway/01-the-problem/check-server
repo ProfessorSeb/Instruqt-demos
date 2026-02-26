@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 source ~/.bashrc || true
 
 # Verify learner made a direct API call by checking it actually works

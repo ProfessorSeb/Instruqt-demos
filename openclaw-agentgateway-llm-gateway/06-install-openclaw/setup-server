@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 # Restart port-forward if it died between challenges
 if ! kill -0 "$(cat /tmp/port-forward.pid 2>/dev/null)" 2>/dev/null; then

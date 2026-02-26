@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 # Bonus challenge — always passes. WhatsApp setup requires a real device outside this lab.
 echo "Bonus challenge complete — connect WhatsApp to your own OpenClaw deployment to go further!"

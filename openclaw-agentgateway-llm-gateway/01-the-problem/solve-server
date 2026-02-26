@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 source ~/.bashrc || true
 
 curl -s https://api.openai.com/v1/chat/completions \

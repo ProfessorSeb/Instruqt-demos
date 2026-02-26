@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 helm upgrade -i --create-namespace \
   --namespace agentgateway-system \

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 # Create gpt-4o backend using the correct schema
 cat > /root/openai-smart-backend.yaml << 'EOF'

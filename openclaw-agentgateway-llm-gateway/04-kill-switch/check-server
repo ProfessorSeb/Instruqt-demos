@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 # Route should be restored by now
 if ! kubectl get httproute openai -n agentgateway-system &>/dev/null; then

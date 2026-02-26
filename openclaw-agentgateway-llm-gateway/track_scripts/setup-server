@@ -5,7 +5,7 @@ until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
   sleep 1
 done
 
-set -euxo pipefail
+set -euo pipefail
 
 set-workdir /root
 

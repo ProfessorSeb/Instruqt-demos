@@ -1,4 +1,4 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 source ~/.bashrc || true
 echo "Challenge 1 setup complete"

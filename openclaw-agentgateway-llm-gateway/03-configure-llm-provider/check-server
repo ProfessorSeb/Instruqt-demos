@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 if ! kubectl get secret openai-secret -n agentgateway-system &>/dev/null; then
   fail-message "Secret 'openai-secret' not found. Apply the secret manifest from the assignment."

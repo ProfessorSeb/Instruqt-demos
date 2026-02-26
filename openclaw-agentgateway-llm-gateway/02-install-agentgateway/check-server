@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 if ! kubectl get gatewayclass agentgateway &>/dev/null; then
   fail-message "AgentGateway GatewayClass not found. Run the Helm install command from the assignment."

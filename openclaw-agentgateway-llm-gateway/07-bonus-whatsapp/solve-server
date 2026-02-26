@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 # Bonus challenge — mark as reviewed
 touch /tmp/bonus-whatsapp-reviewed
